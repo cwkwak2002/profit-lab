@@ -1,12 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EquityCurve } from "@/components/equity-curve";
 import { TradeTable } from "@/components/trade-table";
-import { getCoinTrades, getBacktestCoins, type Trade, type CoinSummary } from "@/lib/api";
+import { CandleChart, type CandleChartHandle } from "@/components/candle-chart";
+import { ResizableSplit } from "@/components/resizable-split";
+import {
+  getCoinTrades,
+  getBacktestCoins,
+  getBacktestSummary,
+  getCandles,
+  type Trade,
+  type CoinSummary,
+  type Candle,
+  type Timeframe,
+} from "@/lib/api";
+
+const TIMEFRAMES: Timeframe[] = ["1m", "5m", "15m", "30m", "1h", "4h", "1D"];
 
 export default function CoinDetailPage() {
   const params = useParams();
@@ -18,18 +31,32 @@ export default function CoinDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Chart state
+  const [activeTab, setActiveTab] = useState<"equity" | "chart">("chart");
+  const [timeframe, setTimeframe] = useState<Timeframe>("1h");
+  const [candles, setCandles] = useState<Candle[]>([]);
+  const [candlesLoading, setCandlesLoading] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const chartRef = useRef<CandleChartHandle>(null);
+
+  // Load initial data
   useEffect(() => {
     if (!runId || !symbol) return;
 
     async function load() {
       try {
-        const [tradesData, coinsData] = await Promise.all([
+        const [tradesData, coinsData, summaryData] = await Promise.all([
           getCoinTrades(runId, symbol),
           getBacktestCoins(runId),
+          getBacktestSummary(runId),
         ]);
         setTrades(tradesData.trades);
         const coinSummary = coinsData.coins.find((c) => c.symbol === symbol);
         setSummary(coinSummary || null);
+        setStartDate(summaryData.run.start_date);
+        setEndDate(summaryData.run.end_date);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
@@ -39,86 +66,181 @@ export default function CoinDetailPage() {
     load();
   }, [runId, symbol]);
 
+  // Load candles when timeframe or dates change
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+
+    async function loadCandles() {
+      setCandlesLoading(true);
+      try {
+        const data = await getCandles(symbol, timeframe, startDate, endDate);
+        setCandles(data.candles);
+      } catch {
+        setCandles([]);
+      } finally {
+        setCandlesLoading(false);
+      }
+    }
+    loadCandles();
+  }, [symbol, timeframe, startDate, endDate]);
+
+  // Handle trade row click → scroll chart
+  const handleTradeClick = useCallback(
+    (trade: Trade) => {
+      if (activeTab !== "chart" || !chartRef.current) return;
+      const ts = new Date(trade.entry_time + "Z").getTime() / 1000;
+      chartRef.current.scrollToTime(ts);
+    },
+    [activeTab],
+  );
+
   if (loading) return <div className="text-center py-12 text-muted-foreground">로딩 중...</div>;
   if (error) return <div className="text-center py-12 text-red-500">오류: {error}</div>;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <div>
-        <Link href={`/backtest/${runId}`} className="text-sm text-muted-foreground hover:underline">
+    <div className="h-[calc(100vh-4rem)] flex flex-col">
+      {/* Header */}
+      <div className="flex-shrink-0 px-4 py-2 border-b border-border bg-[#0d1117]">
+        <Link href={`/backtest/${runId}`} className="text-sm text-muted-foreground hover:text-[#58a6ff] transition-colors">
           ← 결과 요약으로 돌아가기
         </Link>
-        <h2 className="text-2xl font-bold mt-2">{symbol} 상세 결과</h2>
+        <h2 className="text-xl font-bold text-[#e6edf3]">{symbol} 상세 결과</h2>
       </div>
 
-      {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">수익률</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-xl font-bold ${summary.cumulative_return >= 0 ? "text-green-600" : "text-red-600"}`}>
-                {summary.cumulative_return >= 0 ? "+" : ""}{summary.cumulative_return}%
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">승률</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold">{summary.win_rate}%</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">거래수</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold">{summary.total_trades}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">MDD</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold text-orange-600">{summary.max_drawdown}%</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">최종 잔액</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl font-bold">${summary.final_balance.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>수익 곡선 (Equity Curve)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {trades.length > 0 ? (
-            <EquityCurve trades={trades} initialBalance={100} />
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">거래 기록이 없습니다.</div>
+      {/* Main layout: left sidebar + right content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left sidebar - stats */}
+        <aside className="w-48 flex-shrink-0 border-r border-border bg-[#0d1117] overflow-y-auto p-3 space-y-3">
+          {summary && (
+            <>
+              <StatCard
+                label="수익률"
+                value={`${summary.cumulative_return >= 0 ? "+" : ""}${summary.cumulative_return}%`}
+                color={summary.cumulative_return >= 0 ? "text-[#3fb950]" : "text-[#f85149]"}
+              />
+              <StatCard label="승률" value={`${summary.win_rate}%`} />
+              <StatCard label="거래수" value={`${summary.total_trades}`} />
+              <StatCard
+                label="MDD"
+                value={`${summary.max_drawdown}%`}
+                color="text-[#d29922]"
+              />
+              <StatCard label="최종 잔액" value={`$${summary.final_balance.toFixed(2)}`} />
+            </>
           )}
-        </CardContent>
-      </Card>
+        </aside>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>포지션 상세 ({trades.length}건)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TradeTable data={trades} />
-        </CardContent>
-      </Card>
+        {/* Right content - chart/table split */}
+        <main className="flex-1 overflow-hidden">
+          <ResizableSplit
+            top={
+              <div className="h-full flex flex-col">
+                {/* Tabs + timeframe selector */}
+                <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-b border-border bg-[#0d1117]">
+                  <button
+                    onClick={() => setActiveTab("equity")}
+                    className={`px-3 py-1 text-sm rounded transition-colors ${
+                      activeTab === "equity"
+                        ? "bg-[#1f6feb] text-white"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    수익 곡선
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("chart")}
+                    className={`px-3 py-1 text-sm rounded transition-colors ${
+                      activeTab === "chart"
+                        ? "bg-[#1f6feb] text-white"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    차트
+                  </button>
+
+                  {activeTab === "chart" && (
+                    <div className="flex items-center gap-1 ml-4">
+                      {TIMEFRAMES.map((tf) => (
+                        <button
+                          key={tf}
+                          onClick={() => setTimeframe(tf)}
+                          className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                            timeframe === tf
+                              ? "bg-[#1f6feb] text-white"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {tf}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Chart content */}
+                <div className="flex-1 overflow-hidden p-2">
+                  {activeTab === "equity" ? (
+                    trades.length > 0 ? (
+                      <EquityCurve trades={trades} initialBalance={100} />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        거래 기록이 없습니다.
+                      </div>
+                    )
+                  ) : candlesLoading ? (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      차트 로딩 중...
+                    </div>
+                  ) : (
+                    <CandleChart
+                      ref={chartRef}
+                      candles={candles}
+                      trades={trades}
+                    />
+                  )}
+                </div>
+              </div>
+            }
+            bottom={
+              <div className="h-full flex flex-col">
+                <div className="flex-shrink-0 px-3 py-2 border-b border-border bg-[#0d1117]">
+                  <span className="text-sm font-medium">
+                    포지션 상세 ({trades.length}건)
+                  </span>
+                </div>
+                <div className="flex-1 overflow-auto">
+                  <TradeTable
+                    data={trades}
+                    onRowClick={handleTradeClick}
+                    highlightClickable={activeTab === "chart"}
+                  />
+                </div>
+              </div>
+            }
+          />
+        </main>
+      </div>
     </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string;
+  color?: string;
+}) {
+  return (
+    <Card className="p-0">
+      <CardHeader className="p-3 pb-1">
+        <CardTitle className="text-xs text-muted-foreground">{label}</CardTitle>
+      </CardHeader>
+      <CardContent className="p-3 pt-0">
+        <div className={`text-lg font-bold ${color || ""}`}>{value}</div>
+      </CardContent>
+    </Card>
   );
 }

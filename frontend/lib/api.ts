@@ -50,6 +50,7 @@ export interface Trade {
   id: number;
   run_id: string;
   symbol: string;
+  side: "long" | "short";
   entry_time: string;
   entry_price: number;
   entry_margin: number;
@@ -59,6 +60,7 @@ export interface Trade {
   pnl: number;
   pnl_pct: number;
   balance_after: number;
+  tp1_time: string | null;
 }
 
 export interface BacktestRun {
@@ -78,6 +80,17 @@ export interface BacktestSummary {
     avg_return: number;
     avg_mdd: number;
   };
+}
+
+// --- Progress event type ---
+
+export interface ProgressEvent {
+  phase: "sync" | "backtest" | "done";
+  message: string;
+  progress: number;
+  symbol?: string;
+  error?: boolean;
+  run_id?: string;
 }
 
 // --- API Functions ---
@@ -100,6 +113,50 @@ export async function runBacktest(req: BacktestRequest): Promise<BacktestRunResp
   });
 }
 
+export async function runBacktestStream(
+  req: BacktestRequest,
+  onProgress: (event: ProgressEvent) => void,
+): Promise<string> {
+  const res = await fetch(`${API_BASE}/api/backtest/run-stream`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(req),
+  });
+
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status} ${res.statusText}`);
+  }
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("No response body");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let runId = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const data: ProgressEvent = JSON.parse(line.slice(6));
+        onProgress(data);
+        if (data.run_id) {
+          runId = data.run_id;
+        }
+      }
+    }
+  }
+
+  if (!runId) throw new Error("No run_id received");
+  return runId;
+}
+
 export async function getBacktestSummary(runId: string): Promise<BacktestSummary> {
   return fetchApi(`/api/backtest/${runId}/summary`);
 }
@@ -110,4 +167,29 @@ export async function getBacktestCoins(runId: string): Promise<{ coins: CoinSumm
 
 export async function getCoinTrades(runId: string, symbol: string): Promise<{ trades: Trade[] }> {
   return fetchApi(`/api/backtest/${runId}/coins/${symbol}/trades`);
+}
+
+// --- Candle data ---
+
+export interface Candle {
+  timestamp: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  rsi: number | null;
+}
+
+export type Timeframe = "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1D";
+
+export async function getCandles(
+  symbol: string,
+  timeframe: Timeframe,
+  startDate: string,
+  endDate: string,
+): Promise<{ candles: Candle[] }> {
+  return fetchApi(
+    `/api/data/candles?symbol=${symbol}&timeframe=${timeframe}&start_date=${startDate}&end_date=${endDate}`,
+  );
 }

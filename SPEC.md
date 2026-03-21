@@ -12,31 +12,37 @@
 | **백테스트 엔진** | Python (pandas, numpy, ccxt, pandas-ta) |
 | **API 서버** | FastAPI |
 | **프론트엔드** | Next.js (App Router) + Tailwind CSS + shadcn/ui |
-| **차트** | Recharts (수익곡선) + Lightweight Charts (캔들차트, 선택적) |
+| **차트** | Recharts (수익곡선) + Lightweight Charts (캔들차트 + 트레이드 마커) |
 | **테이블** | TanStack Table (필터/정렬/페이지네이션) |
 | **DB** | SQLite |
-| **데이터 수집** | ccxt (Hyperliquid) |
+| **데이터 수집** | ccxt (Binance Futures) |
 
 ---
 
 ## 2. 데이터 요구사항
 
-- **거래소**: Hyperliquid (CCXT 호환)
+- **거래소**: Binance Futures (CCXT 호환)
+- **페어 포맷**: `{SYMBOL}/USDT:USDT` (일부 예외: `1000PEPE/USDT:USDT`, `1000BONK/USDT:USDT`, `POL/USDT:USDT`)
 - **대상 종목**: 주요 선물 페어 상위 50종
+- **데이터 저장**: SQLite에 저장하여 증분 동기화 (이미 DB에 있는 구간은 스킵)
 - **타임프레임**:
-  - Main: 1시간 봉 (전략 신호 포착)
-  - Sub: 1분 봉 (체결/SL/TP 전수 검증)
+  - DB 저장: 1분 봉만 저장 (원본 데이터)
+  - 다른 타임프레임(5m, 15m, 30m, 1h, 4h, 1D)은 1m에서 리샘플링
+  - 전략 신호: 1h (1m에서 리샘플링)
+  - 체결/SL/TP 검증: 1m (원본)
 - **기간**: 사용자 지정 (기본: 2026-01-01 ~ 현재)
 
 ---
 
-## 3. 전략 알고리즘: RSI 상승 다이버전스
+## 3. 전략 알고리즘: RSI 상승 다이버전스 (Long Only)
 
 ### 3-1. 진입 조건 (Entry) — 1H 봉 기준
 1. **Price Lower Low**: 현재 1H 종가 < 직전 N개(기본 50) 캔들의 최저가
-2. **RSI Higher Low**: 현재 1H RSI(14) > 직전 저점 당시 RSI
-3. **RSI 범위**: 현재 RSI ≤ 40
-4. **진입 시점**: 조건 확정된 1H 봉 마감 직후, 다음 봉 시가(Open)에 진입
+2. **RSI Higher Low**: 현재 1H RSI(14) > 직전 저점 당시 RSI (상승 다이버전스)
+3. **RSI 임계치**: 직전 저점 RSI < 30 (30선 하향 돌파 후 회복 확인)
+4. **볼린저 밴드**: 신호 캔들 저가 ≤ BB 하단 (BB 20, 2σ)
+5. **캔들 패턴**: 신호 캔들이 망치형(Hammer) — 하단 꼬리 ≥ 몸통×2, 상단 꼬리 ≤ 몸통
+6. **진입 시점**: 조건 확정된 1H 봉 마감 직후, 다음 봉 시가(Open)에 진입
 
 ### 3-2. 청산 및 관리 로직 (Exit) — 1m 봉 기준
 | 단계 | 조건 | 행동 |
@@ -47,7 +53,10 @@
 | **2차 익절 (TP2)** | 수익률 +5% | 전량 청산 |
 
 ### 3-3. 우선순위 판별
-- 동일 1m 캔들 내 SL/TP 동시 터치 시, Low → High 순서로 판별
+- 동일 캔들 내 SL/TP 동시 터치 시, Low → High 순서로 판별
+
+### 3-4. 데이터 소스
+- Binance Futures는 수년간의 1m 봉 히스토리를 제공하므로 1m 정밀 시뮬레이션이 전 기간 가능
 
 ---
 
@@ -79,6 +88,12 @@
 - `GET /api/backtest/{id}/coins` — 코인별 요약 리스트
 - `GET /api/backtest/{id}/coins/{symbol}/trades` — 특정 코인 포지션 상세 로그
 
+### 5-4. 차트 데이터
+- `GET /api/data/candles?symbol={symbol}&timeframe={tf}&start_date={date}&end_date={date}` — DB에 저장된 캔들 데이터 조회
+  - timeframe: `1m`, `5m`, `15m`, `30m`, `1h`, `4h`, `1D`
+  - 1m 이외의 타임프레임은 1m 데이터를 서버에서 리샘플링하여 반환 (1h 제외, 1h은 원본 사용)
+  - 응답에 RSI(14) 값을 함께 포함하여 프론트엔드에서 별도 계산 불필요
+
 ---
 
 ## 6. 프론트엔드 페이지 구성
@@ -94,10 +109,24 @@
   - 행 클릭 → 코인 상세 페이지로 이동
 
 ### 6-3. 코인 상세 페이지 (`/backtest/{id}/coins/{symbol}`)
-- **통계 카드**: 해당 코인 수익률, 승률, MDD, 최종 잔액
-- **수익 곡선 차트** (Equity Curve): Recharts 라인 차트
-- **포지션 상세 테이블** (시간 오름차순):
-  - 진입시점 | 진입가 | 진입마진 | 청산시점 | 청산가 | 종료사유(SL/TP1/TP2/본절) | P&L($) | P&L(%) | 잔액
+
+**레이아웃: 2-column split**
+- **왼쪽 사이드바** (고정 폭): 주요 지표 카드를 세로로 배치 (수익률, 승률, 거래수, MDD, 최종 잔액)
+- **오른쪽 메인 영역** (flex-1): 상단과 하단을 드래그로 비율 조절 가능한 리사이저로 분리
+  - **상단**: 탭으로 전환 가능한 차트 영역
+    - `수익 곡선` 탭: Recharts 라인 차트 (Equity Curve)
+    - `차트` 탭: Lightweight Charts 캔들스틱 차트
+      - 타임프레임 선택: 1m, 5m, 15m, 30m, 1h, 4h, 1D
+      - 트레이드 마커 표시: 진입(▲ 초록) / 청산(▼ 빨강·파랑) 위치 시각화
+      - **RSI 서브차트**: 메인 캔들 차트 아래에 RSI(14) 라인 차트를 별도 패널로 표시
+        - RSI 40 수평선 (진입 조건 기준선) 표시
+        - RSI 70 수평선 (TP1 조건 기준선) 표시
+  - **하단**: 포지션 상세 테이블 (시간 오름차순, 스크롤)
+    - 진입시점 | 진입가 | 진입마진 | 청산시점 | 청산가 | 종료사유(SL/TP1/TP2/본절) | P&L($) | P&L(%) | 잔액
+
+**인터랙션**
+- 포지션 행 클릭 시 → `차트` 탭이 활성화되어 있으면, 해당 진입 시점으로 차트 자동 스크롤/이동
+- 차트 탭이 아닌 수익 곡선 탭이면 클릭 무시 (이동 없음)
 
 ---
 
@@ -182,6 +211,8 @@ profit-lab/
 │   │   └── layout.tsx
 │   ├── components/
 │   │   ├── equity-curve.tsx
+│   │   ├── candle-chart.tsx          # Lightweight Charts 캔들차트 + RSI 서브차트 + 마커
+│   │   ├── resizable-split.tsx       # 드래그 리사이저 컴포넌트
 │   │   ├── trade-table.tsx
 │   │   └── coin-summary-table.tsx
 │   └── lib/

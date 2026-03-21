@@ -35,7 +35,7 @@ const columns: ColumnDef<CoinSummary>[] = [
     cell: ({ row }) => {
       const val = row.original.cumulative_return;
       return (
-        <span className={val >= 0 ? "text-green-600" : "text-red-600"}>
+        <span className={val >= 0 ? "text-[#3fb950]" : "text-[#f85149]"}>
           {val >= 0 ? "+" : ""}{val}%
         </span>
       );

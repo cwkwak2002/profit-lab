@@ -1,19 +1,22 @@
 import ccxt
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from config import EXCHANGE_ID, TOP_COINS
 
 
 def get_exchange() -> ccxt.Exchange:
     exchange_class = getattr(ccxt, EXCHANGE_ID)
-    exchange = exchange_class({"enableRateLimit": True})
+    exchange = exchange_class({
+        "enableRateLimit": True,
+        "options": {"defaultType": "future"},
+    })
     return exchange
 
 
 def symbol_to_pair(symbol: str) -> str:
-    """Convert symbol like 'BTC' to exchange pair like 'BTC/USDC:USDC'."""
-    return f"{symbol}/USDC:USDC"
+    """Convert symbol like 'BTC' to exchange pair like 'BTC/USDT:USDT'."""
+    return f"{symbol}/USDT:USDT"
 
 
 def fetch_ohlcv(exchange: ccxt.Exchange, symbol: str, timeframe: str,
@@ -26,7 +29,7 @@ def fetch_ohlcv(exchange: ccxt.Exchange, symbol: str, timeframe: str,
     pair = symbol_to_pair(symbol)
     all_candles = []
     current_since = since_ms
-    limit = 1000  # max per request for most exchanges
+    limit = 1000  # max per request for Binance
 
     while current_since < until_ms:
         candles = exchange.fetch_ohlcv(pair, timeframe, since=current_since, limit=limit)
@@ -47,6 +50,17 @@ def fetch_ohlcv(exchange: ccxt.Exchange, symbol: str, timeframe: str,
     return all_candles
 
 
+def get_stored_range(conn, symbol: str, timeframe: str) -> tuple[int | None, int | None]:
+    """Get the (min, max) timestamp stored in DB for a symbol/timeframe pair."""
+    row = conn.execute(
+        "SELECT MIN(timestamp) as mn, MAX(timestamp) as mx FROM candles WHERE symbol=? AND timeframe=?",
+        (symbol, timeframe),
+    ).fetchone()
+    if row and row["mn"] is not None:
+        return row["mn"], row["mx"]
+    return None, None
+
+
 def fetch_available_symbols(exchange: ccxt.Exchange) -> list[str]:
     """Return list of available symbols from TOP_COINS that exist on exchange."""
     exchange.load_markets()
@@ -60,6 +74,5 @@ def fetch_available_symbols(exchange: ccxt.Exchange) -> list[str]:
 
 def date_to_ms(date_str: str) -> int:
     """Convert 'YYYY-MM-DD' to milliseconds timestamp (UTC)."""
-    from datetime import timezone
     dt = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
     return int(dt.timestamp() * 1000)

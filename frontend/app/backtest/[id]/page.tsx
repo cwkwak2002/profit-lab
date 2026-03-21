@@ -77,7 +77,7 @@ export default function BacktestResultPage() {
             <CardTitle className="text-sm text-muted-foreground">평균 수익률</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${aggregate.avg_return >= 0 ? "text-green-600" : "text-red-600"}`}>
+            <div className={`text-2xl font-bold ${aggregate.avg_return >= 0 ? "text-[#3fb950]" : "text-[#f85149]"}`}>
               {aggregate.avg_return >= 0 ? "+" : ""}{aggregate.avg_return}%
             </div>
           </CardContent>
@@ -87,7 +87,7 @@ export default function BacktestResultPage() {
             <CardTitle className="text-sm text-muted-foreground">평균 MDD</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{aggregate.avg_mdd}%</div>
+            <div className="text-2xl font-bold text-[#d29922]">{aggregate.avg_mdd}%</div>
           </CardContent>
         </Card>
       </div>

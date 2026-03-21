@@ -14,24 +14,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import type { Trade } from "@/lib/api";
 
-const reasonColors: Record<string, string> = {
-  SL: "destructive",
-  TP1: "default",
-  TP2: "default",
-  BE: "secondary",
-  TIMEOUT: "outline",
-  NO_DATA: "outline",
+const reasonStyleMap: Record<string, string> = {
+  SL: "bg-[#f85149]/15 text-[#f85149] border-transparent",
+  TP2: "bg-[#3fb950]/15 text-[#3fb950] border-transparent",
+  BE: "bg-[#d29922]/15 text-[#d29922] border-transparent",
+  TIMEOUT: "bg-transparent text-muted-foreground border-border",
+  NO_DATA: "bg-transparent text-muted-foreground border-border",
 };
 
 const reasonLabels: Record<string, string> = {
-  SL: "손절",
-  TP2: "2차 익절",
-  BE: "본절",
-  TIMEOUT: "타임아웃",
-  NO_DATA: "데이터 없음",
+  SL: "SL",
+  TP2: "TP1+TP2",
+  BE: "TP1+BE",
+  TIMEOUT: "TIMEOUT",
+  NO_DATA: "NO_DATA",
 };
 
 const columns: ColumnDef<Trade>[] = [
@@ -66,9 +64,9 @@ const columns: ColumnDef<Trade>[] = [
     cell: ({ row }) => {
       const reason = row.original.exit_reason;
       return (
-        <Badge variant={reasonColors[reason] as "default" | "destructive" | "secondary" | "outline"}>
+        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${reasonStyleMap[reason] || "text-muted-foreground"}`}>
           {reasonLabels[reason] || reason}
-        </Badge>
+        </span>
       );
     },
   },
@@ -78,7 +76,7 @@ const columns: ColumnDef<Trade>[] = [
     cell: ({ row }) => {
       const val = row.original.pnl;
       return (
-        <span className={val >= 0 ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+        <span className={val >= 0 ? "text-[#3fb950] font-medium" : "text-[#f85149] font-medium"}>
           {val >= 0 ? "+" : ""}{val.toFixed(2)}
         </span>
       );
@@ -90,7 +88,7 @@ const columns: ColumnDef<Trade>[] = [
     cell: ({ row }) => {
       const val = row.original.pnl_pct;
       return (
-        <span className={val >= 0 ? "text-green-600" : "text-red-600"}>
+        <span className={val >= 0 ? "text-[#3fb950]" : "text-[#f85149]"}>
           {val >= 0 ? "+" : ""}{val}%
         </span>
       );
@@ -105,9 +103,11 @@ const columns: ColumnDef<Trade>[] = [
 
 interface Props {
   data: Trade[];
+  onRowClick?: (trade: Trade) => void;
+  highlightClickable?: boolean;
 }
 
-export function TradeTable({ data }: Props) {
+export function TradeTable({ data, onRowClick, highlightClickable }: Props) {
   const table = useReactTable({
     data,
     columns,
@@ -130,7 +130,11 @@ export function TradeTable({ data }: Props) {
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
+            <TableRow
+              key={row.id}
+              onClick={() => onRowClick?.(row.original)}
+              className={highlightClickable ? "cursor-pointer hover:bg-muted/50" : ""}
+            >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id} className="whitespace-nowrap text-xs">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}

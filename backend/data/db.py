@@ -68,6 +68,7 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 run_id TEXT NOT NULL,
                 symbol TEXT NOT NULL,
+                side TEXT NOT NULL DEFAULT 'long',
                 entry_time TEXT NOT NULL,
                 entry_price REAL NOT NULL,
                 entry_margin REAL NOT NULL,
@@ -77,6 +78,7 @@ def init_db():
                 pnl REAL NOT NULL,
                 pnl_pct REAL NOT NULL,
                 balance_after REAL NOT NULL,
+                tp1_time TEXT,
                 FOREIGN KEY (run_id) REFERENCES backtest_runs(id)
             );
 
@@ -128,10 +130,10 @@ def save_coin_summary(conn: sqlite3.Connection, run_id: str, symbol: str,
 def save_trades(conn: sqlite3.Connection, trades_list: list[dict]):
     conn.executemany(
         """INSERT INTO trades
-           (run_id, symbol, entry_time, entry_price, entry_margin, exit_time, exit_price,
-            exit_reason, pnl, pnl_pct, balance_after)
-           VALUES (:run_id, :symbol, :entry_time, :entry_price, :entry_margin, :exit_time,
-                   :exit_price, :exit_reason, :pnl, :pnl_pct, :balance_after)""",
+           (run_id, symbol, side, entry_time, entry_price, entry_margin, exit_time, exit_price,
+            exit_reason, pnl, pnl_pct, balance_after, tp1_time)
+           VALUES (:run_id, :symbol, :side, :entry_time, :entry_price, :entry_margin, :exit_time,
+                   :exit_price, :exit_reason, :pnl, :pnl_pct, :balance_after, :tp1_time)""",
         trades_list,
     )
 
