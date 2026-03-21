@@ -1,0 +1,65 @@
+import ccxt
+import time
+from datetime import datetime
+
+from config import EXCHANGE_ID, TOP_COINS
+
+
+def get_exchange() -> ccxt.Exchange:
+    exchange_class = getattr(ccxt, EXCHANGE_ID)
+    exchange = exchange_class({"enableRateLimit": True})
+    return exchange
+
+
+def symbol_to_pair(symbol: str) -> str:
+    """Convert symbol like 'BTC' to exchange pair like 'BTC/USDC:USDC'."""
+    return f"{symbol}/USDC:USDC"
+
+
+def fetch_ohlcv(exchange: ccxt.Exchange, symbol: str, timeframe: str,
+                since_ms: int, until_ms: int) -> list[list]:
+    """Fetch all OHLCV candles for a symbol between since_ms and until_ms.
+
+    Returns list of [timestamp, open, high, low, close, volume].
+    Handles pagination automatically.
+    """
+    pair = symbol_to_pair(symbol)
+    all_candles = []
+    current_since = since_ms
+    limit = 1000  # max per request for most exchanges
+
+    while current_since < until_ms:
+        candles = exchange.fetch_ohlcv(pair, timeframe, since=current_since, limit=limit)
+        if not candles:
+            break
+
+        # Filter out candles beyond until_ms
+        candles = [c for c in candles if c[0] <= until_ms]
+        all_candles.extend(candles)
+
+        if len(candles) < limit:
+            break
+
+        # Move to next batch
+        current_since = candles[-1][0] + 1
+        time.sleep(exchange.rateLimit / 1000)
+
+    return all_candles
+
+
+def fetch_available_symbols(exchange: ccxt.Exchange) -> list[str]:
+    """Return list of available symbols from TOP_COINS that exist on exchange."""
+    exchange.load_markets()
+    available = []
+    for symbol in TOP_COINS:
+        pair = symbol_to_pair(symbol)
+        if pair in exchange.markets:
+            available.append(symbol)
+    return available
+
+
+def date_to_ms(date_str: str) -> int:
+    """Convert 'YYYY-MM-DD' to milliseconds timestamp (UTC)."""
+    from datetime import timezone
+    dt = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    return int(dt.timestamp() * 1000)
