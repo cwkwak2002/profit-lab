@@ -29,13 +29,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <header className="border-b border-border bg-[#0d1117] px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-base font-bold tracking-tight text-[#58a6ff]">Profit Lab</h1>
+          <div className="flex items-center gap-6">
+            <a href="/" className="text-base font-bold tracking-tight text-[#58a6ff]">Profit Lab</a>
             <nav className="flex gap-4 text-sm text-muted-foreground">
-              <a href="/backtest" className="hover:text-foreground transition-colors">Backtest</a>
+              <a href="/backtest" className="hover:text-foreground transition-colors">백테스트</a>
             </nav>
           </div>
-          <span className="text-xs text-muted-foreground">RSI Divergence Backtest Dashboard</span>
+          <span className="text-xs text-muted-foreground">Backtest Dashboard</span>
         </header>
         <main className="flex-1 p-6">{children}</main>
       </body>

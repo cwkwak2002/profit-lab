@@ -30,6 +30,7 @@ export interface BacktestRequest {
   end_date: string;
   seed?: number;
   leverage?: number;
+  strategy?: string;
 }
 
 export interface BacktestRunResponse {
@@ -69,7 +70,7 @@ export interface BacktestRun {
   start_date: string;
   end_date: string;
   coins: string[];
-  params: Record<string, number>;
+  params: Record<string, number | string>;
 }
 
 export interface BacktestSummary {
@@ -178,7 +179,15 @@ export interface Candle {
   low: number;
   close: number;
   volume: number;
-  rsi: number | null;
+  // Strategy-specific indicators
+  rsi?: number | null;
+  ema50?: number | null;
+  ema200?: number | null;
+  adx?: number | null;
+  bb_lower?: number | null;
+  bb_mid?: number | null;
+  bb_upper?: number | null;
+  bb_width?: number | null;
 }
 
 export type Timeframe = "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "1D";
@@ -188,8 +197,10 @@ export async function getCandles(
   timeframe: Timeframe,
   startDate: string,
   endDate: string,
+  strategy?: string,
 ): Promise<{ candles: Candle[] }> {
+  const strategyParam = strategy ? `&strategy=${strategy}` : "";
   return fetchApi(
-    `/api/data/candles?symbol=${symbol}&timeframe=${timeframe}&start_date=${startDate}&end_date=${endDate}`,
+    `/api/data/candles?symbol=${symbol}&timeframe=${timeframe}&start_date=${startDate}&end_date=${endDate}${strategyParam}`,
   );
 }

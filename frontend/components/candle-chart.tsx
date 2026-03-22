@@ -23,6 +23,7 @@ export interface CandleChartHandle {
 interface Props {
   candles: Candle[];
   trades: Trade[];
+  strategy?: string;
 }
 
 function tsToSeconds(ms: number): Time {
@@ -34,7 +35,7 @@ function isoToSeconds(iso: string): Time {
 }
 
 export const CandleChart = forwardRef<CandleChartHandle, Props>(
-  function CandleChart({ candles, trades }, ref) {
+  function CandleChart({ candles, trades, strategy = "rsi_divergence" }, ref) {
     const containerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
 
@@ -99,7 +100,17 @@ export const CandleChart = forwardRef<CandleChartHandle, Props>(
 
       // --- Trade markers ---
       const exitLabels: Record<string, string> = {
-        SL: "SL", TP2: "TP2", BE: "BE", TIMEOUT: "TIMEOUT", NO_DATA: "NO_DATA",
+        SL: "SL", TP2: "TP2", FIXED_TP: "TP+3.5%", BE: "BE", EMA_CROSS: "EMA Cross", TRAIL: "TRAIL", TIMEOUT: "TIMEOUT", NO_DATA: "NO_DATA",
+      };
+      const riskLabels: Record<string, string> = {
+        RISK_EMA_GAP: "EMA Gap",
+        RISK_TRAPPED: "EMA Trap",
+        RISK_ADX: "ADX Low",
+        RISK_BB_EXPANSION: "BB Filter",
+        RISK_SPIKE: "Spike CD",
+        RISK_BTC_CRASH: "BTC Crash",
+        RISK_RSI_INUNDATION: "RSI Flood",
+        RISK_DEAD_ZONE: "Dead Zone",
       };
       const markers = trades.flatMap((t) => {
         const result: Array<{
@@ -107,13 +118,27 @@ export const CandleChart = forwardRef<CandleChartHandle, Props>(
           color: string; shape: "arrowUp" | "arrowDown" | "circle"; text: string;
         }> = [];
 
+        const isRiskBlocked = t.exit_reason.startsWith("RISK_");
+
+        if (isRiskBlocked) {
+          result.push({
+            time: isoToSeconds(t.entry_time),
+            position: "belowBar",
+            color: "#6e7681",
+            shape: "circle",
+            text: riskLabels[t.exit_reason] || t.exit_reason,
+          });
+          return result;
+        }
+
         // Entry
+        const isShort = t.side === "short";
         result.push({
           time: isoToSeconds(t.entry_time),
-          position: "belowBar",
-          color: "#22c55e",
-          shape: "arrowUp",
-          text: "Long",
+          position: isShort ? "aboveBar" : "belowBar",
+          color: isShort ? "#ef4444" : "#22c55e",
+          shape: isShort ? "arrowDown" : "arrowUp",
+          text: isShort ? "Short" : "Long",
         });
 
         // TP1
@@ -130,7 +155,10 @@ export const CandleChart = forwardRef<CandleChartHandle, Props>(
         // Final exit
         const exitColor = t.exit_reason === "SL" ? "#ef4444"
           : t.exit_reason === "TP2" ? "#22c55e"
+          : t.exit_reason === "FIXED_TP" ? "#22c55e"
           : t.exit_reason === "BE" ? "#f59e0b"
+          : t.exit_reason === "EMA_CROSS" ? "#a371f7"
+          : t.exit_reason === "TRAIL" ? "#22c55e"
           : "#6b7280";
         result.push({
           time: isoToSeconds(t.exit_time),
@@ -145,44 +173,162 @@ export const CandleChart = forwardRef<CandleChartHandle, Props>(
       markers.sort((a, b) => (a.time as number) - (b.time as number));
       createSeriesMarkers(candleSeries, markers);
 
-      // --- RSI pane ---
-      const rsiPane = chart.addPane();
+      // --- Strategy-specific indicators ---
+      if (strategy === "rsi_divergence") {
+        // RSI sub-pane with 30/70 lines
+        const rsiPane = chart.addPane();
 
-      const rsiSeries = rsiPane.addSeries(LineSeries, {
-        color: "#a78bfa",
-        lineWidth: 2,
-        priceScaleId: "right",
-        lastValueVisible: true,
-        priceLineVisible: false,
-      });
-      const rsiData: LineData[] = candles
-        .filter((c) => c.rsi !== null)
-        .map((c) => ({ time: tsToSeconds(c.timestamp), value: c.rsi! }));
-      rsiSeries.setData(rsiData);
+        const rsiSeries = rsiPane.addSeries(LineSeries, {
+          color: "#a78bfa",
+          lineWidth: 2,
+          priceScaleId: "right",
+          lastValueVisible: true,
+          priceLineVisible: false,
+        });
+        const rsiData: LineData[] = candles
+          .filter((c) => c.rsi != null)
+          .map((c) => ({ time: tsToSeconds(c.timestamp), value: c.rsi! }));
+        rsiSeries.setData(rsiData);
 
-      const rsiTimestamps = candles.filter((c) => c.rsi !== null).map((c) => tsToSeconds(c.timestamp));
+        const rsiTimestamps = candles.filter((c) => c.rsi != null).map((c) => tsToSeconds(c.timestamp));
 
-      // RSI 30
-      const rsi30 = rsiPane.addSeries(LineSeries, {
-        color: "rgba(34,197,94,0.4)",
-        lineWidth: 1,
-        lineStyle: LineStyle.Dashed,
-        priceScaleId: "right",
-        lastValueVisible: false,
-        priceLineVisible: false,
-      });
-      rsi30.setData(rsiTimestamps.map((t) => ({ time: t, value: 30 })));
+        // RSI 30 line
+        const rsi30 = rsiPane.addSeries(LineSeries, {
+          color: "rgba(34,197,94,0.4)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          priceScaleId: "right",
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        rsi30.setData(rsiTimestamps.map((t) => ({ time: t, value: 30 })));
 
-      // RSI 70
-      const rsi70 = rsiPane.addSeries(LineSeries, {
-        color: "rgba(239,68,68,0.4)",
-        lineWidth: 1,
-        lineStyle: LineStyle.Dashed,
-        priceScaleId: "right",
-        lastValueVisible: false,
-        priceLineVisible: false,
-      });
-      rsi70.setData(rsiTimestamps.map((t) => ({ time: t, value: 70 })));
+        // RSI 70 line
+        const rsi70 = rsiPane.addSeries(LineSeries, {
+          color: "rgba(239,68,68,0.4)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          priceScaleId: "right",
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        rsi70.setData(rsiTimestamps.map((t) => ({ time: t, value: 70 })));
+
+      } else if (strategy === "ema_trend") {
+        // EMA 50 overlay on main chart
+        const ema50Series = chart.addSeries(LineSeries, {
+          color: "#f59e0b",
+          lineWidth: 2,
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        const ema50Data: LineData[] = candles
+          .filter((c) => c.ema50 != null)
+          .map((c) => ({ time: tsToSeconds(c.timestamp), value: c.ema50! }));
+        ema50Series.setData(ema50Data);
+
+        // EMA 200 overlay on main chart
+        const ema200Series = chart.addSeries(LineSeries, {
+          color: "#3b82f6",
+          lineWidth: 2,
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        const ema200Data: LineData[] = candles
+          .filter((c) => c.ema200 != null)
+          .map((c) => ({ time: tsToSeconds(c.timestamp), value: c.ema200! }));
+        ema200Series.setData(ema200Data);
+
+        // ADX sub-pane
+        const adxPane = chart.addPane();
+
+        const adxSeries = adxPane.addSeries(LineSeries, {
+          color: "#f97316",
+          lineWidth: 2,
+          priceScaleId: "right",
+          lastValueVisible: true,
+          priceLineVisible: false,
+        });
+        const adxData: LineData[] = candles
+          .filter((c) => c.adx != null)
+          .map((c) => ({ time: tsToSeconds(c.timestamp), value: c.adx! }));
+        adxSeries.setData(adxData);
+
+        const adxTimestamps = candles.filter((c) => c.adx != null).map((c) => tsToSeconds(c.timestamp));
+
+        // ADX 20 line
+        const adx20 = adxPane.addSeries(LineSeries, {
+          color: "rgba(239,68,68,0.4)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          priceScaleId: "right",
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        adx20.setData(adxTimestamps.map((t) => ({ time: t, value: 20 })));
+
+        // ADX 25 line
+        const adx25 = adxPane.addSeries(LineSeries, {
+          color: "rgba(34,197,94,0.4)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          priceScaleId: "right",
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        adx25.setData(adxTimestamps.map((t) => ({ time: t, value: 25 })));
+
+      } else if (strategy === "bb_squeeze") {
+        // BB upper/mid/lower overlays on main chart
+        const bbUpperSeries = chart.addSeries(LineSeries, {
+          color: "rgba(59,130,246,0.6)",
+          lineWidth: 1,
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        const bbUpperData: LineData[] = candles
+          .filter((c) => c.bb_upper != null)
+          .map((c) => ({ time: tsToSeconds(c.timestamp), value: c.bb_upper! }));
+        bbUpperSeries.setData(bbUpperData);
+
+        const bbMidSeries = chart.addSeries(LineSeries, {
+          color: "rgba(156,163,175,0.5)",
+          lineWidth: 1,
+          lineStyle: LineStyle.Dashed,
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        const bbMidData: LineData[] = candles
+          .filter((c) => c.bb_mid != null)
+          .map((c) => ({ time: tsToSeconds(c.timestamp), value: c.bb_mid! }));
+        bbMidSeries.setData(bbMidData);
+
+        const bbLowerSeries = chart.addSeries(LineSeries, {
+          color: "rgba(59,130,246,0.6)",
+          lineWidth: 1,
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        const bbLowerData: LineData[] = candles
+          .filter((c) => c.bb_lower != null)
+          .map((c) => ({ time: tsToSeconds(c.timestamp), value: c.bb_lower! }));
+        bbLowerSeries.setData(bbLowerData);
+
+        // BB Width sub-pane
+        const bbWidthPane = chart.addPane();
+
+        const bbWidthSeries = bbWidthPane.addSeries(LineSeries, {
+          color: "#8b5cf6",
+          lineWidth: 2,
+          priceScaleId: "right",
+          lastValueVisible: true,
+          priceLineVisible: false,
+        });
+        const bbWidthData: LineData[] = candles
+          .filter((c) => c.bb_width != null)
+          .map((c) => ({ time: tsToSeconds(c.timestamp), value: c.bb_width! }));
+        bbWidthSeries.setData(bbWidthData);
+      }
 
       // Resize observer
       const observer = new ResizeObserver(() => {
@@ -195,7 +341,7 @@ export const CandleChart = forwardRef<CandleChartHandle, Props>(
         chart.remove();
         chartRef.current = null;
       };
-    }, [candles, trades]);
+    }, [candles, trades, strategy]);
 
     if (candles.length === 0) {
       return (

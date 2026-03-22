@@ -45,13 +45,19 @@ export default function BacktestResultPage() {
   if (!summary) return null;
 
   const { aggregate, run } = summary;
+  const strategyLabels: Record<string, string> = {
+    rsi_divergence: "RSI Divergence",
+    ema_trend: "EMA Trend",
+    bb_squeeze: "BB Squeeze",
+  };
+  const strategyLabel = strategyLabels[run.params?.strategy as string] || "RSI Divergence";
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-bold">백테스트 결과</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          {run.start_date} ~ {run.end_date} | {run.coins.length}개 코인 | Run ID: {run.id}
+          {strategyLabel} | {run.start_date} ~ {run.end_date} | {run.coins.length}개 코인 | Run ID: {run.id}
         </p>
       </div>
 

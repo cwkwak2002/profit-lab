@@ -5,6 +5,10 @@ from fastapi import APIRouter, HTTPException, Query
 
 from data.db import get_db, get_candles, save_candles
 from data.fetcher import get_exchange, fetch_ohlcv, fetch_available_symbols, date_to_ms, get_stored_range
+from config import (
+    RSI_PERIOD, BB_PERIOD, BB_STD, EMA_FAST, EMA_SLOW, ADX_PERIOD,
+    SQZ_BB_PERIOD, SQZ_BB_STD,
+)
 
 router = APIRouter(prefix="/api/data", tags=["data"])
 
@@ -74,14 +78,21 @@ RESAMPLE_MAP = {
 VALID_TIMEFRAMES = {"1m", "5m", "15m", "30m", "1h", "4h", "1D"}
 
 
+def _nan_to_none(val):
+    if pd.isna(val):
+        return None
+    return round(val, 4)
+
+
 @router.get("/candles")
 def get_candles_api(
     symbol: str = Query(...),
     timeframe: str = Query("1h"),
     start_date: str = Query(...),
     end_date: str = Query(...),
+    strategy: str = Query("rsi_divergence"),
 ):
-    """Return OHLCV candles with RSI(14) from DB. Resamples from 1m for non-native timeframes."""
+    """Return OHLCV candles with strategy-specific indicators."""
     if timeframe not in VALID_TIMEFRAMES:
         raise HTTPException(400, f"Invalid timeframe: {timeframe}")
 
@@ -110,17 +121,41 @@ def get_candles_api(
         }).dropna(subset=["timestamp"])
         df["timestamp"] = df["timestamp"].astype(int)
 
-    # Compute RSI(14)
-    rsi = ta.rsi(df["close"], length=14)
-    if rsi is not None:
-        df["rsi"] = rsi.round(2)
-    else:
-        df["rsi"] = None
+    # --- Strategy-specific indicators ---
+    base_cols = ["timestamp", "open", "high", "low", "close", "volume"]
 
-    result = df[["timestamp", "open", "high", "low", "close", "volume", "rsi"]].to_dict("records")
+    if strategy == "ema_trend":
+        df["ema50"] = ta.ema(df["close"], length=EMA_FAST)
+        df["ema200"] = ta.ema(df["close"], length=EMA_SLOW)
+        adx_df = ta.adx(df["high"], df["low"], df["close"], length=ADX_PERIOD)
+        df["adx"] = adx_df.iloc[:, 0] if adx_df is not None else None
+        extra_cols = ["ema50", "ema200", "adx"]
+
+    elif strategy == "bb_squeeze":
+        bb = ta.bbands(df["close"], length=SQZ_BB_PERIOD, std=SQZ_BB_STD)
+        if bb is not None:
+            df["bb_lower"] = bb.iloc[:, 0]
+            df["bb_mid"] = bb.iloc[:, 1]
+            df["bb_upper"] = bb.iloc[:, 2]
+            df["bb_width"] = ((df["bb_upper"] - df["bb_lower"]) / df["bb_mid"] * 100)
+        else:
+            df["bb_lower"] = None
+            df["bb_mid"] = None
+            df["bb_upper"] = None
+            df["bb_width"] = None
+        extra_cols = ["bb_lower", "bb_mid", "bb_upper", "bb_width"]
+
+    else:  # rsi_divergence (default)
+        rsi = ta.rsi(df["close"], length=RSI_PERIOD)
+        df["rsi"] = rsi if rsi is not None else None
+        extra_cols = ["rsi"]
+
+    all_cols = base_cols + extra_cols
+    result = df[all_cols].to_dict("records")
+
     # Replace NaN with None for JSON
     for r in result:
-        if pd.isna(r.get("rsi")):
-            r["rsi"] = None
+        for col in extra_cols:
+            r[col] = _nan_to_none(r.get(col))
 
     return {"candles": result}

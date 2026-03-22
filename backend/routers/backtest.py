@@ -18,12 +18,16 @@ from engine.backtester import run_backtest_for_coin
 router = APIRouter(prefix="/api/backtest", tags=["backtest"])
 
 
+VALID_STRATEGIES = {"rsi_divergence", "ema_trend", "bb_squeeze"}
+
+
 class BacktestRequest(BaseModel):
     coins: list[str]
     start_date: str  # YYYY-MM-DD
     end_date: str    # YYYY-MM-DD
     seed: float = DEFAULT_SEED
     leverage: int = DEFAULT_LEVERAGE
+    strategy: str = "rsi_divergence"
 
 
 class BacktestRunResponse(BaseModel):
@@ -34,18 +38,75 @@ def _sse_event(data: dict) -> str:
     return f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
+def _resample(df_1m_indexed: pd.DataFrame, freq: str) -> pd.DataFrame:
+    """Resample 1m indexed DataFrame to a higher timeframe."""
+    df = df_1m_indexed.resample(freq).agg({
+        "timestamp": "first", "open": "first", "high": "max",
+        "low": "min", "close": "last", "volume": "sum",
+    }).dropna(subset=["timestamp"]).reset_index(drop=True)
+    df["timestamp"] = df["timestamp"].astype(int)
+    return df
+
+
+def _prepare_dfs(df_1m: pd.DataFrame, strategy: str):
+    """Prepare resampled DataFrames needed by the strategy."""
+    df_1m_indexed = df_1m.copy()
+    df_1m_indexed["datetime"] = pd.to_datetime(df_1m_indexed["timestamp"], unit="ms", utc=True)
+    df_1m_indexed = df_1m_indexed.set_index("datetime")
+
+    df_1h = _resample(df_1m_indexed, "1h")
+    # All strategies use 15m data (RSI for TP2, EMA/BB for entry+exit)
+    df_15m = _resample(df_1m_indexed, "15min")
+
+    return df_1h, df_15m
+
+
+def _ensure_btc_synced(conn, exchange, since_ms: int, until_ms: int):
+    """Ensure BTC 1m data is synced for the given date range (needed by risk filters)."""
+    stored_min, stored_max = get_stored_range(conn, "BTC", "1m")
+    if stored_min is None:
+        candles = fetch_ohlcv(exchange, "BTC", "1m", since_ms, until_ms)
+        save_candles(conn, "BTC", "1m", candles)
+    else:
+        if since_ms < stored_min:
+            candles = fetch_ohlcv(exchange, "BTC", "1m", since_ms, stored_min - 1)
+            save_candles(conn, "BTC", "1m", candles)
+        if until_ms > stored_max:
+            candles = fetch_ohlcv(exchange, "BTC", "1m", stored_max + 1, until_ms)
+            save_candles(conn, "BTC", "1m", candles)
+
+
+def _get_btc_1h(conn, since_ms: int, until_ms: int) -> pd.DataFrame | None:
+    """Load BTC 1m data and resample to 1H for risk filter."""
+    btc_raw = get_candles(conn, "BTC", "1m", since_ms, until_ms)
+    if not btc_raw:
+        return None
+    df = pd.DataFrame(btc_raw)
+    df["datetime"] = pd.to_datetime(df["timestamp"], unit="ms", utc=True)
+    df = df.set_index("datetime")
+    return _resample(df, "1h")
+
+
 @router.post("/run", response_model=BacktestRunResponse)
 def run_backtest(req: BacktestRequest):
     """Execute backtest for specified coins and date range (non-streaming)."""
+    if req.strategy not in VALID_STRATEGIES:
+        raise HTTPException(400, f"Unknown strategy: {req.strategy}")
+
     run_id = str(uuid.uuid4())[:8]
     created_at = datetime.utcnow().isoformat()
     since_ms = date_to_ms(req.start_date)
     until_ms = date_to_ms(req.end_date)
 
-    params = {"seed": req.seed, "leverage": req.leverage}
+    params = {"seed": req.seed, "leverage": req.leverage, "strategy": req.strategy}
 
     with get_db() as conn:
         save_backtest_run(conn, run_id, created_at, req.start_date, req.end_date, req.coins, params)
+
+        # Ensure BTC data is synced for risk filter (BTC crash → block altcoin longs)
+        exchange = get_exchange()
+        _ensure_btc_synced(conn, exchange, since_ms, until_ms)
+        btc_df_1h = _get_btc_1h(conn, since_ms, until_ms)
 
         for symbol in req.coins:
             candles_1m_raw = get_candles(conn, symbol, "1m", since_ms, until_ms)
@@ -55,16 +116,13 @@ def run_backtest(req: BacktestRequest):
                 continue
 
             df_1m = pd.DataFrame(candles_1m_raw)
-            df_1m_indexed = df_1m.copy()
-            df_1m_indexed["datetime"] = pd.to_datetime(df_1m_indexed["timestamp"], unit="ms", utc=True)
-            df_1m_indexed = df_1m_indexed.set_index("datetime")
-            df_1h = df_1m_indexed.resample("1h").agg({
-                "timestamp": "first", "open": "first", "high": "max",
-                "low": "min", "close": "last", "volume": "sum",
-            }).dropna(subset=["timestamp"]).reset_index(drop=True)
-            df_1h["timestamp"] = df_1h["timestamp"].astype(int)
+            df_1h, df_15m = _prepare_dfs(df_1m, req.strategy)
 
-            result = run_backtest_for_coin(df_1h, df_1m, symbol, req.seed, req.leverage)
+            result = run_backtest_for_coin(
+                df_1h, df_1m, symbol, req.seed, req.leverage,
+                strategy=req.strategy, df_15m=df_15m,
+                btc_df_1h=btc_df_1h,
+            )
             summary = result["summary"]
             save_coin_summary(conn, run_id, symbol,
                               summary["total_trades"], summary["win_rate"],
@@ -89,12 +147,21 @@ def run_backtest_stream(req: BacktestRequest):
         # --- Phase 1: Data Sync ---
         yield _sse_event({"phase": "sync", "message": "데이터 동기화 시작", "progress": 0})
 
+        # Build full sync list: always include BTC for risk filter
+        sync_coins = list(req.coins)
+        btc_added = False
+        if "BTC" not in sync_coins:
+            sync_coins.insert(0, "BTC")
+            btc_added = True
+
         sync_errors = {}
-        for idx, symbol in enumerate(req.coins):
-            pct = int((idx / total_coins) * 50)  # sync = 0~50%
+        total_sync = len(sync_coins)
+        for idx, symbol in enumerate(sync_coins):
+            label = f"{symbol} (위험 회피 필터용)" if symbol == "BTC" and btc_added else symbol
+            pct = int((idx / total_sync) * 50)  # sync = 0~50%
             yield _sse_event({
                 "phase": "sync",
-                "message": f"[{idx+1}/{total_coins}] {symbol} 데이터 수집 중...",
+                "message": f"[{idx+1}/{total_sync}] {label} 데이터 수집 중...",
                 "progress": pct,
                 "symbol": symbol,
             })
@@ -120,16 +187,16 @@ def run_backtest_stream(req: BacktestRequest):
 
                 yield _sse_event({
                     "phase": "sync",
-                    "message": f"[{idx+1}/{total_coins}] {symbol} 동기화 완료 ({total:,}건)",
-                    "progress": int(((idx + 1) / total_coins) * 50),
+                    "message": f"[{idx+1}/{total_sync}] {label} 동기화 완료 ({total:,}건)",
+                    "progress": int(((idx + 1) / total_sync) * 50),
                     "symbol": symbol,
                 })
             except Exception as e:
                 sync_errors[symbol] = str(e)
                 yield _sse_event({
                     "phase": "sync",
-                    "message": f"[{idx+1}/{total_coins}] {symbol} 에러: {e}",
-                    "progress": int(((idx + 1) / total_coins) * 50),
+                    "message": f"[{idx+1}/{total_sync}] {label} 에러: {e}",
+                    "progress": int(((idx + 1) / total_sync) * 50),
                     "symbol": symbol,
                     "error": True,
                 })
@@ -139,12 +206,16 @@ def run_backtest_stream(req: BacktestRequest):
         # --- Phase 2: Backtest ---
         run_id = str(uuid.uuid4())[:8]
         created_at = datetime.utcnow().isoformat()
-        params = {"seed": req.seed, "leverage": req.leverage}
+        strategy = req.strategy
+        params = {"seed": req.seed, "leverage": req.leverage, "strategy": strategy}
 
         yield _sse_event({"phase": "backtest", "message": "백테스트 시작", "progress": 50})
 
         with get_db() as conn:
             save_backtest_run(conn, run_id, created_at, req.start_date, req.end_date, req.coins, params)
+
+            # Pre-load BTC 1H for risk filter
+            btc_df_1h = _get_btc_1h(conn, since_ms, until_ms)
 
             for idx, symbol in enumerate(req.coins):
                 pct = 50 + int((idx / total_coins) * 50)  # backtest = 50~100%
@@ -168,16 +239,13 @@ def run_backtest_stream(req: BacktestRequest):
                     continue
 
                 df_1m = pd.DataFrame(candles_1m_raw)
-                df_1m_indexed = df_1m.copy()
-                df_1m_indexed["datetime"] = pd.to_datetime(df_1m_indexed["timestamp"], unit="ms", utc=True)
-                df_1m_indexed = df_1m_indexed.set_index("datetime")
-                df_1h = df_1m_indexed.resample("1h").agg({
-                    "timestamp": "first", "open": "first", "high": "max",
-                    "low": "min", "close": "last", "volume": "sum",
-                }).dropna(subset=["timestamp"]).reset_index(drop=True)
-                df_1h["timestamp"] = df_1h["timestamp"].astype(int)
+                df_1h, df_15m = _prepare_dfs(df_1m, strategy)
 
-                result = run_backtest_for_coin(df_1h, df_1m, symbol, req.seed, req.leverage)
+                result = run_backtest_for_coin(
+                    df_1h, df_1m, symbol, req.seed, req.leverage,
+                    strategy=strategy, df_15m=df_15m,
+                    btc_df_1h=btc_df_1h,
+                )
                 summary = result["summary"]
                 save_coin_summary(conn, run_id, symbol,
                                   summary["total_trades"], summary["win_rate"],
