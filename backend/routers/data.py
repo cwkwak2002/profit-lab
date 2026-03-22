@@ -99,7 +99,32 @@ def get_candles_api(
     since_ms = date_to_ms(start_date)
     until_ms = date_to_ms(end_date)
 
+    # Auto-sync missing 1m candles
     with get_db() as conn:
+        stored_min, stored_max = get_stored_range(conn, symbol, "1m")
+        need_fetch = False
+        if stored_min is None:
+            need_fetch = True
+        else:
+            if since_ms < stored_min or until_ms > stored_max:
+                need_fetch = True
+
+        if need_fetch:
+            try:
+                exchange = get_exchange()
+                if stored_min is None:
+                    candles = fetch_ohlcv(exchange, symbol, "1m", since_ms, until_ms)
+                    save_candles(conn, symbol, "1m", candles)
+                else:
+                    if since_ms < stored_min:
+                        candles = fetch_ohlcv(exchange, symbol, "1m", since_ms, stored_min - 1)
+                        save_candles(conn, symbol, "1m", candles)
+                    if until_ms > stored_max:
+                        candles = fetch_ohlcv(exchange, symbol, "1m", stored_max + 1, until_ms)
+                        save_candles(conn, symbol, "1m", candles)
+            except Exception:
+                pass  # Best-effort: return whatever we have
+
         rows = get_candles(conn, symbol, "1m", since_ms, until_ms)
 
     if not rows:

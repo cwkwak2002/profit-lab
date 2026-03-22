@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const notoSansKR = Noto_Sans_KR({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -24,18 +25,21 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="ko"
+      className={`dark ${notoSansKR.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <header className="border-b border-border bg-[#0d1117] px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <a href="/" className="text-base font-bold tracking-tight text-[#58a6ff]">Profit Lab</a>
-            <nav className="flex gap-4 text-sm text-muted-foreground">
-              <a href="/backtest" className="hover:text-foreground transition-colors">백테스트</a>
+        <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm px-6 flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <a href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
+              <img src="/logo.svg" alt="Profit Lab" className="w-7 h-7" />
+              <span><span className="text-[#d0d4dc]">Profit</span> <span className="text-[#7a8194]">Lab</span></span>
+            </a>
+            <nav className="flex gap-1 text-sm">
+              <a href="/backtest" className="px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">전략 검증</a>
+              <a href="/benchmark/models" className="px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">AI 벤치마크</a>
             </nav>
           </div>
-          <span className="text-xs text-muted-foreground">Backtest Dashboard</span>
         </header>
         <main className="flex-1 p-6">{children}</main>
       </body>

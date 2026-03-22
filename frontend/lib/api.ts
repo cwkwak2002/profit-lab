@@ -204,3 +204,166 @@ export async function getCandles(
     `/api/data/candles?symbol=${symbol}&timeframe=${timeframe}&start_date=${startDate}&end_date=${endDate}${strategyParam}`,
   );
 }
+
+// --- AI Benchmark Types ---
+
+export interface BenchmarkModel {
+  id: string;
+  name: string;
+  balance: number;
+  seed: number;
+  created_at: string;
+  total_orders: number;
+  closed_orders: number;
+  cancelled_orders: number;
+  win_rate: number;
+  mdd: number;
+  profit_factor: number | null;
+  avg_holding_minutes: number;
+  fill_rate: number;
+  cumulative_pnl: number;
+  unrealized_pnl: number;
+  active_margin: number;
+  available_balance: number;
+}
+
+export interface BenchmarkOrder {
+  id: number;
+  model_id: string;
+  batch_id: string;
+  symbol: string;
+  side: "long" | "short";
+  entry_price: number;
+  tp_price: number;
+  sl_price: number;
+  description: string;
+  margin: number;
+  status: "PENDING" | "FILLED" | "CLOSED" | "CANCELLED";
+  created_at: string;
+  fill_time: string | null;
+  close_time: string | null;
+  close_price: number | null;
+  close_reason: string | null;
+  pnl: number | null;
+  pnl_pct: number | null;
+  balance_after: number | null;
+  order_type: "limit" | "market";
+  confidence: number;
+  tp2_price: number | null;
+  tp1_hit: number;
+  tp1_pnl: number | null;
+}
+
+export interface BenchmarkBatch {
+  id: string;
+  model_id: string;
+  market_analysis: string;
+  created_at: string;
+}
+
+export interface OrderInput {
+  symbol: string;
+  side: "long" | "short";
+  entry_price: number;
+  tp_price: number;
+  sl_price: number;
+  description: string;
+  order_type: "limit" | "market";
+  confidence: number;
+  tp2_price: number | null;
+}
+
+export interface SubmitOrdersRequest {
+  model_name: string;
+  market_analysis: string;
+  orders: OrderInput[];
+}
+
+// --- AI Benchmark API ---
+
+export async function getBenchmarkModelNames(): Promise<{ names: string[] }> {
+  return fetchApi("/api/benchmark/model-names");
+}
+
+export async function getBenchmarkModels(): Promise<{ models: BenchmarkModel[] }> {
+  return fetchApi("/api/benchmark/models");
+}
+
+export async function getBenchmarkModel(modelId: string): Promise<BenchmarkModel> {
+  return fetchApi(`/api/benchmark/models/${modelId}`);
+}
+
+export async function getBenchmarkOrders(modelId: string): Promise<{ orders: BenchmarkOrder[] }> {
+  return fetchApi(`/api/benchmark/models/${modelId}/orders`);
+}
+
+export async function getBenchmarkBatches(modelId: string): Promise<{ batches: BenchmarkBatch[] }> {
+  return fetchApi(`/api/benchmark/models/${modelId}/batches`);
+}
+
+export async function submitBenchmarkOrders(req: SubmitOrdersRequest): Promise<{
+  model_id: string;
+  batch_id: string;
+  margin_per_order: number;
+}> {
+  return fetchApi("/api/benchmark/orders", {
+    method: "POST",
+    body: JSON.stringify(req),
+  });
+}
+
+export async function updateBenchmarkOrder(
+  orderId: number,
+  updates: Partial<OrderInput> & { description?: string },
+): Promise<{ ok: boolean }> {
+  return fetchApi(`/api/benchmark/orders/${orderId}`, {
+    method: "PATCH",
+    body: JSON.stringify(updates),
+  });
+}
+
+export async function updateBenchmarkBatch(
+  batchId: string,
+  marketAnalysis: string,
+): Promise<{ ok: boolean }> {
+  return fetchApi(`/api/benchmark/batches/${batchId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ market_analysis: marketAnalysis }),
+  });
+}
+
+export async function renameBenchmarkModel(
+  modelId: string,
+  name: string,
+): Promise<{ ok: boolean }> {
+  return fetchApi(`/api/benchmark/models/${modelId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function deleteBenchmarkModel(
+  modelId: string,
+): Promise<{ ok: boolean }> {
+  return fetchApi(`/api/benchmark/models/${modelId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function deleteBenchmarkBatch(
+  batchId: string,
+): Promise<{ ok: boolean; cancelled_orders: number }> {
+  return fetchApi(`/api/benchmark/batches/${batchId}`, {
+    method: "DELETE",
+  });
+}
+
+export function subscribeBenchmarkStream(
+  onEvent: (event: Record<string, unknown>) => void,
+): EventSource {
+  const es = new EventSource(`${API_BASE}/api/benchmark/stream`);
+  es.onmessage = (e) => {
+    onEvent(JSON.parse(e.data));
+  };
+  return es;
+}

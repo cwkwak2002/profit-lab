@@ -1,7 +1,7 @@
-# Profit-Lab: RSI 다이버전스 백테스트 대시보드 개발 스펙
+# Profit-Lab: 트레이딩 전략 백테스트 & AI 벤치마크 플랫폼 개발 스펙
 
 ## Context
-코인선물 트레이딩 봇 개발에 앞서, 매매전략의 유효성을 검증하기 위한 백테스트 엔진과 결과 대시보드를 구축한다. 1차 목표는 RSI 상승 다이버전스 전략의 과거 수익률을 정밀 검증하는 것이며, 향후 다양한 전략 및 AI 추천 전략 실시간 검증으로 확장할 예정이다.
+코인선물 트레이딩 봇 개발에 앞서, 매매전략의 유효성을 검증하기 위한 백테스트 엔진과 결과 대시보드를 구축한다. 또한 AI 모델별 실시간 모의 투자 성과를 비교하는 벤치마크 시스템을 포함한다.
 
 ---
 
@@ -147,6 +147,7 @@
 - `POST /api/backtest/run` — 백테스트 실행
   - params: `coins[]`, `start_date`, `end_date`, `strategy_params`(선택)
   - response: 실행 ID 반환
+- `POST /api/backtest/run-stream` — 백테스트 실행 (SSE 진행률 스트리밍)
 
 ### 5-3. 결과 조회
 - `GET /api/backtest/{id}/summary` — 전체 요약 (총 수익률, 승률, MDD 등)
@@ -157,7 +158,83 @@
 - `GET /api/data/candles?symbol={symbol}&timeframe={tf}&start_date={date}&end_date={date}` — DB에 저장된 캔들 데이터 조회
   - timeframe: `1m`, `5m`, `15m`, `30m`, `1h`, `4h`, `1D`
   - 1m 이외의 타임프레임은 1m 데이터를 서버에서 리샘플링하여 반환 (1h 제외, 1h은 원본 사용)
-  - 응답에 RSI(14) 값을 함께 포함하여 프론트엔드에서 별도 계산 불필요
+  - `strategy` 파라미터로 전략별 인디케이터 포함 (RSI, EMA+ADX, BB+Width)
+
+### 5-5. AI 벤치마크
+- `GET /api/benchmark/model-names` — 모델 이름 목록 (autocomplete)
+- `GET /api/benchmark/models` — 전체 모델 + 성과 지표 (리더보드)
+- `GET /api/benchmark/models/{id}` — 모델 상세 + 성과 지표
+- `GET /api/benchmark/models/{id}/orders` — 모델의 전체 주문 내역
+- `GET /api/benchmark/models/{id}/batches` — 모델의 배치 목록 (시장 분석 포함)
+- `POST /api/benchmark/orders` — 배치 주문 제출 (model_name + market_analysis + orders[])
+- `GET /api/benchmark/stream` — SSE 실시간 주문 상태 변경 이벤트
+
+---
+
+## 5B. AI 벤치마크 (AI Benchmark)
+
+AI 모델별 실시간 모의 투자 성과를 비교하는 시스템. 사용자가 AI 모델명과 주문을 입력하면, 실시간 Binance 가격을 모니터링하여 체결/청산을 자동 처리하고 모델별 성과를 리더보드로 비교한다.
+
+### 5B-1. 워크플로우
+1. 사용자가 AI 모델명, 시장 분석, 주문(코인/방향/유형/진입가/TP1/TP2/SL/확신도)을 입력
+2. 시장 분석만 제출할 수도 있음 (주문 없이)
+3. Market 주문은 즉시 FILLED, Limit 주문은 PENDING으로 시작
+4. 시스템이 실시간 Binance 가격을 5초 간격으로 모니터링
+5. 모델별 성과 지표를 리더보드로 비교
+
+### 5B-2. 주문 라이프사이클
+```
+[Limit]  PENDING ──(가격 도달)──→ FILLED ──(TP/SL/6H)──→ CLOSED
+            │
+            └──(30분 미체결)──→ CANCELLED
+
+[Market] FILLED (즉시) ──(TP/SL/6H)──→ CLOSED
+
+[Dual TP] FILLED ──(TP1 도달)──→ 50% 청산 + SL→본절 ──(TP2/SL_BE/6H)──→ CLOSED
+```
+
+### 5B-3. 주문 속성
+| 속성 | 설명 |
+|---|---|
+| **order_type** | `limit` (가격 도달 시 체결) 또는 `market` (즉시 체결) |
+| **confidence** | 1~5 (5가 가장 확신), 주문별 확신도 |
+| **tp2_price** | 선택적 2차 익절가. 설정 시 TP1→50% 청산 + SL 본절 이동 → TP2까지 나머지 유지 |
+| **market_analysis** | 배치 단위 시장 분석 (전체 주문에 적용) |
+
+### 5B-4. 주문 규칙
+- **마진 배분**: 가용잔액 / 주문 수 (균등 배분)
+- **가용잔액**: balance - SUM(PENDING+FILLED 주문의 margin)
+- **Timeout**: 미체결 30분 → 자동 취소, 포지션 6시간 → 현재가 강제 청산
+- **가격 모니터링**: 5초 간격 (`fetch_tickers` 일괄 호출)
+- **Dual TP 동작**: TP1 도달 → 마진 50% 해당 P&L 실현, 잔여 50% SL을 진입가(본절)로 이동, TP2 또는 본절 SL까지 유지
+
+### 5B-5. P&L 계산
+```
+position_size = margin × leverage (10x)
+raw_pnl = position_size × (close - entry) / entry × direction
+fees = position_size × (taker_fee + slippage) × 2  (진입 + 청산)
+net_pnl = max(raw_pnl - fees, -margin)  (마진 이상 손실 방지)
+
+[Dual TP]
+  TP1: 50% margin에 대한 P&L 즉시 실현, 모델 잔액에 반영
+  TP2/SL_BE/Timeout: 나머지 50%에 대한 P&L 실현
+  최종 P&L = tp1_pnl + remaining_pnl
+```
+
+### 5B-6. 성과 지표
+| 지표 | 설명 |
+|---|---|
+| Win Rate | 수익 청산 / 전체 청산 × 100 |
+| MDD | balance_after 시계열의 최대 낙폭 |
+| Profit Factor | 총 수익 / 총 손실 |
+| 평균 보유시간 | 체결~청산 시간 평균 (분) |
+| 체결률 | (FILLED+CLOSED) / 전체 주문 × 100 |
+| 누적 P&L | 현재 잔액 - seed |
+
+### 5B-7. 설정
+- Seed: $100, Leverage: 10x
+- 지원 코인: Top 50 Binance Futures (config.py TOP_COINS)
+- 수수료/슬리피지: 백테스트와 동일 (Taker 0.04%, Slippage 0.05%)
 
 ---
 
@@ -192,6 +269,34 @@
 **인터랙션**
 - 포지션 행 클릭 시 → `차트` 탭이 활성화되어 있으면, 해당 진입 시점으로 차트 자동 스크롤/이동
 - 차트 탭이 아닌 수익 곡선 탭이면 클릭 무시 (이동 없음)
+
+### 6-4. AI 벤치마크 — 주문 입력 (`/benchmark`)
+- **모델명 입력**: 기존 모델 autocomplete + 신규 모델 생성
+- **가용잔액 표시**: 기존 모델 선택 시 잔액 표시 (신규 모델은 $100)
+- **시장 분석**: 텍스트 영역 — 배치 내 전체 주문에 적용되는 시장 관점 기록
+- **주문 행 동적 추가/삭제** (2행 레이아웃):
+  - 1행: 코인, 방향(long/short), 유형(limit/market), 진입가, TP1, TP2(선택), SL
+  - 2행: Confidence(1~5 버튼), 설명
+- **TP2 입력 시**: "TP1 도달 시 50% 청산, SL 본절 이동" 안내 표시
+- **분석만 제출**: 주문 없이 시장 분석만 제출 가능
+- TP/SL 방향 실시간 validation (Long: TP > entry > SL, TP2 > TP1 / Short: 반대)
+- 제출 → POST /orders → 모델 상세 페이지로 리다이렉트
+
+### 6-5. AI 벤치마크 — 리더보드 (`/benchmark/models`)
+- 모델별 성과 비교 테이블: 순위, 모델명, 잔액, 수익률, 승률, MDD, Profit Factor, 체결률, 주문수
+- SSE 구독으로 실시간 업데이트
+- 행 클릭 → 모델 상세 페이지
+
+### 6-6. AI 벤치마크 — 모델 상세 (`/benchmark/models/{modelId}`)
+- 지표 카드: 잔액, 수익률, 승률, MDD, Profit Factor, 가용잔액
+- 잔액 추이 차트 (Equity Curve)
+- **배치 그룹별 주문 표시**:
+  - 각 배치는 카드로 구분 (배치ID, 시각, 주문 수)
+  - 시장 분석이 있으면 배치 헤더에 표시 (음영 박스)
+  - 분석만 있는 배치도 표시 ("분석만" 배지)
+- 주문 테이블 컬럼: 상태, 유형(LIMIT/MARKET), 코인, 방향, 확신도(dots), 진입가, TP1(+체크), TP2, SL, 마진, P&L, 사유, 설명
+- TP1 hit 시 체크마크 표시, partial P&L 툴팁
+- SSE 구독으로 실시간 주문 상태 업데이트
 
 ---
 
@@ -234,6 +339,7 @@ CREATE TABLE trades (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     run_id TEXT,
     symbol TEXT,
+    side TEXT DEFAULT 'long',
     entry_time TEXT,
     entry_price REAL,
     entry_margin REAL,
@@ -242,7 +348,54 @@ CREATE TABLE trades (
     exit_reason TEXT,  -- 'SL', 'TP1', 'TP2', 'BE'
     pnl REAL,
     pnl_pct REAL,
-    balance_after REAL
+    balance_after REAL,
+    tp1_time TEXT
+);
+
+-- AI 벤치마크: 모델
+CREATE TABLE benchmark_models (
+    id TEXT PRIMARY KEY,           -- uuid8
+    name TEXT NOT NULL UNIQUE,     -- 모델 이름
+    seed REAL NOT NULL DEFAULT 100.0,
+    leverage INTEGER NOT NULL DEFAULT 10,
+    created_at TEXT NOT NULL,
+    balance REAL NOT NULL DEFAULT 100.0
+);
+
+-- AI 벤치마크: 배치 (시장 분석 단위)
+CREATE TABLE benchmark_batches (
+    id TEXT PRIMARY KEY,              -- batch_id (uuid[:8])
+    model_id TEXT NOT NULL REFERENCES benchmark_models(id),
+    market_analysis TEXT DEFAULT '',   -- 배치 단위 시장 분석
+    created_at TEXT NOT NULL
+);
+
+-- AI 벤치마크: 주문 (전체 라이프사이클 관리)
+CREATE TABLE benchmark_orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    model_id TEXT NOT NULL REFERENCES benchmark_models(id),
+    batch_id TEXT NOT NULL,        -- benchmark_batches.id 참조
+    symbol TEXT NOT NULL,
+    side TEXT NOT NULL,            -- 'long' | 'short'
+    entry_price REAL NOT NULL,
+    tp_price REAL NOT NULL,        -- TP1
+    sl_price REAL NOT NULL,
+    description TEXT DEFAULT '',
+    margin REAL NOT NULL,          -- 투입 마진 (dual TP 시 TP1 후 50%로 감소)
+    status TEXT NOT NULL DEFAULT 'PENDING',  -- PENDING/FILLED/CLOSED/CANCELLED
+    created_at TEXT NOT NULL,
+    fill_time TEXT,
+    close_time TEXT,
+    close_price REAL,
+    close_reason TEXT,             -- TP, TP2, SL, SL_BE, TIMEOUT_6H, CANCEL_30M
+    pnl REAL,                      -- 최종 P&L (dual TP: tp1_pnl + remaining)
+    pnl_pct REAL,
+    balance_after REAL,
+    order_type TEXT DEFAULT 'limit',   -- 'limit' | 'market'
+    confidence INTEGER DEFAULT 3,      -- 1~5
+    tp2_price REAL,                    -- 선택적 2차 익절가
+    tp1_hit INTEGER DEFAULT 0,         -- TP1 도달 여부 (dual TP)
+    tp1_pnl REAL                       -- TP1 부분 청산 P&L
 );
 ```
 
@@ -253,21 +406,23 @@ CREATE TABLE trades (
 ```
 profit-lab/
 ├── backend/
-│   ├── main.py              # FastAPI 앱
-│   ├── config.py             # 설정값 (수수료, 슬리피지 등)
+│   ├── main.py                # FastAPI 앱 + lifespan (벤치마크 모니터 시작)
+│   ├── config.py              # 설정값 (수수료, 슬리피지, 벤치마크 설정 등)
 │   ├── data/
-│   │   ├── fetcher.py        # ccxt 데이터 수집
-│   │   └── db.py             # SQLite 연결/쿼리
+│   │   ├── fetcher.py         # ccxt 데이터 수집
+│   │   └── db.py              # SQLite 연결/쿼리 (백테스트 + 벤치마크)
 │   ├── strategy/
-│   │   ├── rsi_divergence.py # RSI 다이버전스 전략 로직
-│   │   ├── ema_trend.py      # EMA Trend Following 전략 (Long & Short)
-│   │   ├── bb_squeeze.py     # BB Squeeze Breakout 전략 (Long & Short)
-│   │   └── risk_filters.py   # 리스크 회피 필터 (전 전략 공통)
+│   │   ├── rsi_divergence.py  # RSI 다이버전스 전략 로직
+│   │   ├── ema_trend.py       # EMA Trend Following 전략 (Long & Short)
+│   │   ├── bb_squeeze.py      # BB Squeeze Breakout 전략 (Long & Short)
+│   │   └── risk_filters.py    # 리스크 회피 필터 (전 전략 공통)
 │   ├── engine/
-│   │   └── backtester.py     # 백테스트 엔진 (멀티TF 처리)
+│   │   ├── backtester.py      # 백테스트 엔진 (멀티TF 처리)
+│   │   └── benchmark_monitor.py  # 실시간 가격 모니터 (asyncio 백그라운드)
 │   └── routers/
-│       ├── data.py           # 데이터 수집 API
-│       └── backtest.py       # 백테스트 실행/조회 API
+│       ├── data.py            # 데이터 수집 API
+│       ├── backtest.py        # 백테스트 실행/조회 API
+│       └── benchmark.py       # AI 벤치마크 API + SSE 스트림
 ├── frontend/
 │   ├── app/
 │   │   ├── page.tsx                          # 메인 (→ /backtest 리다이렉트)
@@ -276,27 +431,32 @@ profit-lab/
 │   │   │   └── [id]/
 │   │   │       ├── page.tsx                  # 결과 요약 페이지
 │   │   │       └── coins/[symbol]/page.tsx   # 코인 상세 페이지
+│   │   ├── benchmark/
+│   │   │   ├── page.tsx                      # 주문 입력 페이지
+│   │   │   └── models/
+│   │   │       ├── page.tsx                  # 리더보드
+│   │   │       └── [modelId]/page.tsx        # 모델 상세
 │   │   └── layout.tsx
 │   ├── components/
 │   │   ├── equity-curve.tsx
-│   │   ├── candle-chart.tsx          # Lightweight Charts 캔들차트 + RSI 서브차트 + 마커
+│   │   ├── candle-chart.tsx          # Lightweight Charts 캔들차트 + 전략별 인디케이터
 │   │   ├── resizable-split.tsx       # 드래그 리사이저 컴포넌트
 │   │   ├── trade-table.tsx
 │   │   └── coin-summary-table.tsx
 │   └── lib/
-│       └── api.ts            # Backend API 호출 함수
+│       └── api.ts            # Backend API 호출 함수 (백테스트 + 벤치마크)
 ├── data/
 │   └── profit-lab.db         # SQLite DB 파일
-└── README.md
+└── spec.md
 ```
 
 ---
 
 ## 9. 향후 확장 계획 (참고)
 
-- **전략 추가**: RSI 외 다양한 전략 모듈 플러그인 방식 지원
-- **AI 추천 검증**: 여러 AI가 1시간마다 추천 → 실제 성과 기록/비교 대시보드
-- **실시간 모니터링**: 라이브 데이터 연동
+- **전략 추가**: 다양한 전략 모듈 플러그인 방식 지원
+- **AI 벤치마크 확장**: 차트 마커(진입/체결/청산 위치 시각화), 미실현 P&L 실시간 표시
+- **자동 AI 연동**: API를 통한 AI 모델 자동 주문 제출 (현재 수동 입력)
 
 ---
 

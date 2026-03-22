@@ -106,30 +106,30 @@ export default function CoinDetailPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       {/* Header */}
-      <div className="flex-shrink-0 px-4 py-2 border-b border-border bg-[#0d1117]">
-        <Link href={`/backtest/${runId}`} className="text-sm text-muted-foreground hover:text-[#58a6ff] transition-colors">
+      <div className="flex-shrink-0 px-4 py-2 border-b border-border bg-card">
+        <Link href={`/backtest/${runId}`} className="text-sm text-muted-foreground hover:text-primary transition-colors">
           ← 결과 요약으로 돌아가기
         </Link>
-        <h2 className="text-xl font-bold text-[#e6edf3]">{symbol} 상세 결과</h2>
+        <h2 className="text-xl font-bold text-card-foreground">{symbol} 상세 결과</h2>
       </div>
 
       {/* Main layout: left sidebar + right content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar - stats */}
-        <aside className="w-48 flex-shrink-0 border-r border-border bg-[#0d1117] overflow-y-auto p-3 space-y-3">
+        <aside className="w-48 flex-shrink-0 border-r border-border bg-card overflow-y-auto p-3 space-y-3">
           {summary && (
             <>
               <StatCard
                 label="수익률"
                 value={`${summary.cumulative_return >= 0 ? "+" : ""}${summary.cumulative_return}%`}
-                color={summary.cumulative_return >= 0 ? "text-[#3fb950]" : "text-[#f85149]"}
+                color={summary.cumulative_return >= 0 ? "text-emerald-400" : "text-red-400"}
               />
               <StatCard label="승률" value={`${summary.win_rate}%`} />
               <StatCard label="거래수" value={`${summary.total_trades}`} />
               <StatCard
                 label="MDD"
                 value={`${summary.max_drawdown}%`}
-                color="text-[#d29922]"
+                color="text-amber-400"
               />
               <StatCard label="최종 잔액" value={`$${summary.final_balance.toFixed(2)}`} />
             </>
@@ -146,14 +146,14 @@ export default function CoinDetailPage() {
                     href={`/backtest/${runId}/coins/${c.symbol}`}
                     className={`block px-2 py-1.5 rounded text-xs transition-colors ${
                       c.symbol === symbol
-                        ? "bg-[#1f6feb] text-white"
+                        ? "bg-primary text-white"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     }`}
                   >
                     <div className="flex justify-between items-center">
                       <span className="font-medium">{c.symbol}</span>
                       <span className={
-                        c.cumulative_return >= 0 ? "text-[#3fb950]" : "text-[#f85149]"
+                        c.cumulative_return >= 0 ? "text-emerald-400" : "text-red-400"
                       }>
                         {c.cumulative_return >= 0 ? "+" : ""}{c.cumulative_return}%
                       </span>
@@ -171,12 +171,12 @@ export default function CoinDetailPage() {
             top={
               <div className="h-full flex flex-col">
                 {/* Tabs + timeframe selector */}
-                <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-b border-border bg-[#0d1117]">
+                <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-b border-border bg-card">
                   <button
                     onClick={() => setActiveTab("equity")}
                     className={`px-3 py-1 text-sm rounded transition-colors ${
                       activeTab === "equity"
-                        ? "bg-[#1f6feb] text-white"
+                        ? "bg-primary text-white"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -186,7 +186,7 @@ export default function CoinDetailPage() {
                     onClick={() => setActiveTab("chart")}
                     className={`px-3 py-1 text-sm rounded transition-colors ${
                       activeTab === "chart"
-                        ? "bg-[#1f6feb] text-white"
+                        ? "bg-primary text-white"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -201,7 +201,7 @@ export default function CoinDetailPage() {
                           onClick={() => setTimeframe(tf)}
                           className={`px-2 py-0.5 text-xs rounded transition-colors ${
                             timeframe === tf
-                              ? "bg-[#1f6feb] text-white"
+                              ? "bg-primary text-white"
                               : "text-muted-foreground hover:text-foreground"
                           }`}
                         >
@@ -239,7 +239,7 @@ export default function CoinDetailPage() {
             }
             bottom={
               <div className="h-full flex flex-col">
-                <div className="flex-shrink-0 px-3 py-2 border-b border-border bg-[#0d1117]">
+                <div className="flex-shrink-0 px-3 py-2 border-b border-border bg-card">
                   <span className="text-sm font-medium">
                     포지션 상세 ({trades.length}건)
                   </span>

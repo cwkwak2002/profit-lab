@@ -107,7 +107,7 @@ function BacktestPageInner() {
             onClick={() => setStrategy(s.id)}
             className={`px-4 py-2 text-sm rounded-md border transition-colors ${
               strategy === s.id
-                ? "bg-[#1f6feb] text-white border-[#1f6feb]"
+                ? "bg-primary text-white border-primary"
                 : "bg-transparent text-muted-foreground border-border hover:text-foreground"
             }`}
           >
@@ -131,7 +131,7 @@ function BacktestPageInner() {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="border border-border rounded px-3 py-2 text-sm bg-[#0d1117] text-foreground"
+              className="border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -140,7 +140,7 @@ function BacktestPageInner() {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="border border-border rounded px-3 py-2 text-sm bg-[#0d1117] text-foreground"
+              className="border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
             />
           </div>
         </CardContent>
@@ -205,9 +205,9 @@ function BacktestPageInner() {
                 <div>
                   <h4 className="font-semibold mb-1">청산 규칙 (1m 봉)</h4>
                   <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-[#f85149] font-medium">SL</span> — 다이버전스 최근 저가 - 0.5%</li>
-                    <li><span className="text-[#58a6ff] font-medium">TP1 (50%)</span> — RSI ≥ 70 또는 손익비 1.5배 도달 → 본절로스 이동</li>
-                    <li><span className="text-[#3fb950] font-medium">TP2 (50%)</span> — 15m 200 EMA 터치 시 전량 청산</li>
+                    <li><span className="text-red-400 font-medium">SL</span> — 다이버전스 최근 저가 - 0.5%</li>
+                    <li><span className="text-primary font-medium">TP1 (50%)</span> — RSI ≥ 70 또는 손익비 1.5배 도달 → 본절로스 이동</li>
+                    <li><span className="text-emerald-400 font-medium">TP2 (50%)</span> — 15m 200 EMA 터치 시 전량 청산</li>
                   </ul>
                 </div>
               </>
@@ -216,8 +216,8 @@ function BacktestPageInner() {
                 <div>
                   <h4 className="font-semibold mb-1">추세 확인 (1H 봉)</h4>
                   <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-[#3fb950] font-medium">Long</span> — 50 EMA &gt; 200 EMA 정배열 (골든크로스)</li>
-                    <li><span className="text-[#f85149] font-medium">Short</span> — 50 EMA &lt; 200 EMA 역배열 (데드크로스)</li>
+                    <li><span className="text-emerald-400 font-medium">Long</span> — 50 EMA &gt; 200 EMA 정배열 (골든크로스)</li>
+                    <li><span className="text-red-400 font-medium">Short</span> — 50 EMA &lt; 200 EMA 역배열 (데드크로스)</li>
                     <li>ADX(14) ≥ 25 — 추세 강도 확인</li>
                     <li>No-Trade Zone: ADX &lt; 20 또는 50/200 EMA 간격 &lt; 0.5% (Whipsaw)</li>
                   </ul>
@@ -225,8 +225,8 @@ function BacktestPageInner() {
                 <div>
                   <h4 className="font-semibold mb-1">진입 조건 (15m 봉)</h4>
                   <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-[#3fb950] font-medium">Long</span> — 15m 가격이 50 EMA로 눌림목 형성 후 재돌파</li>
-                    <li><span className="text-[#f85149] font-medium">Short</span> — 15m 가격이 50 EMA 위로 반등 후 재이탈</li>
+                    <li><span className="text-emerald-400 font-medium">Long</span> — 15m 가격이 50 EMA로 눌림목 형성 후 재돌파</li>
+                    <li><span className="text-red-400 font-medium">Short</span> — 15m 가격이 50 EMA 위로 반등 후 재이탈</li>
                     <li>현재 거래량 &gt; 최근 20봉 평균 거래량</li>
                     <li>다음 봉 시가에 진입</li>
                   </ul>
@@ -234,11 +234,11 @@ function BacktestPageInner() {
                 <div>
                   <h4 className="font-semibold mb-1">청산 규칙</h4>
                   <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-[#f85149] font-medium">SL</span> — 15m 200 EMA 이탈 (동적 추적)</li>
-                    <li><span className="text-[#58a6ff] font-medium">TP1 (Long)</span> — 손익비 1:2 지점 → 50% 청산</li>
-                    <li><span className="text-[#58a6ff] font-medium">TP1 (Short)</span> — 손익비 1:1.5 지점 → 50% 청산</li>
+                    <li><span className="text-red-400 font-medium">SL</span> — 15m 200 EMA 이탈 (동적 추적)</li>
+                    <li><span className="text-primary font-medium">TP1 (Long)</span> — 손익비 1:2 지점 → 50% 청산</li>
+                    <li><span className="text-primary font-medium">TP1 (Short)</span> — 손익비 1:1.5 지점 → 50% 청산</li>
                     <li><span className="font-medium">BE</span> — TP1 체결 즉시, 잔여 50% 손절가를 진입가로 이동</li>
-                    <li><span className="text-[#3fb950] font-medium">EMA Cross</span> — 15m EMA 역크로스 시 전량 청산</li>
+                    <li><span className="text-emerald-400 font-medium">EMA Cross</span> — 15m EMA 역크로스 시 전량 청산</li>
                   </ul>
                 </div>
                 <div>
@@ -264,17 +264,17 @@ function BacktestPageInner() {
                 <div>
                   <h4 className="font-semibold mb-1">진입 조건 (15m 봉)</h4>
                   <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-[#3fb950] font-medium">Long</span> — 종가 &gt; BB 상단 + 거래량 ≥ 평균의 200% + 하단 밴드 하락 확인</li>
-                    <li><span className="text-[#f85149] font-medium">Short</span> — 종가 &lt; BB 하단 + 거래량 ≥ 평균의 250%</li>
+                    <li><span className="text-emerald-400 font-medium">Long</span> — 종가 &gt; BB 상단 + 거래량 ≥ 평균의 200% + 하단 밴드 하락 확인</li>
+                    <li><span className="text-red-400 font-medium">Short</span> — 종가 &lt; BB 하단 + 거래량 ≥ 평균의 250%</li>
                     <li>다음 봉 시가에 진입</li>
                   </ul>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-1">청산 규칙 (1m 봉)</h4>
                   <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-[#f85149] font-medium">SL</span> — BB 중심선 (20 SMA) 터치 시 전량 청산</li>
-                    <li><span className="text-[#a371f7] font-medium">Long TRAIL</span> — 수익 발생 후 밴드 안쪽 복귀 시 트레일링 스탑 (고점 -1% 또는 중심선)</li>
-                    <li><span className="text-[#3fb950] font-medium">Short TP</span> — 고정 수익률 +3.5% 도달 시 즉시 청산</li>
+                    <li><span className="text-red-400 font-medium">SL</span> — BB 중심선 (20 SMA) 터치 시 전량 청산</li>
+                    <li><span className="text-purple-400 font-medium">Long TRAIL</span> — 수익 발생 후 밴드 안쪽 복귀 시 트레일링 스탑 (고점 -1% 또는 중심선)</li>
+                    <li><span className="text-emerald-400 font-medium">Short TP</span> — 고정 수익률 +3.5% 도달 시 즉시 청산</li>
                   </ul>
                 </div>
                 <div>
@@ -308,9 +308,9 @@ function BacktestPageInner() {
 
         {loading && (
           <div className="space-y-2">
-            <div className="w-full h-2 bg-[#21262d] rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#1f6feb] rounded-full transition-all duration-300 ease-out"
+                className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>

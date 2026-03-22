@@ -57,24 +57,22 @@ export const CandleChart = forwardRef<CandleChartHandle, Props>(
         width: el.clientWidth,
         height: el.clientHeight,
         layout: {
-          background: { type: ColorType.Solid, color: "#0f1117" },
-          textColor: "#9ca3af",
+          background: { type: ColorType.Solid, color: "#0d1526" },
+          textColor: "#6e7fa0",
           fontSize: 11,
         },
         grid: {
-          vertLines: { color: "#1e2433" },
-          horzLines: { color: "#1e2433" },
+          vertLines: { color: "#182642" },
+          horzLines: { color: "#182642" },
         },
         crosshair: { mode: CrosshairMode.Normal },
         timeScale: {
           timeVisible: true,
           secondsVisible: false,
-          fixLeftEdge: true,
-          fixRightEdge: true,
-          borderColor: "#2d3548",
+          borderColor: "#223557",
         },
         rightPriceScale: {
-          borderColor: "#2d3548",
+          borderColor: "#223557",
         },
       });
       chartRef.current = chart;

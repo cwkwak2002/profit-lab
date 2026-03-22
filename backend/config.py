@@ -74,3 +74,10 @@ RISK_BTC_CRASH_PCT = -0.05       # BTC 1H -5%+ → no altcoin longs
 
 # Exchange
 EXCHANGE_ID = "binance"
+
+# AI Benchmark defaults
+BENCHMARK_SEED = 100.0
+BENCHMARK_LEVERAGE = 10
+BENCHMARK_ORDER_TIMEOUT_MIN = 30       # cancel unfilled after 30 min
+BENCHMARK_POSITION_TIMEOUT_MIN = 360   # force close after 6 hours
+BENCHMARK_MONITOR_INTERVAL_SEC = 5     # price check frequency
