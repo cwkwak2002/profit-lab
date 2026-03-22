@@ -9,7 +9,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from strategy.rsi_divergence import compute_rsi, find_entry_signals, simulate_exit_on_1m
-from helpers import make_1h_candles, make_1m_candles, make_divergence_scenario
+from helpers import make_1h_candles, make_1m_candles, make_15m_candles, make_divergence_scenario
 
 
 class TestComputeRSI:
@@ -138,12 +138,24 @@ class TestSimulateExit:
         assert result["exit_reason"] == "NO_DATA"
 
     def test_tp2_hit(self):
-        """Price reaches +5% → TP2 triggered after TP1."""
+        """Price reaches 15m EMA200 → TP2 triggered after TP1."""
         entry_price = 100.0
         sl_price = 90.0
+        base_ts = 1_700_000_000_000
+
         # Sharp rise to +5%
         prices = [100.0 + i * 0.5 for i in range(50)]
-        result = self._make_entry_with_1m(entry_price, sl_price, prices)
+        df_1m = make_1m_candles(len(prices), base_ts=base_ts, prices=prices)
+
+        # Create 15m candles with EMA200 around 104 (price will reach this)
+        # Need 210+ bars so EMA200 has values; place them before entry time
+        n_15m = 220
+        fifteen_min_ms = 900_000
+        start_15m = base_ts - n_15m * fifteen_min_ms
+        prices_15m = [104.0] * n_15m  # flat at 104 so EMA200 ≈ 104
+        df_15m = make_15m_candles(n_15m, base_ts=start_15m, prices=prices_15m)
+
+        result = simulate_exit_on_1m(df_1m, entry_price, sl_price, base_ts, df_15m=df_15m)
         assert result["tp1_hit"] is True
         assert result["exit_reason"] == "TP2"
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Noto_Sans_KR } from "next/font/google";
+import { NavLinks } from "@/components/nav-links";
 import "./globals.css";
 
 const notoSansKR = Noto_Sans_KR({
@@ -35,10 +36,7 @@ export default function RootLayout({
               <img src="/logo.svg" alt="Profit Lab" className="w-7 h-7" />
               <span><span className="text-[#d0d4dc]">Profit</span> <span className="text-[#7a8194]">Lab</span></span>
             </a>
-            <nav className="flex gap-1 text-sm">
-              <a href="/backtest" className="px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">전략 검증</a>
-              <a href="/benchmark/models" className="px-3 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">AI 벤치마크</a>
-            </nav>
+            <NavLinks />
           </div>
         </header>
         <main className="flex-1 p-6">{children}</main>

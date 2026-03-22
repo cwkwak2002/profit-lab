@@ -42,9 +42,10 @@ def test_conn(tmp_path):
         );
         CREATE TABLE trades (
             id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT, symbol TEXT,
+            side TEXT NOT NULL DEFAULT 'long',
             entry_time TEXT, entry_price REAL, entry_margin REAL,
             exit_time TEXT, exit_price REAL, exit_reason TEXT,
-            pnl REAL, pnl_pct REAL, balance_after REAL
+            pnl REAL, pnl_pct REAL, balance_after REAL, tp1_time TEXT
         );
     """)
     conn.commit()
@@ -68,7 +69,8 @@ def client(test_conn):
     """Create a TestClient that uses the test DB."""
     conn, db_path = test_conn
     factory = _make_connection_factory(db_path)
-    with patch("data.db.get_connection", factory):
+    with patch("data.db.get_connection", factory), \
+         patch("routers.data.get_exchange", side_effect=RuntimeError("no exchange in tests")):
         yield TestClient(app)
 
 

@@ -68,7 +68,7 @@ export default function LeaderboardPage() {
       {/* Page header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">리더보드</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">AI 트레이딩 리더보드</h1>
           <p className="text-sm text-muted-foreground mt-1">AI 모델 트레이딩 성과 비교</p>
         </div>
         <button

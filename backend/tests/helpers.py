@@ -33,6 +33,21 @@ def make_1m_candles(n: int, base_ts: int = 1_700_000_000_000,
     return pd.DataFrame(rows)
 
 
+def make_15m_candles(n: int, base_ts: int = 1_700_000_000_000,
+                     base_price: float = 100.0,
+                     prices: list[float] | None = None) -> pd.DataFrame:
+    if prices is None:
+        prices = [base_price + (i % 15) * 0.05 for i in range(n)]
+    rows = []
+    for i, close in enumerate(prices):
+        ts = base_ts + i * 900_000  # 15 min intervals
+        rows.append({
+            "timestamp": ts, "open": close * 0.999, "high": close * 1.002,
+            "low": close * 0.998, "close": close, "volume": 500.0,
+        })
+    return pd.DataFrame(rows)
+
+
 def make_divergence_scenario() -> tuple[pd.DataFrame, pd.DataFrame]:
     """Create a scenario where RSI bullish divergence occurs."""
     n_1h = 80

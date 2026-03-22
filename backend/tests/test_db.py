@@ -102,18 +102,20 @@ class TestTradeOperations:
         )
         trades = [
             {
-                "run_id": "run1", "symbol": "BTC",
+                "run_id": "run1", "symbol": "BTC", "side": "long",
                 "entry_time": "2024-01-05 10:00:00", "entry_price": 42000.0,
                 "entry_margin": 100.0, "exit_time": "2024-01-05 14:00:00",
                 "exit_price": 42840.0, "exit_reason": "TP1",
                 "pnl": 20.0, "pnl_pct": 20.0, "balance_after": 120.0,
+                "tp1_time": "2024-01-05 12:00:00",
             },
             {
-                "run_id": "run1", "symbol": "BTC",
+                "run_id": "run1", "symbol": "BTC", "side": "long",
                 "entry_time": "2024-01-06 10:00:00", "entry_price": 43000.0,
                 "entry_margin": 120.0, "exit_time": "2024-01-06 12:00:00",
                 "exit_price": 42500.0, "exit_reason": "SL",
                 "pnl": -15.0, "pnl_pct": -12.5, "balance_after": 105.0,
+                "tp1_time": None,
             },
         ]
         save_trades(in_memory_db, trades)
@@ -130,18 +132,20 @@ class TestTradeOperations:
         )
         trades = [
             {
-                "run_id": "run1", "symbol": "BTC",
+                "run_id": "run1", "symbol": "BTC", "side": "long",
                 "entry_time": "2024-01-05 10:00:00", "entry_price": 42000.0,
                 "entry_margin": 100.0, "exit_time": "2024-01-05 14:00:00",
                 "exit_price": 42840.0, "exit_reason": "TP1",
                 "pnl": 20.0, "pnl_pct": 20.0, "balance_after": 120.0,
+                "tp1_time": None,
             },
             {
-                "run_id": "run1", "symbol": "ETH",
+                "run_id": "run1", "symbol": "ETH", "side": "long",
                 "entry_time": "2024-01-05 10:00:00", "entry_price": 2200.0,
                 "entry_margin": 100.0, "exit_time": "2024-01-05 14:00:00",
                 "exit_price": 2150.0, "exit_reason": "SL",
                 "pnl": -10.0, "pnl_pct": -10.0, "balance_after": 90.0,
+                "tp1_time": None,
             },
         ]
         save_trades(in_memory_db, trades)
