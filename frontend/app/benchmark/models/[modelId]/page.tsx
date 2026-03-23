@@ -372,10 +372,10 @@ export default function ModelDetailPage() {
       if (o.close_time) t.push(new Date(o.close_time).getTime());
       return t;
     });
-    const pad = 12 * 3600 * 1000;
+    const pad = 24 * 3600 * 1000;
     return {
       start: new Date(Math.min(...times) - pad).toISOString().split("T")[0],
-      end: new Date(Math.max(...times) + pad).toISOString().split("T")[0],
+      end: new Date().toISOString().split("T")[0],
     };
   }, [orders]);
 
