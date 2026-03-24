@@ -59,6 +59,43 @@ def _calc_pnl(side: str, entry_price: float, close_price: float,
     return round(max(net_pnl, -margin), 6)
 
 
+def _invalidate_order(conn, order: dict):
+    """Mark an order as INVALID — fill candle already triggers TP or SL.
+
+    Does NOT affect model balance (INVALID orders are ignored in P&L).
+    Clears fill_time / close_time so the order only shows created_at.
+    """
+    conn.execute(
+        """UPDATE benchmark_orders
+           SET status='INVALID', fill_time=NULL, close_time=NULL,
+               close_price=NULL, close_reason='FILL_CANDLE_TPSL',
+               pnl=NULL, pnl_pct=NULL, balance_after=NULL
+           WHERE id=?""",
+        (order["id"],),
+    )
+    _broadcast({
+        "type": "order_invalid",
+        "order_id": order["id"],
+        "model_id": order["model_id"],
+        "symbol": order["symbol"],
+        "reason": "FILL_CANDLE_TPSL",
+    })
+    logger.info("INVALID order %s (%s %s) — fill candle triggers TP/SL",
+                order["id"], order["side"], order["symbol"])
+
+
+def _fill_candle_triggers_tpsl(order: dict, high: float, low: float) -> bool:
+    """Check if a candle's high/low would trigger TP or SL for the order."""
+    tp1 = order["tp_price"]
+    sl = order["sl_price"]
+    is_long = order["side"] == "long"
+
+    if is_long:
+        return high >= tp1 or low <= sl
+    else:
+        return low <= tp1 or high >= sl
+
+
 def _close_order(conn, order: dict, close_price: float, reason: str, now_iso: str):
     """Close a FILLED order: compute P&L, update balance, broadcast."""
     margin = order["margin"]
@@ -249,6 +286,11 @@ def _recover_pending(conn, order: dict, candles: list[list]) -> bool:
         # Check fill: long fills when price dips to entry, short when price rises
         filled = (is_long and l <= entry) or (not is_long and h >= entry)
         if filled:
+            # Check if this same candle also triggers TP/SL → INVALID
+            if _fill_candle_triggers_tpsl(order, h, l):
+                _invalidate_order(conn, order)
+                return True
+
             candle_iso = candle_time.isoformat()
             conn.execute(
                 "UPDATE benchmark_orders SET status='FILLED', fill_time=? WHERE id=?",
@@ -279,10 +321,9 @@ def _recover_filled(conn, order: dict, candles: list[list]) -> bool:
     """
     fill_time = datetime.fromisoformat(order["fill_time"])
     fill_ms = int(fill_time.timestamp() * 1000)
-    # Round up to the next 1m candle boundary so we skip the fill candle entirely.
-    # e.g. fill at 10:30:15 → skip_until = 10:31:00 → first check at 10:31:00 candle
     fill_candle_start = (fill_ms // 60_000) * 60_000
-    skip_until_ms = fill_candle_start + 60_000  # next candle after the fill candle
+    # Check the fill candle for TP/SL — if it triggers, mark INVALID
+    checked_fill_candle = False
     tp1 = order["tp_price"]
     tp2 = order.get("tp2_price")
     sl = order["sl_price"]
@@ -292,7 +333,16 @@ def _recover_filled(conn, order: dict, candles: list[list]) -> bool:
 
     for candle in candles:
         ts, _o, h, l, c, _v = candle[0], candle[1], candle[2], candle[3], candle[4], candle[5]
-        if ts < skip_until_ms:
+
+        # Check the fill candle: if TP/SL triggers on this candle → INVALID
+        if ts == fill_candle_start and not checked_fill_candle:
+            checked_fill_candle = True
+            if _fill_candle_triggers_tpsl(order, h, l):
+                _invalidate_order(conn, order)
+                return True
+            continue  # skip normal TP/SL processing for the fill candle
+
+        if ts <= fill_candle_start:
             continue
 
         candle_time = datetime.fromtimestamp(ts / 1000, tz=timezone.utc)
@@ -484,8 +534,18 @@ def _process_filled(conn, order: dict, price: float,
     elapsed_sec = (now - fill_time).total_seconds()
     elapsed_min = elapsed_sec / 60
 
-    # Skip TP/SL checks during the fill candle (< 60s after fill)
+    # During the fill candle (< 60s after fill): check if TP/SL would trigger
+    # on this same candle — if so, mark as INVALID (AI used stale price data)
     if elapsed_sec < 60:
+        tp1 = order["tp_price"]
+        sl = order["sl_price"]
+        is_long = order["side"] == "long"
+        if is_long:
+            if price >= tp1 or price <= sl:
+                _invalidate_order(conn, order)
+        else:
+            if price <= tp1 or price >= sl:
+                _invalidate_order(conn, order)
         return
 
     tp1 = order["tp_price"]

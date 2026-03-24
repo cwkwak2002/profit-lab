@@ -12,7 +12,7 @@ from data.db import (
     get_db, get_candles, save_candles, save_backtest_run, save_coin_summary,
     save_trades, get_backtest_run, get_coin_summaries, get_trades_for_coin,
 )
-from data.fetcher import date_to_ms, get_exchange, fetch_ohlcv, get_stored_range
+from data.fetcher import date_to_ms, end_date_to_ms, get_exchange, fetch_ohlcv, get_stored_range
 from engine.backtester import run_backtest_for_coin
 
 router = APIRouter(prefix="/api/backtest", tags=["backtest"])
@@ -96,7 +96,7 @@ def run_backtest(req: BacktestRequest):
     run_id = str(uuid.uuid4())[:8]
     created_at = datetime.utcnow().isoformat()
     since_ms = date_to_ms(req.start_date)
-    until_ms = date_to_ms(req.end_date)
+    until_ms = end_date_to_ms(req.end_date)
 
     params = {"seed": req.seed, "leverage": req.leverage, "strategy": req.strategy}
 
@@ -141,7 +141,7 @@ def run_backtest_stream(req: BacktestRequest):
     def generate():
         total_coins = len(req.coins)
         since_ms = date_to_ms(req.start_date)
-        until_ms = date_to_ms(req.end_date)
+        until_ms = end_date_to_ms(req.end_date)
         exchange = get_exchange()
 
         # --- Phase 1: Data Sync ---

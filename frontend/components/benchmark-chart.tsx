@@ -1,242 +1,377 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from "react";
-import {
-  createChart,
-  createSeriesMarkers,
-  CandlestickSeries,
-  LineSeries,
-  type IChartApi,
-  type CandlestickData,
-  type Time,
-  ColorType,
-  CrosshairMode,
-  LineStyle,
-} from "lightweight-charts";
-import type { Candle, BenchmarkOrder } from "@/lib/api";
+import type { BenchmarkOrder } from "@/lib/api";
+import { getCandles, type Timeframe } from "@/lib/api";
 
 export interface BenchmarkChartHandle {
   scrollToTime: (timeSeconds: number) => void;
 }
 
 interface Props {
-  candles: Candle[];
+  symbol: string;
   orders: BenchmarkOrder[];
 }
 
-// lightweight-charts renders UTC timestamps as-is on the time axis.
-// To show KST (UTC+9) on the chart, we shift all timestamps by +9 hours.
-const KST_OFFSET_SEC = 9 * 3600;
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-function tsToSeconds(ms: number): Time {
-  return (ms / 1000 + KST_OFFSET_SEC) as Time;
+const RESOLUTION_TO_TF: Record<string, Timeframe> = {
+  "1": "1m", "5": "5m", "15": "15m", "30": "30m",
+  "60": "1h", "240": "4h", "1D": "1D",
+};
+
+const SUPPORTED_RESOLUTIONS = ["1", "5", "15", "30", "60", "240", "1D"];
+
+function getPriceScale(sym: string): number {
+  if (sym === "BTC") return 10;
+  if (["ETH", "BNB"].includes(sym)) return 100;
+  if (sym.startsWith("1000")) return 1000000;
+  return 10000;
 }
 
-function isoToSeconds(iso: string): Time {
-  return (new Date(iso).getTime() / 1000 + KST_OFFSET_SEC) as Time;
+const REASON_LABELS: Record<string, string> = {
+  TP: "TP", TP2: "TP2", SL: "SL", SL_BE: "SL(BE)",
+  TIMEOUT_6H: "6H", CANCEL_30M: "30M", MANUAL: "DEL",
+};
+
+function createDatafeed(symbol: string) {
+  return {
+    onReady: (cb: any) => {
+      setTimeout(() => cb({ supported_resolutions: SUPPORTED_RESOLUTIONS }), 0);
+    },
+    searchSymbols: (_input: any, _exchange: any, _type: any, onResult: any) => onResult([]),
+    resolveSymbol: (_name: any, onResolve: any) => {
+      setTimeout(() =>
+        onResolve({
+          name: symbol,
+          ticker: symbol,
+          full_name: `${symbol}/USDT`,
+          description: `${symbol}/USDT Perpetual`,
+          type: "crypto",
+          session: "24x7",
+          exchange: "Binance",
+          listed_exchange: "Binance",
+          timezone: "Asia/Seoul",
+          format: "price",
+          minmov: 1,
+          pricescale: getPriceScale(symbol),
+          has_intraday: true,
+          has_daily_and_weekly: true,
+          supported_resolutions: SUPPORTED_RESOLUTIONS,
+          volume_precision: 2,
+          data_status: "streaming",
+        }),
+      0);
+    },
+    getBars: async (
+      _symbolInfo: any,
+      resolution: string,
+      periodParams: { from: number; to: number; firstDataRequest: boolean },
+      onResult: any,
+      onError: any,
+    ) => {
+      try {
+        const tf = RESOLUTION_TO_TF[resolution] || "15m";
+        const startDate = new Date(periodParams.from * 1000).toISOString().split("T")[0];
+        const endDate = new Date(periodParams.to * 1000).toISOString().split("T")[0];
+        const { candles } = await getCandles(symbol, tf, startDate, endDate);
+        const bars = candles.map((c) => ({
+          time: c.timestamp,
+          open: c.open,
+          high: c.high,
+          low: c.low,
+          close: c.close,
+          volume: c.volume,
+        }));
+        onResult(bars, { noData: bars.length === 0 });
+      } catch (e: any) {
+        onError(e?.message || "Failed to fetch candles");
+      }
+    },
+    subscribeBars: () => {},
+    unsubscribeBars: () => {},
+  };
+}
+
+/** Add execution shapes (arrows with text) for order entries and exits. */
+function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
+  try {
+    const chart = widget.activeChart();
+
+    for (const order of orders) {
+      // Entry arrow
+      if (order.fill_time) {
+        const fillTimeSec = new Date(order.fill_time).getTime() / 1000;
+        const isBuy = order.side === "long";
+        chart.createExecutionShape()
+          .setText(isBuy ? "Long 진입" : "Short 진입")
+          .setTooltip(`${isBuy ? "Long" : "Short"} @ ${order.entry_price.toLocaleString()}`)
+          .setTextColor(isBuy ? "#22c55e" : "#ef4444")
+          .setArrowColor(isBuy ? "#22c55e" : "#ef4444")
+          .setDirection(isBuy ? "buy" : "sell")
+          .setTime(fillTimeSec)
+          .setFont("bold 11px sans-serif");
+      }
+
+      // Exit arrow
+      if (order.close_time && order.close_reason) {
+        const closeTimeSec = new Date(order.close_time).getTime() / 1000;
+        const reason = order.close_reason;
+        const label = REASON_LABELS[reason] || reason;
+        const isProfit = reason === "TP" || reason === "TP2";
+        const pnlStr = order.pnl !== null
+          ? ` (${order.pnl > 0 ? "+" : ""}${order.pnl.toFixed(2)})`
+          : "";
+        // Exit direction is opposite of entry
+        const isBuy = order.side === "long";
+        chart.createExecutionShape()
+          .setText(`${label} 청산${pnlStr}`)
+          .setTooltip(`${label} @ ${order.close_price?.toLocaleString() || "?"}${pnlStr}`)
+          .setTextColor(isProfit ? "#22c55e" : "#ef4444")
+          .setArrowColor(isProfit ? "#22c55e" : "#ef4444")
+          .setDirection(isBuy ? "sell" : "buy")
+          .setTime(closeTimeSec)
+          .setFont("bold 11px sans-serif");
+      }
+    }
+  } catch (e) {
+    console.error("[BenchmarkChart] addExecutionShapes error:", e);
+  }
+}
+
+function addOrderLines(widget: any, orders: BenchmarkOrder[]) {
+  try {
+    const chart = widget.activeChart();
+
+    for (const order of orders) {
+      if (order.status !== "FILLED") continue;
+
+      chart.createOrderLine()
+        .setPrice(order.tp_price)
+        .setColor("#22c55e")
+        .setLineColor("rgba(34,197,94,0.4)")
+        .setBodyBorderColor("#22c55e")
+        .setBodyBackgroundColor("rgba(34,197,94,0.15)")
+        .setBodyTextColor("#22c55e")
+        .setQuantity("")
+        .setText("TP")
+        .setLineStyle(2)
+        .setLineLength(25);
+
+      chart.createOrderLine()
+        .setPrice(order.sl_price)
+        .setColor("#ef4444")
+        .setLineColor("rgba(239,68,68,0.4)")
+        .setBodyBorderColor("#ef4444")
+        .setBodyBackgroundColor("rgba(239,68,68,0.15)")
+        .setBodyTextColor("#ef4444")
+        .setQuantity("")
+        .setText("SL")
+        .setLineStyle(2)
+        .setLineLength(25);
+
+      if (order.tp2_price) {
+        chart.createOrderLine()
+          .setPrice(order.tp2_price)
+          .setColor("#22c55e")
+          .setLineColor("rgba(34,197,94,0.25)")
+          .setBodyBorderColor("#22c55e")
+          .setBodyBackgroundColor("rgba(34,197,94,0.1)")
+          .setBodyTextColor("#22c55e")
+          .setQuantity("")
+          .setText("TP2")
+          .setLineStyle(2)
+          .setLineLength(25);
+      }
+
+      chart.createOrderLine()
+        .setPrice(order.entry_price)
+        .setColor("#9ca3af")
+        .setLineColor("rgba(156,163,175,0.4)")
+        .setBodyBorderColor("#9ca3af")
+        .setBodyBackgroundColor("rgba(156,163,175,0.1)")
+        .setBodyTextColor("#9ca3af")
+        .setQuantity("")
+        .setText("Entry")
+        .setLineStyle(1)
+        .setLineLength(25);
+    }
+  } catch {
+    // ignore
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+const STORAGE_KEY = "benchmark-chart-state";
+
+function saveChartState(widget: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+  try {
+    widget.save((state: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    });
+  } catch { /* ignore */ }
+}
+
+function loadChartState(): any | null { // eslint-disable-line @typescript-eslint/no-explicit-any
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
 }
 
 export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
-  function BenchmarkChart({ candles, orders }, ref) {
+  function BenchmarkChart({ symbol, orders }, ref) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const chartRef = useRef<IChartApi | null>(null);
+    const widgetRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const chartReadyRef = useRef(false);
+    const ordersRef = useRef(orders);
+    ordersRef.current = orders;
+    const pendingScrollRef = useRef<number | null>(null);
+    const saveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    function doScroll(widget: any, timeSeconds: number) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      try {
+        const chart = widget.activeChart();
+        chart.setVisibleRange({
+          from: timeSeconds - 6 * 3600,
+          to: timeSeconds + 6 * 3600,
+        });
+      } catch { /* ignore */ }
+    }
 
     const scrollToTime = useCallback((timeSeconds: number) => {
-      const chart = chartRef.current;
-      if (!chart) return;
-      // Apply same KST offset so scroll target matches shifted chart data
-      const kst = timeSeconds + KST_OFFSET_SEC;
-      const from = (kst - 3600 * 12) as Time;
-      const to = (kst + 3600 * 12) as Time;
-      chart.timeScale().setVisibleRange({ from, to });
+      if (widgetRef.current && chartReadyRef.current) {
+        doScroll(widgetRef.current, timeSeconds);
+      } else {
+        pendingScrollRef.current = timeSeconds;
+      }
     }, []);
 
     useImperativeHandle(ref, () => ({ scrollToTime }), [scrollToTime]);
 
     useEffect(() => {
       const el = containerRef.current;
-      if (!el || candles.length === 0) return;
+      if (!el || !symbol) return;
 
-      const chart = createChart(el, {
-        width: el.clientWidth,
-        height: el.clientHeight,
-        layout: {
-          background: { type: ColorType.Solid, color: "#0d1526" },
-          textColor: "#6e7fa0",
-          fontSize: 11,
-        },
-        grid: {
-          vertLines: { color: "#182642" },
-          horzLines: { color: "#182642" },
-        },
-        crosshair: { mode: CrosshairMode.Normal },
-        timeScale: {
-          timeVisible: true,
-          secondsVisible: false,
-          borderColor: "#223557",
-        },
-        rightPriceScale: {
-          borderColor: "#223557",
-        },
-      });
-      chartRef.current = chart;
+      chartReadyRef.current = false;
 
-      // --- Candle series ---
-      const candleSeries = chart.addSeries(CandlestickSeries, {
-        upColor: "#22c55e",
-        downColor: "#ef4444",
-        borderUpColor: "#22c55e",
-        borderDownColor: "#ef4444",
-        wickUpColor: "#4ade80",
-        wickDownColor: "#f87171",
-      });
+      function initWidget() {
+        const TV = (window as any).TradingView; // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (!TV?.widget) return;
 
-      const candleData: CandlestickData[] = candles.map((c) => ({
-        time: tsToSeconds(c.timestamp),
-        open: c.open,
-        high: c.high,
-        low: c.low,
-        close: c.close,
-      }));
-      candleSeries.setData(candleData);
+        const savedState = loadChartState();
 
-      // --- TP/SL horizontal lines for FILLED orders ---
-      for (const order of orders) {
-        if (order.status !== "FILLED") continue;
-
-        const isLong = order.side === "long";
-
-        // Entry price line
-        const entrySeries = chart.addSeries(LineSeries, {
-          color: "rgba(156,163,175,0.5)",
-          lineWidth: 1,
-          lineStyle: LineStyle.Dotted,
-          lastValueVisible: false,
-          priceLineVisible: false,
+        const widget = new TV.widget({
+          container: el,
+          library_path: "/tradingview/",
+          datafeed: createDatafeed(symbol),
+          symbol: symbol,
+          interval: "5",
+          locale: "ko",
+          timezone: "Asia/Seoul",
+          theme: "dark",
+          autosize: true,
+          toolbar_bg: "#0d1526",
+          overrides: {
+            "paneProperties.background": "#0d1526",
+            "paneProperties.backgroundType": "solid",
+            "mainSeriesProperties.candleStyle.upColor": "#22c55e",
+            "mainSeriesProperties.candleStyle.downColor": "#ef4444",
+            "mainSeriesProperties.candleStyle.borderUpColor": "#22c55e",
+            "mainSeriesProperties.candleStyle.borderDownColor": "#ef4444",
+            "mainSeriesProperties.candleStyle.wickUpColor": "#4ade80",
+            "mainSeriesProperties.candleStyle.wickDownColor": "#f87171",
+          },
+          disabled_features: [
+            "header_symbol_search",
+            "symbol_search_hot_key",
+            "header_compare",
+            "display_market_status",
+            "timeframes_toolbar",
+            "go_to_date",
+            "order_panel",
+            "object_tree_legend_mode",
+            "show_object_tree",
+          ],
+          enabled_features: [
+            "hide_left_toolbar_by_default",
+          ],
+          loading_screen: { backgroundColor: "#0d1526", foregroundColor: "#3b82f6" },
+          ...(savedState ? { saved_data: savedState } : {}),
+          auto_save_delay: 3,
         });
-        const entryTime = isoToSeconds(order.fill_time || order.created_at);
-        const now = (Date.now() / 1000) as Time;
-        entrySeries.setData([
-          { time: entryTime, value: order.entry_price },
-          { time: now, value: order.entry_price },
-        ]);
 
-        // TP line
-        const tpSeries = chart.addSeries(LineSeries, {
-          color: "rgba(34,197,94,0.4)",
-          lineWidth: 1,
-          lineStyle: LineStyle.Dashed,
-          lastValueVisible: false,
-          priceLineVisible: false,
+        widgetRef.current = widget;
+
+        widget.onChartReady(() => {
+          chartReadyRef.current = true;
+
+          // Override symbol to current coin (saved_data may contain a different symbol)
+          try { widget.activeChart().setSymbol(symbol); } catch { /* */ }
+
+          addOrderLines(widget, ordersRef.current);
+          addExecutionShapes(widget, ordersRef.current);
+
+          if (pendingScrollRef.current !== null) {
+            doScroll(widget, pendingScrollRef.current);
+            pendingScrollRef.current = null;
+          } else {
+            const latestOrder = [...ordersRef.current]
+              .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+            if (latestOrder) {
+              const t = new Date(latestOrder.fill_time || latestOrder.created_at).getTime() / 1000;
+              doScroll(widget, t);
+            }
+          }
+
+          // Periodically save chart state (interval, studies, drawing tools, etc.)
+          saveTimerRef.current = setInterval(() => saveChartState(widget), 3000);
         });
-        tpSeries.setData([
-          { time: entryTime, value: order.tp_price },
-          { time: now, value: order.tp_price },
-        ]);
-
-        // SL line
-        const slSeries = chart.addSeries(LineSeries, {
-          color: "rgba(239,68,68,0.4)",
-          lineWidth: 1,
-          lineStyle: LineStyle.Dashed,
-          lastValueVisible: false,
-          priceLineVisible: false,
-        });
-        slSeries.setData([
-          { time: entryTime, value: order.sl_price },
-          { time: now, value: order.sl_price },
-        ]);
-
-        // TP2 line if exists
-        if (order.tp2_price) {
-          const tp2Series = chart.addSeries(LineSeries, {
-            color: "rgba(34,197,94,0.25)",
-            lineWidth: 1,
-            lineStyle: LineStyle.Dashed,
-            lastValueVisible: false,
-            priceLineVisible: false,
-          });
-          tp2Series.setData([
-            { time: entryTime, value: order.tp2_price },
-            { time: now, value: order.tp2_price },
-          ]);
-        }
       }
 
-      // --- Order markers ---
-      const reasonColors: Record<string, string> = {
-        TP: "#22c55e", TP2: "#22c55e", SL: "#ef4444", SL_BE: "#f59e0b",
-        TIMEOUT_6H: "#6b7280", CANCEL_30M: "#6b7280", MANUAL: "#6b7280",
-      };
-      const reasonLabels: Record<string, string> = {
-        TP: "TP", TP2: "TP2", SL: "SL", SL_BE: "SL(BE)",
-        TIMEOUT_6H: "6H", CANCEL_30M: "30M", MANUAL: "DEL",
-      };
+      // Check if charting library is already loaded
+      const existingTV = (window as any).TradingView; // eslint-disable-line @typescript-eslint/no-explicit-any
+      let isCorrectLib = false;
+      try { isCorrectLib = typeof existingTV?.version === "function" && existingTV.version().includes("v27"); } catch { /* */ }
 
-      const markers: Array<{
-        time: Time; position: "belowBar" | "aboveBar";
-        color: string; shape: "arrowUp" | "arrowDown" | "circle"; text: string;
-      }> = [];
-
-      for (const order of orders) {
-        const isShort = order.side === "short";
-
-        // Order creation (PENDING submission)
-        markers.push({
-          time: isoToSeconds(order.created_at),
-          position: "belowBar",
-          color: "#6b7280",
-          shape: "circle",
-          text: `${isShort ? "S" : "L"} 주문`,
-        });
-
-        // Fill
-        if (order.fill_time) {
-          markers.push({
-            time: isoToSeconds(order.fill_time),
-            position: isShort ? "aboveBar" : "belowBar",
-            color: isShort ? "#ef4444" : "#22c55e",
-            shape: isShort ? "arrowDown" : "arrowUp",
-            text: isShort ? "Short" : "Long",
-          });
-        }
-
-        // TP1 hit (dual TP)
-        if (order.tp1_hit && order.tp1_pnl !== null) {
-          // TP1 time not stored separately — approximate from close_time or skip
-        }
-
-        // Close
-        if (order.close_time && order.close_reason) {
-          markers.push({
-            time: isoToSeconds(order.close_time),
-            position: "aboveBar",
-            color: reasonColors[order.close_reason] || "#6b7280",
-            shape: "circle",
-            text: reasonLabels[order.close_reason] || order.close_reason,
-          });
-        }
+      if (isCorrectLib) {
+        initWidget();
+      } else {
+        const script = document.createElement("script");
+        script.src = "/tradingview/charting_library.standalone.js";
+        script.async = true;
+        script.onload = () => initWidget();
+        script.onerror = (e) => console.error("[BenchmarkChart] script load error:", e);
+        document.head.appendChild(script);
       }
-
-      markers.sort((a, b) => (a.time as number) - (b.time as number));
-      if (markers.length > 0) {
-        createSeriesMarkers(candleSeries, markers);
-      }
-
-      // Resize observer
-      const observer = new ResizeObserver(() => {
-        chart.applyOptions({ width: el.clientWidth, height: el.clientHeight });
-      });
-      observer.observe(el);
 
       return () => {
-        observer.disconnect();
-        chart.remove();
-        chartRef.current = null;
+        if (saveTimerRef.current) {
+          clearInterval(saveTimerRef.current);
+          saveTimerRef.current = null;
+        }
+        // Save state one last time before destroying
+        if (widgetRef.current && chartReadyRef.current) {
+          saveChartState(widgetRef.current);
+        }
+        chartReadyRef.current = false;
+        pendingScrollRef.current = null;
+        if (widgetRef.current) {
+          try { widgetRef.current.remove(); } catch { /* ignore */ }
+          widgetRef.current = null;
+        }
       };
-    }, [candles, orders]);
+    }, [symbol]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    if (candles.length === 0) {
+    // Re-add execution shapes when orders change
+    useEffect(() => {
+      if (!widgetRef.current || !chartReadyRef.current) return;
+      try {
+        addExecutionShapes(widgetRef.current, orders);
+      } catch { /* ignore */ }
+    }, [orders]);
+
+    if (!symbol) {
       return (
         <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
           코인을 선택하면 차트가 표시됩니다.

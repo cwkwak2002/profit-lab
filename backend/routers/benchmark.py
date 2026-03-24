@@ -20,6 +20,7 @@ from data.db import (
     cancel_batch_pending_orders, delete_benchmark_batch,
     rename_benchmark_model, delete_benchmark_model,
 )
+from data.fetcher import get_exchange, symbol_to_pair
 from engine.benchmark_monitor import subscribe, unsubscribe
 
 router = APIRouter(prefix="/api/benchmark", tags=["benchmark"])
@@ -280,6 +281,44 @@ def submit_orders(req: SubmitOrdersRequest):
             if o.tp2_price is not None and o.tp2_price >= o.tp_price:
                 raise HTTPException(400, f"Order {i+1}: Short TP2 must be < TP1")
 
+    # Fetch live prices for all symbols in the order set
+    price_map: dict[str, float] = {}
+    if req.orders:
+        symbols = list({o.symbol for o in req.orders})
+        try:
+            exchange = get_exchange()
+            pairs = [symbol_to_pair(s) for s in symbols]
+            tickers = exchange.fetch_tickers(pairs)
+            for sym in symbols:
+                pair = symbol_to_pair(sym)
+                if pair in tickers and tickers[pair].get("last"):
+                    price_map[sym] = tickers[pair]["last"]
+        except Exception:
+            pass  # Best-effort; if ticker fetch fails, skip live-price checks
+
+    # Validate orders against live prices
+    # Only reject if current price already beyond TP or SL (order is nonsensical)
+    invalid_orders: list[str] = []
+    valid_orders: list[OrderInput] = []
+    for i, o in enumerate(req.orders):
+        price = price_map.get(o.symbol)
+        if price is not None:
+            if o.side == "long":
+                if price >= o.tp_price:
+                    invalid_orders.append(f"Order {i+1} ({o.symbol} Long): 현재가 {price} ≥ TP {o.tp_price}")
+                    continue
+                if price <= o.sl_price:
+                    invalid_orders.append(f"Order {i+1} ({o.symbol} Long): 현재가 {price} ≤ SL {o.sl_price}")
+                    continue
+            else:
+                if price <= o.tp_price:
+                    invalid_orders.append(f"Order {i+1} ({o.symbol} Short): 현재가 {price} ≤ TP {o.tp_price}")
+                    continue
+                if price >= o.sl_price:
+                    invalid_orders.append(f"Order {i+1} ({o.symbol} Short): 현재가 {price} ≥ SL {o.sl_price}")
+                    continue
+        valid_orders.append(o)
+
     with get_db() as conn:
         model = get_or_create_model(conn, req.model_name, BENCHMARK_SEED, BENCHMARK_LEVERAGE)
         model_id = model["id"]
@@ -295,25 +334,32 @@ def submit_orders(req: SubmitOrdersRequest):
         })
 
         margin_per_order = 0.0
-        if req.orders:
+        if valid_orders:
             # Calculate available balance
             active_margin = get_active_margin(conn, model_id)
             available = model["balance"] - active_margin
             if available <= 0:
                 raise HTTPException(400, "Insufficient available balance (all funds in open positions)")
 
-            margin_per_order = round(available / len(req.orders), 4)
+            margin_per_order = round(available / len(valid_orders), 4)
             if margin_per_order <= 0:
                 raise HTTPException(400, "Insufficient balance for this many orders")
 
-            for o in req.orders:
+            for o in valid_orders:
                 is_market = o.order_type == "market"
+                # For market orders, use live price as entry instead of AI-submitted price
+                entry_price = o.entry_price
+                if is_market:
+                    live_price = price_map.get(o.symbol)
+                    if live_price is not None:
+                        entry_price = live_price
+
                 insert_benchmark_order(conn, {
                     "model_id": model_id,
                     "batch_id": batch_id,
                     "symbol": o.symbol,
                     "side": o.side,
-                    "entry_price": o.entry_price,
+                    "entry_price": entry_price,
                     "tp_price": o.tp_price,
                     "sl_price": o.sl_price,
                     "description": o.description,
@@ -326,7 +372,14 @@ def submit_orders(req: SubmitOrdersRequest):
                     "fill_time": now if is_market else None,
                 })
 
-    return {"model_id": model_id, "batch_id": batch_id, "margin_per_order": margin_per_order}
+    return {
+        "model_id": model_id,
+        "batch_id": batch_id,
+        "margin_per_order": margin_per_order,
+        "invalid_orders": invalid_orders,
+        "valid_count": len(valid_orders),
+        "invalid_count": len(invalid_orders),
+    }
 
 
 @router.get("/stream")

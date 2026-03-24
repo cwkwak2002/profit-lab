@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, Query
 
 from data.db import get_db, get_candles, save_candles
-from data.fetcher import get_exchange, fetch_ohlcv, fetch_available_symbols, date_to_ms, get_stored_range
+from data.fetcher import get_exchange, fetch_ohlcv, fetch_available_symbols, date_to_ms, end_date_to_ms, get_stored_range
 from config import (
     RSI_PERIOD, BB_PERIOD, BB_STD, EMA_FAST, EMA_SLOW, ADX_PERIOD,
     SQZ_BB_PERIOD, SQZ_BB_STD,
@@ -29,7 +29,7 @@ def sync_data(req: SyncRequest):
     """Fetch and store OHLCV data for specified coins and date range."""
     exchange = get_exchange()
     since_ms = date_to_ms(req.start_date)
-    until_ms = date_to_ms(req.end_date)
+    until_ms = end_date_to_ms(req.end_date)
 
     synced = {}
     errors = {}
@@ -97,7 +97,7 @@ def get_candles_api(
         raise HTTPException(400, f"Invalid timeframe: {timeframe}")
 
     since_ms = date_to_ms(start_date)
-    until_ms = date_to_ms(end_date)
+    until_ms = end_date_to_ms(end_date)
 
     # Auto-sync missing 1m candles
     with get_db() as conn:

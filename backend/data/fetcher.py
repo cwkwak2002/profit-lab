@@ -73,6 +73,11 @@ def fetch_available_symbols(exchange: ccxt.Exchange) -> list[str]:
 
 
 def date_to_ms(date_str: str) -> int:
-    """Convert 'YYYY-MM-DD' to milliseconds timestamp (UTC)."""
+    """Convert 'YYYY-MM-DD' to milliseconds timestamp (UTC start of day)."""
     dt = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
     return int(dt.timestamp() * 1000)
+
+
+def end_date_to_ms(date_str: str) -> int:
+    """Convert end date to ms — includes the full day (next day 00:00 UTC - 1ms)."""
+    return date_to_ms(date_str) + 86_400_000 - 1

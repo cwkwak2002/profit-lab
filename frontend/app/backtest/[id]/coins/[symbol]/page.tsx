@@ -1,25 +1,20 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EquityCurve } from "@/components/equity-curve";
 import { TradeTable } from "@/components/trade-table";
-import { CandleChart, type CandleChartHandle } from "@/components/candle-chart";
+import { TradingViewChart } from "@/components/tradingview-chart";
 import { ResizableSplit } from "@/components/resizable-split";
 import {
   getCoinTrades,
   getBacktestCoins,
   getBacktestSummary,
-  getCandles,
   type Trade,
   type CoinSummary,
-  type Candle,
-  type Timeframe,
 } from "@/lib/api";
-
-const TIMEFRAMES: Timeframe[] = ["1m", "5m", "15m", "30m", "1h", "4h", "1D"];
 
 export default function CoinDetailPage() {
   const params = useParams();
@@ -29,19 +24,12 @@ export default function CoinDetailPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [summary, setSummary] = useState<CoinSummary | null>(null);
   const [allCoins, setAllCoins] = useState<CoinSummary[]>([]);
+  const [strategyLabel, setStrategyLabel] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   // Chart state
   const [activeTab, setActiveTab] = useState<"equity" | "chart">("chart");
-  const [timeframe, setTimeframe] = useState<Timeframe>("1h");
-  const [candles, setCandles] = useState<Candle[]>([]);
-  const [candlesLoading, setCandlesLoading] = useState(false);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [strategy, setStrategy] = useState("rsi_divergence");
-
-  const chartRef = useRef<CandleChartHandle>(null);
 
   // Load initial data
   useEffect(() => {
@@ -58,11 +46,12 @@ export default function CoinDetailPage() {
         setAllCoins(coinsData.coins);
         const coinSummary = coinsData.coins.find((c) => c.symbol === symbol);
         setSummary(coinSummary || null);
-        setStartDate(summaryData.run.start_date);
-        setEndDate(summaryData.run.end_date);
-        if (summaryData.run.params.strategy) {
-          setStrategy(summaryData.run.params.strategy as string);
-        }
+        const strategyLabels: Record<string, string> = {
+          rsi_divergence: "RSI Divergence",
+          ema_trend: "EMA Trend",
+          bb_squeeze: "BB Squeeze",
+        };
+        setStrategyLabel(strategyLabels[summaryData.run.params?.strategy as string] || "RSI Divergence");
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
@@ -72,33 +61,8 @@ export default function CoinDetailPage() {
     load();
   }, [runId, symbol]);
 
-  // Load candles when timeframe or dates change
-  useEffect(() => {
-    if (!startDate || !endDate) return;
-
-    async function loadCandles() {
-      setCandlesLoading(true);
-      try {
-        const data = await getCandles(symbol, timeframe, startDate, endDate, strategy);
-        setCandles(data.candles);
-      } catch {
-        setCandles([]);
-      } finally {
-        setCandlesLoading(false);
-      }
-    }
-    loadCandles();
-  }, [symbol, timeframe, startDate, endDate, strategy]);
-
-  // Handle trade row click → scroll chart
-  const handleTradeClick = useCallback(
-    (trade: Trade) => {
-      if (activeTab !== "chart" || !chartRef.current) return;
-      const ts = new Date(trade.entry_time + "Z").getTime() / 1000;
-      chartRef.current.scrollToTime(ts);
-    },
-    [activeTab],
-  );
+  // Handle trade row click (no-op with TradingView widget)
+  const handleTradeClick = useCallback((_trade: Trade) => {}, []);
 
   if (loading) return <div className="text-center py-12 text-muted-foreground">로딩 중...</div>;
   if (error) return <div className="text-center py-12 text-red-500">오류: {error}</div>;
@@ -110,7 +74,10 @@ export default function CoinDetailPage() {
         <Link href={`/backtest/${runId}`} className="text-sm text-muted-foreground hover:text-primary transition-colors">
           ← 결과 요약으로 돌아가기
         </Link>
-        <h2 className="text-xl font-bold text-card-foreground">{symbol} 상세 결과</h2>
+        <h2 className="text-xl font-bold text-card-foreground">
+          {symbol} 상세 결과
+          {strategyLabel && <span className="ml-2 text-sm font-normal text-muted-foreground">| {strategyLabel}</span>}
+        </h2>
       </div>
 
       {/* Main layout: left sidebar + right content */}
@@ -193,23 +160,6 @@ export default function CoinDetailPage() {
                     차트
                   </button>
 
-                  {activeTab === "chart" && (
-                    <div className="flex items-center gap-1 ml-4">
-                      {TIMEFRAMES.map((tf) => (
-                        <button
-                          key={tf}
-                          onClick={() => setTimeframe(tf)}
-                          className={`px-2 py-0.5 text-xs rounded transition-colors ${
-                            timeframe === tf
-                              ? "bg-primary text-white"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          {tf}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Chart content */}
@@ -222,17 +172,8 @@ export default function CoinDetailPage() {
                         거래 기록이 없습니다.
                       </div>
                     )
-                  ) : candlesLoading ? (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      차트 로딩 중...
-                    </div>
                   ) : (
-                    <CandleChart
-                      ref={chartRef}
-                      candles={candles}
-                      trades={trades}
-                      strategy={strategy}
-                    />
+                    <TradingViewChart symbol={symbol} showRsi={false} />
                   )}
                 </div>
               </div>

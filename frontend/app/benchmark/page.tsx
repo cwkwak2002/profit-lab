@@ -135,6 +135,15 @@ function BenchmarkPageInner() {
           symbol, side, entry_price, tp_price, sl_price, description, order_type, confidence, tp2_price,
         })),
       });
+      if (result.invalid_count > 0) {
+        const msg = `${result.invalid_count}건 무효 (현재가 기준 TP/SL 즉시 도달):\n${result.invalid_orders.join("\n")}`;
+        if (result.valid_count > 0) {
+          alert(`${result.valid_count}건 접수 완료.\n\n${msg}`);
+        } else {
+          setError(msg);
+          return;
+        }
+      }
       router.push(`/benchmark/models/${result.model_id}`);
     } catch (e: unknown) { setError(e instanceof Error ? e.message : "제출 실패"); }
     finally { setLoading(false); }

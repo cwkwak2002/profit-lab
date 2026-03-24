@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,6 @@ import {
   getBenchmarkModel,
   getBenchmarkOrders,
   getBenchmarkBatches,
-  getCandles,
   updateBenchmarkOrder,
   updateBenchmarkBatch,
   deleteBenchmarkBatch,
@@ -30,8 +29,6 @@ import {
   type BenchmarkModel,
   type BenchmarkOrder,
   type BenchmarkBatch,
-  type Candle,
-  type Timeframe,
 } from "@/lib/api";
 
 const TOP_COINS = [
@@ -42,7 +39,6 @@ const TOP_COINS = [
   "LIGHT", "XPL", "DUSK", "BULLA", "PENGU", "1000BONK", "1000SHIB", "ZKP", "SENT", "ARB",
 ];
 
-const TIMEFRAMES: Timeframe[] = ["1m", "5m", "15m", "30m", "1h", "4h", "1D"];
 
 // --- Helpers ---
 
@@ -52,6 +48,7 @@ function statusBadge(status: string) {
     FILLED: "bg-blue-500/10 text-blue-400 border-blue-500/20",
     CLOSED: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
     CANCELLED: "bg-red-500/10 text-red-400 border-red-500/20",
+    INVALID: "bg-orange-500/10 text-orange-400 border-orange-500/20",
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border ${styles[status] || "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"}`}>
@@ -87,7 +84,7 @@ function confidenceDots(level: number) {
 }
 
 function formatTime(iso: string) {
-  return new Date(iso).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
 function StatItem({ label, value, color, sub }: { label: string; value: string; color?: string; sub?: string }) {
@@ -203,6 +200,11 @@ function EditableOrderRow({
   if (!editing) {
     return (
       <TableRow className="group text-xs border-border/30 hover:bg-accent/30 transition-colors">
+        <TableCell className="py-2 text-muted-foreground whitespace-nowrap">
+          <div className="text-[10px] font-mono" title={`주문: ${order.created_at}`}>{formatTime(order.created_at)}</div>
+          {order.fill_time && <div className="text-[10px] font-mono text-blue-400/70" title={`체결: ${order.fill_time}`}>{formatTime(order.fill_time)}</div>}
+          {order.close_time && <div className="text-[10px] font-mono text-zinc-400/70" title={`청산: ${order.close_time}`}>{formatTime(order.close_time)}</div>}
+        </TableCell>
         <TableCell className="py-2">{statusBadge(order.status)}</TableCell>
         <TableCell className="py-2">
           <span className={`font-mono text-[10px] ${order.order_type === "market" ? "text-amber-400" : "text-muted-foreground"}`}>
@@ -257,6 +259,9 @@ function EditableOrderRow({
   return (
     <>
       <TableRow className="bg-accent/20 text-xs border-border/30">
+        <TableCell className="py-2 text-muted-foreground whitespace-nowrap">
+          <div className="text-[10px] font-mono">{formatTime(order.created_at)}</div>
+        </TableCell>
         <TableCell className="py-2">{statusBadge(order.status)}</TableCell>
         <TableCell className="py-2">
           {isPending ? (
@@ -328,10 +333,8 @@ export default function ModelDetailPage() {
   // Chart state
   const [chartTab, setChartTab] = useState<"equity" | "chart">("chart");
   const [chartCoin, setChartCoin] = useState<string | null>(null);
-  const [chartTimeframe, setChartTimeframe] = useState<Timeframe>("15m");
-  const [chartCandles, setChartCandles] = useState<Candle[]>([]);
-  const [chartLoading, setChartLoading] = useState(false);
   const chartRef = useRef<BenchmarkChartHandle>(null);
+  const initialCoinSet = useRef(false);
 
   // Bottom tab state
   const [bottomTab, setBottomTab] = useState<"orders" | "analyses">("orders");
@@ -363,45 +366,27 @@ export default function ModelDetailPage() {
 
   const orderCoins = [...new Set(orders.map((o) => o.symbol))];
 
-  const getDateRange = useCallback((coin: string) => {
-    const coinOrders = orders.filter((o) => o.symbol === coin);
-    if (coinOrders.length === 0) return { start: "", end: "" };
-    const times = coinOrders.flatMap((o) => {
-      const t = [new Date(o.created_at).getTime()];
-      if (o.fill_time) t.push(new Date(o.fill_time).getTime());
-      if (o.close_time) t.push(new Date(o.close_time).getTime());
-      return t;
-    });
-    const pad = 24 * 3600 * 1000;
-    return {
-      start: new Date(Math.min(...times) - pad).toISOString().split("T")[0],
-      end: new Date().toISOString().split("T")[0],
-    };
-  }, [orders]);
-
+  // Auto-select most recent order's coin on initial load
   useEffect(() => {
-    if (!chartCoin) return;
-    const { start, end } = getDateRange(chartCoin);
-    if (!start || !end) return;
-    let cancelled = false;
-    setChartLoading(true);
-    getCandles(chartCoin, chartTimeframe, start, end)
-      .then((res) => { if (!cancelled) setChartCandles(res.candles); })
-      .catch(() => { if (!cancelled) setChartCandles([]); })
-      .finally(() => { if (!cancelled) setChartLoading(false); });
-    return () => { cancelled = true; };
-  }, [chartCoin, chartTimeframe, getDateRange]);
+    if (initialCoinSet.current || orders.length === 0) return;
+    const sorted = [...orders].sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const latest = sorted[0];
+    setChartCoin(latest.symbol);
+    initialCoinSet.current = true;
+  }, [orders]);
 
   const chartCoinOrders = chartCoin ? orders.filter((o) => o.symbol === chartCoin) : [];
 
   function handleClickSymbol(order: BenchmarkOrder) {
-    setChartCoin(order.symbol);
-    setChartTab("chart");
-    setTimeout(() => {
-      const targetTime = order.fill_time || order.created_at;
-      const timeSeconds = new Date(targetTime).getTime() / 1000;
-      setTimeout(() => chartRef.current?.scrollToTime(timeSeconds), 400);
-    }, 100);
+    const targetTime = order.fill_time || order.created_at;
+    const timeSeconds = new Date(targetTime).getTime() / 1000;
+
+    if (order.symbol !== chartCoin) {
+      setChartCoin(order.symbol);
+      setChartTab("chart");
+    }
+    // scrollToTime queues internally if chart isn't ready yet
+    chartRef.current?.scrollToTime(timeSeconds);
   }
 
   function handleClickAnalysis(batchId: string) {
@@ -532,16 +517,6 @@ export default function ModelDetailPage() {
                     차트
                   </button>
 
-                  {chartTab === "chart" && (
-                    <div className="flex items-center gap-0.5 ml-4 bg-accent/30 rounded-lg p-0.5">
-                      {TIMEFRAMES.map((tf) => (
-                        <button key={tf} onClick={() => setChartTimeframe(tf)}
-                          className={`px-2.5 py-1 text-[10px] rounded-md transition-all ${chartTimeframe === tf ? "bg-primary/20 text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}>
-                          {tf}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Chart content */}
@@ -555,20 +530,13 @@ export default function ModelDetailPage() {
                       <div className="flex items-center justify-center h-full text-muted-foreground text-sm">청산된 주문이 없습니다.</div>
                     )
                   ) : (
-                    <>
-                      {chartLoading && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-10">
-                          <span className="text-sm text-muted-foreground">차트 로딩 중...</span>
-                        </div>
-                      )}
-                      {chartCoin ? (
-                        <BenchmarkChart ref={chartRef} candles={chartCandles} orders={chartCoinOrders} />
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                          좌측에서 코인을 선택하세요.
-                        </div>
-                      )}
-                    </>
+                    chartCoin ? (
+                      <BenchmarkChart ref={chartRef} symbol={chartCoin} orders={chartCoinOrders} />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                        좌측에서 코인을 선택하세요.
+                      </div>
+                    )
                   )}
                 </div>
               </div>
@@ -593,6 +561,7 @@ export default function ModelDetailPage() {
                     <Table>
                       <TableHeader>
                         <TableRow className="border-border/30 hover:bg-transparent">
+                          <TableHead className="text-[10px] uppercase tracking-wider font-medium">시간</TableHead>
                           <TableHead className="text-[10px] uppercase tracking-wider font-medium">상태</TableHead>
                           <TableHead className="text-[10px] uppercase tracking-wider font-medium">유형</TableHead>
                           <TableHead className="text-[10px] uppercase tracking-wider font-medium">코인</TableHead>

@@ -305,6 +305,9 @@ export async function submitBenchmarkOrders(req: SubmitOrdersRequest): Promise<{
   model_id: string;
   batch_id: string;
   margin_per_order: number;
+  invalid_orders: string[];
+  valid_count: number;
+  invalid_count: number;
 }> {
   return fetchApi("/api/benchmark/orders", {
     method: "POST",
