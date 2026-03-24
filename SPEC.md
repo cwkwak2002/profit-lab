@@ -12,23 +12,24 @@
 | **백테스트 엔진** | Python (pandas, numpy, ccxt, pandas-ta) |
 | **API 서버** | FastAPI |
 | **프론트엔드** | Next.js (App Router) + Tailwind CSS + shadcn/ui |
-| **차트** | Recharts (수익곡선) + Lightweight Charts (캔들차트 + 트레이드 마커) |
+| **차트** | TradingView Charting Library (캔들차트) + Recharts (수익곡선) |
 | **테이블** | TanStack Table (필터/정렬/페이지네이션) |
 | **DB** | SQLite |
-| **데이터 수집** | ccxt (Binance Futures) |
+| **데이터 수집** | ccxt (Bybit Futures) |
 
 ---
 
 ## 2. 데이터 요구사항
 
-- **거래소**: Binance Futures (CCXT 호환)
-- **페어 포맷**: `{SYMBOL}/USDT:USDT` (일부 예외: `1000PEPE/USDT:USDT`, `1000BONK/USDT:USDT`, `POL/USDT:USDT`)
-- **대상 종목**: 주요 선물 페어 상위 50종
+- **거래소**: Bybit Futures (CCXT 호환)
+- **페어 포맷**: `{SYMBOL}/USDT:USDT` (PEPE → `1000PEPE/USDT:USDT` 자동 매핑)
+- **대상 종목**: 안정적 상위 30개 Bybit Futures 코인
 - **데이터 저장**: SQLite에 저장하여 증분 동기화 (이미 DB에 있는 구간은 스킵)
 - **타임프레임**:
-  - DB 저장: 1분 봉만 저장 (원본 데이터)
-  - 다른 타임프레임(5m, 15m, 30m, 1h, 4h, 1D)은 1m에서 리샘플링
-  - 전략 신호: 1h (1m에서 리샘플링)
+  - DB 저장: 1m, 1h (두 가지 원본 데이터)
+  - 5m, 15m, 30m은 1m에서 리샘플링
+  - 4h, 1D는 1h에서 리샘플링
+  - 전략 신호: 1h (원본)
   - 체결/SL/TP 검증: 1m (원본)
 - **기간**: 사용자 지정 (기본: 2026-01-01 ~ 현재)
 
@@ -63,7 +64,7 @@
 - 동일 캔들 내 SL/TP 동시 터치 시, Low → High 순서로 판별
 
 ### 3-5. 데이터 소스
-- Binance Futures는 수년간의 1m 봉 히스토리를 제공하므로 1m 정밀 시뮬레이션이 전 기간 가능
+- Bybit Futures는 수년간의 1m 봉 히스토리를 제공하므로 1m 정밀 시뮬레이션이 전 기간 가능
 
 ---
 
@@ -154,11 +155,12 @@
 - `GET /api/backtest/{id}/coins` — 코인별 요약 리스트
 - `GET /api/backtest/{id}/coins/{symbol}/trades` — 특정 코인 포지션 상세 로그
 
-### 5-4. 차트 데이터
-- `GET /api/data/candles?symbol={symbol}&timeframe={tf}&start_date={date}&end_date={date}` — DB에 저장된 캔들 데이터 조회
+### 5-4. 차트/시세 데이터
+- `GET /api/data/candles?symbol={symbol}&timeframe={tf}&start_date={date}&end_date={date}` — 캔들 데이터 조회
   - timeframe: `1m`, `5m`, `15m`, `30m`, `1h`, `4h`, `1D`
-  - 1m 이외의 타임프레임은 1m 데이터를 서버에서 리샘플링하여 반환 (1h 제외, 1h은 원본 사용)
+  - 1m, 1h은 DB에서 직접 조회; 5m/15m/30m은 1m에서, 4h/1D는 1h에서 리샘플링
   - `strategy` 파라미터로 전략별 인디케이터 포함 (RSI, EMA+ADX, BB+Width)
+- `GET /api/data/ticker?symbol={symbol}` — Bybit 실시간 현재가 조회
 
 ### 5-5. AI 벤치마크
 - `GET /api/benchmark/model-names` — 모델 이름 목록 (autocomplete)
@@ -173,13 +175,13 @@
 
 ## 5B. AI 벤치마크 (AI Benchmark)
 
-AI 모델별 실시간 모의 투자 성과를 비교하는 시스템. 사용자가 AI 모델명과 주문을 입력하면, 실시간 Binance 가격을 모니터링하여 체결/청산을 자동 처리하고 모델별 성과를 리더보드로 비교한다.
+AI 모델별 실시간 모의 투자 성과를 비교하는 시스템. 사용자가 AI 모델명과 주문을 입력하면, 실시간 Bybit 가격을 모니터링하여 체결/청산을 자동 처리하고 모델별 성과를 리더보드로 비교한다.
 
 ### 5B-1. 워크플로우
 1. 사용자가 AI 모델명, 시장 분석, 주문(코인/방향/유형/진입가/TP1/TP2/SL/확신도)을 입력
 2. 시장 분석만 제출할 수도 있음 (주문 없이)
 3. Market 주문은 즉시 FILLED, Limit 주문은 PENDING으로 시작
-4. 시스템이 실시간 Binance 가격을 5초 간격으로 모니터링
+4. 시스템이 실시간 Bybit 가격을 5초 간격으로 모니터링
 5. 모델별 성과 지표를 리더보드로 비교
 
 ### 5B-2. 주문 라이프사이클
@@ -233,15 +235,72 @@ net_pnl = max(raw_pnl - fees, -margin)  (마진 이상 손실 방지)
 
 ### 5B-7. 설정
 - Seed: $100, Leverage: 10x
-- 지원 코인: Top 50 Binance Futures (config.py TOP_COINS)
+- 지원 코인: Top 30 Bybit Futures (config.py TOP_COINS)
 - 수수료/슬리피지: 백테스트와 동일 (Taker 0.04%, Slippage 0.05%)
+
+### 5B-8. 주문 소스 (source)
+| source | 설명 |
+|---|---|
+| `manual` | 사용자가 UI에서 직접 입력한 주문 (기본값) |
+| `ai_trader` | AI Auto-Trader (Calico)가 자동 제출한 주문 |
+| `telegram` | Telegram Listener가 시그널 기반으로 제출한 주문 |
+
+- `telegram` 소스 주문은 벤치마크 모니터의 자동 TP/SL 체결에서 제외
+
+---
+
+## 5C. AI Auto-Trader (Calico)
+
+Claude Sonnet 4 API를 활용한 자동 매매 시스템. 5분 간격으로 실행.
+
+### 5C-1. 워크플로우
+1. Bybit Futures에서 TOP_COINS 30개의 시세, 24h 변동률, 거래량, 펀딩레이트 수집
+2. 데이터를 Claude Sonnet 4 API에 전송, 단기(1시간~12시간) 추천 3~5개 요청
+3. Claude 응답을 JSON 파싱하여 entry/tp/sl/confidence/reason 추출
+4. 진입가, TP/SL 방향 유효성 검증 후 벤치마크 주문으로 제출
+5. prompt + response를 `data/ai_trader_logs/{timestamp}.json`에 저장
+
+### 5C-2. 설정
+- 모델명: "Claude Sonnet 4 (Calico)"
+- Claude 모델: claude-sonnet-4-20250514
+- 실행 간격: 300초 (5분)
+- 마진 배분: 가용잔액을 추천 수로 균등 배분
+- 주문 유형: limit (Claude가 제시한 진입가 사용)
+- API 키: `.env` 파일의 `ANTHROPIC_API_KEY`
+
+---
+
+## 5D. Telegram Listener (Mirroly Live)
+
+Telegram 채널의 트레이딩 시그널을 자동 수신·실행하는 시스템.
+
+### 5D-1. 워크플로우
+1. Telethon userbot으로 MirrorlyLive 채널에 연결
+2. 신규 메시지 수신 시 시그널 파싱
+3. entry 시그널: 시장가 즉시 체결 (마진 = 잔액의 50%)
+4. exit 시그널: 해당 포지션 시장가 청산, P&L 계산
+5. 모든 메시지를 `data/telegram_logs/{timestamp}.json`에 저장
+
+### 5D-2. 시그널 패턴
+| 패턴 | 예시 | 해석 |
+|---|---|---|
+| `longing {COIN}` | "now longing HYPE at $38" | HYPE long 진입 |
+| `shorting {COIN}` | "now shorting BTC at $70k" | BTC short 진입 |
+| `closed {COIN} {side}` | "closed HYPE long" | HYPE long 청산 |
+
+### 5D-3. 설정
+- 모델명: "Mirroly Live"
+- 마진 비율: 잔액의 50%
+- TP/SL: 없음 (exit 시그널로만 청산)
+- 텔레그램 연결: `.env` 파일의 `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_CHANNEL`
+- 첫 실행 시 `python -m engine.telegram_listener`로 세션 파일 생성 필요
 
 ---
 
 ## 6. 프론트엔드 페이지 구성
 
 ### 6-1. 백테스트 실행 페이지 (`/backtest`)
-- **입력 필드**: 시작일, 종료일, 코인 선택 (멀티셀렉트, 50종)
+- **입력 필드**: 시작일, 종료일, 코인 선택 (멀티셀렉트, 30종)
 - **실행 버튼** → 백테스트 실행 후 결과 페이지로 이동
 
 ### 6-2. 결과 요약 페이지 (`/backtest/{id}`)
@@ -257,12 +316,11 @@ net_pnl = max(raw_pnl - fees, -margin)  (마진 이상 손실 방지)
 - **오른쪽 메인 영역** (flex-1): 상단과 하단을 드래그로 비율 조절 가능한 리사이저로 분리
   - **상단**: 탭으로 전환 가능한 차트 영역
     - `수익 곡선` 탭: Recharts 라인 차트 (Equity Curve)
-    - `차트` 탭: Lightweight Charts 캔들스틱 차트
-      - 타임프레임 선택: 1m, 5m, 15m, 30m, 1h, 4h, 1D
-      - 트레이드 마커 표시: 진입(▲ 초록) / 청산(▼ 빨강·파랑) 위치 시각화
-      - **RSI 서브차트**: 메인 캔들 차트 아래에 RSI(14) 라인 차트를 별도 패널로 표시
-        - RSI 40 수평선 (진입 조건 기준선) 표시
-        - RSI 70 수평선 (TP1 조건 기준선) 표시
+    - `차트` 탭: TradingView Charting Library 캔들스틱 차트
+      - 타임프레임 선택: 1m, 5m, 15m, 30m, 1h, 4h, 1D (기본 5m, localStorage 유지)
+      - 트레이드 마커 표시: 주문(회색), 진입(초록/빨강), 청산(색상+P&L)
+      - 오픈 포지션(FILLED/PENDING) 코인은 1초 간격 실시간 차트 업데이트
+      - TP/SL/Entry 수평선 표시 (FILLED 주문)
   - **하단**: 포지션 상세 테이블 (시간 오름차순, 스크롤)
     - 진입시점 | 진입가 | 진입마진 | 청산시점 | 청산가 | 종료사유(SL/TP1/TP2/본절) | P&L($) | P&L(%) | 잔액
 
@@ -395,7 +453,8 @@ CREATE TABLE benchmark_orders (
     confidence INTEGER DEFAULT 3,      -- 1~5
     tp2_price REAL,                    -- 선택적 2차 익절가
     tp1_hit INTEGER DEFAULT 0,         -- TP1 도달 여부 (dual TP)
-    tp1_pnl REAL                       -- TP1 부분 청산 P&L
+    tp1_pnl REAL,                      -- TP1 부분 청산 P&L
+    source TEXT DEFAULT 'manual'       -- 'manual' | 'ai_trader' | 'telegram'
 );
 ```
 
@@ -406,24 +465,28 @@ CREATE TABLE benchmark_orders (
 ```
 profit-lab/
 ├── backend/
-│   ├── main.py                # FastAPI 앱 + lifespan (벤치마크 모니터 시작)
-│   ├── config.py              # 설정값 (수수료, 슬리피지, 벤치마크 설정 등)
+│   ├── main.py                    # FastAPI 앱 + lifespan (3개 백그라운드 태스크)
+│   ├── config.py                  # 설정값 (코인 목록, 수수료, 벤치마크 설정 등)
+│   ├── Dockerfile
 │   ├── data/
-│   │   ├── fetcher.py         # ccxt 데이터 수집
-│   │   └── db.py              # SQLite 연결/쿼리 (백테스트 + 벤치마크)
+│   │   ├── fetcher.py             # ccxt Bybit Futures 데이터 수집
+│   │   └── db.py                  # SQLite 연결/쿼리 (백테스트 + 벤치마크)
 │   ├── strategy/
-│   │   ├── rsi_divergence.py  # RSI 다이버전스 전략 로직
-│   │   ├── ema_trend.py       # EMA Trend Following 전략 (Long & Short)
-│   │   ├── bb_squeeze.py      # BB Squeeze Breakout 전략 (Long & Short)
-│   │   └── risk_filters.py    # 리스크 회피 필터 (전 전략 공통)
+│   │   ├── rsi_divergence.py      # RSI 다이버전스 전략 로직
+│   │   ├── ema_trend.py           # EMA Trend Following 전략 (Long & Short)
+│   │   ├── bb_squeeze.py          # BB Squeeze Breakout 전략 (Long & Short)
+│   │   └── risk_filters.py        # 리스크 회피 필터 (전 전략 공통)
 │   ├── engine/
-│   │   ├── backtester.py      # 백테스트 엔진 (멀티TF 처리)
-│   │   └── benchmark_monitor.py  # 실시간 가격 모니터 (asyncio 백그라운드)
+│   │   ├── backtester.py          # 백테스트 엔진 (멀티TF 처리)
+│   │   ├── benchmark_monitor.py   # 실시간 가격 모니터 (asyncio 백그라운드)
+│   │   ├── ai_trader.py           # Claude API 자동 매매 (Calico)
+│   │   └── telegram_listener.py   # Telegram 시그널 리스너 (Mirroly Live)
 │   └── routers/
-│       ├── data.py            # 데이터 수집 API
-│       ├── backtest.py        # 백테스트 실행/조회 API
-│       └── benchmark.py       # AI 벤치마크 API + SSE 스트림
+│       ├── data.py                # 데이터 수집/캔들/티커 API
+│       ├── backtest.py            # 백테스트 실행/조회 API
+│       └── benchmark.py           # AI 벤치마크 API + SSE 스트림
 ├── frontend/
+│   ├── Dockerfile
 │   ├── app/
 │   │   ├── page.tsx                          # 메인 (→ /backtest 리다이렉트)
 │   │   ├── backtest/
@@ -438,16 +501,22 @@ profit-lab/
 │   │   │       └── [modelId]/page.tsx        # 모델 상세
 │   │   └── layout.tsx
 │   ├── components/
+│   │   ├── benchmark-chart.tsx       # TradingView 벤치마크 차트 (실시간 업데이트)
+│   │   ├── tradingview-chart.tsx     # TradingView 백테스트 차트
 │   │   ├── equity-curve.tsx
-│   │   ├── candle-chart.tsx          # Lightweight Charts 캔들차트 + 전략별 인디케이터
-│   │   ├── resizable-split.tsx       # 드래그 리사이저 컴포넌트
+│   │   ├── resizable-split.tsx
 │   │   ├── trade-table.tsx
 │   │   └── coin-summary-table.tsx
+│   ├── public/tradingview/           # TradingView Charting Library (self-hosted)
 │   └── lib/
-│       └── api.ts            # Backend API 호출 함수 (백테스트 + 벤치마크)
-├── data/
-│   └── profit-lab.db         # SQLite DB 파일
-└── spec.md
+│       └── api.ts                    # Backend API 호출 함수
+├── data/                             # DB, 로그 (gitignore)
+│   ├── profit-lab.db
+│   ├── ai_trader_logs/
+│   └── telegram_logs/
+├── docker-compose.yml
+├── .env.example
+└── SPEC.md
 ```
 
 ---
@@ -455,8 +524,9 @@ profit-lab/
 ## 9. 향후 확장 계획 (참고)
 
 - **전략 추가**: 다양한 전략 모듈 플러그인 방식 지원
-- **AI 벤치마크 확장**: 차트 마커(진입/체결/청산 위치 시각화), 미실현 P&L 실시간 표시
-- **자동 AI 연동**: API를 통한 AI 모델 자동 주문 제출 (현재 수동 입력)
+- **AI 벤치마크 확장**: 미실현 P&L 실시간 표시
+- **추가 AI 모델**: 다른 LLM (GPT, Gemini 등) 자동 매매 모델 추가
+- **추가 시그널 소스**: 다른 Telegram 채널, Discord, Twitter 등
 
 ---
 

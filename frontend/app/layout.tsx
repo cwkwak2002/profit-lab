@@ -1,18 +1,6 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Noto_Sans_KR } from "next/font/google";
 import { NavLinks } from "@/components/nav-links";
 import "./globals.css";
-
-const notoSansKR = Noto_Sans_KR({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Profit Lab",
@@ -27,8 +15,13 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`dark ${notoSansKR.variable} ${geistMono.variable} h-full antialiased`}
+      className="dark h-full antialiased"
     >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300..700&family=Noto+Sans+KR:wght@300..700&display=swap" rel="stylesheet" />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm px-6 flex items-center justify-between">
           <div className="flex items-center gap-8">
