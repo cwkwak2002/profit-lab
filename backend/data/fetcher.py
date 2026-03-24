@@ -14,9 +14,15 @@ def get_exchange() -> ccxt.Exchange:
     return exchange
 
 
+# Display name → exchange pair name (for tokens traded as 1000x units)
+_SYMBOL_ALIAS = {
+    "PEPE": "1000PEPE",
+}
+
 def symbol_to_pair(symbol: str) -> str:
     """Convert symbol like 'BTC' to exchange pair like 'BTC/USDT:USDT'."""
-    return f"{symbol}/USDT:USDT"
+    exchange_sym = _SYMBOL_ALIAS.get(symbol, symbol)
+    return f"{exchange_sym}/USDT:USDT"
 
 
 def fetch_ohlcv(exchange: ccxt.Exchange, symbol: str, timeframe: str,
@@ -29,7 +35,7 @@ def fetch_ohlcv(exchange: ccxt.Exchange, symbol: str, timeframe: str,
     pair = symbol_to_pair(symbol)
     all_candles = []
     current_since = since_ms
-    limit = 1000  # max per request for Binance
+    limit = 1000  # max per request
 
     while current_since < until_ms:
         candles = exchange.fetch_ohlcv(pair, timeframe, since=current_since, limit=limit)

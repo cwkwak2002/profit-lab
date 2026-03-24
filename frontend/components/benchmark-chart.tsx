@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from "react";
 import type { BenchmarkOrder } from "@/lib/api";
-import { getCandles, type Timeframe } from "@/lib/api";
+import { getCandles, getTicker, type Timeframe } from "@/lib/api";
 
 export interface BenchmarkChartHandle {
   scrollToTime: (timeSeconds: number) => void;
@@ -34,7 +34,10 @@ const REASON_LABELS: Record<string, string> = {
   TIMEOUT_6H: "6H", CANCEL_30M: "30M", MANUAL: "DEL",
 };
 
-function createDatafeed(symbol: string) {
+function createDatafeed(symbol: string, hasOpenPosition: () => boolean) {
+  const subscriptions = new Map<string, ReturnType<typeof setInterval>>();
+  let lastBar: { time: number; open: number; high: number; low: number; close: number; volume: number } | null = null;
+
   return {
     onReady: (cb: any) => {
       setTimeout(() => cb({ supported_resolutions: SUPPORTED_RESOLUTIONS }), 0);
@@ -49,8 +52,8 @@ function createDatafeed(symbol: string) {
           description: `${symbol}/USDT Perpetual`,
           type: "crypto",
           session: "24x7",
-          exchange: "Binance",
-          listed_exchange: "Binance",
+          exchange: "Bybit",
+          listed_exchange: "Bybit",
           timezone: "Asia/Seoul",
           format: "price",
           minmov: 1,
@@ -83,13 +86,55 @@ function createDatafeed(symbol: string) {
           close: c.close,
           volume: c.volume,
         }));
+        if (bars.length > 0) lastBar = { ...bars[bars.length - 1] };
         onResult(bars, { noData: bars.length === 0 });
       } catch (e: any) {
         onError(e?.message || "Failed to fetch candles");
       }
     },
-    subscribeBars: () => {},
-    unsubscribeBars: () => {},
+    subscribeBars: (
+      _symbolInfo: any,
+      resolution: string,
+      onRealtimeCallback: any,
+      subscriberUID: string,
+    ) => {
+      if (!hasOpenPosition()) return;
+
+      const resMs: Record<string, number> = {
+        "1": 60000, "5": 300000, "15": 900000, "30": 1800000,
+        "60": 3600000, "240": 14400000, "1D": 86400000,
+      };
+      const barDuration = resMs[resolution] || 60000;
+
+      const interval = setInterval(async () => {
+        if (!hasOpenPosition()) return;
+        try {
+          const { price, timestamp } = await getTicker(symbol);
+          const barTime = Math.floor(timestamp / barDuration) * barDuration;
+
+          if (lastBar && barTime === lastBar.time) {
+            // Update current bar
+            lastBar.high = Math.max(lastBar.high, price);
+            lastBar.low = Math.min(lastBar.low, price);
+            lastBar.close = price;
+            onRealtimeCallback({ ...lastBar });
+          } else {
+            // New bar
+            lastBar = { time: barTime, open: price, high: price, low: price, close: price, volume: 0 };
+            onRealtimeCallback({ ...lastBar });
+          }
+        } catch { /* ignore ticker errors */ }
+      }, 1000);
+
+      subscriptions.set(subscriberUID, interval);
+    },
+    unsubscribeBars: (subscriberUID: string) => {
+      const interval = subscriptions.get(subscriberUID);
+      if (interval) {
+        clearInterval(interval);
+        subscriptions.delete(subscriberUID);
+      }
+    },
   };
 }
 
@@ -99,6 +144,24 @@ function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
     const chart = widget.activeChart();
 
     for (const order of orders) {
+      // Order placed marker (show when created_at differs from fill_time)
+      if (order.created_at) {
+        const createdTimeSec = new Date(order.created_at).getTime() / 1000;
+        const fillTimeSec = order.fill_time ? new Date(order.fill_time).getTime() / 1000 : 0;
+        const isSameTime = order.fill_time && Math.abs(createdTimeSec - fillTimeSec) < 60;
+        if (!isSameTime) {
+          const isBuy = order.side === "long";
+          chart.createExecutionShape()
+            .setText(isBuy ? "Long 주문" : "Short 주문")
+            .setTooltip(`주문 @ ${order.entry_price.toLocaleString()}`)
+            .setTextColor("#9ca3af")
+            .setArrowColor("#9ca3af")
+            .setDirection(isBuy ? "buy" : "sell")
+            .setTime(createdTimeSec)
+            .setFont("11px sans-serif");
+        }
+      }
+
       // Entry arrow
       if (order.fill_time) {
         const fillTimeSec = new Date(order.fill_time).getTime() / 1000;
@@ -125,7 +188,7 @@ function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
         // Exit direction is opposite of entry
         const isBuy = order.side === "long";
         chart.createExecutionShape()
-          .setText(`${label} 청산${pnlStr}`)
+          .setText(`${label} ${reason === "CANCEL_30M" ? "취소" : "청산"}${pnlStr}`)
           .setTooltip(`${label} @ ${order.close_price?.toLocaleString() || "?"}${pnlStr}`)
           .setTextColor(isProfit ? "#22c55e" : "#ef4444")
           .setArrowColor(isProfit ? "#22c55e" : "#ef4444")
@@ -264,7 +327,9 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
         const widget = new TV.widget({
           container: el,
           library_path: "/tradingview/",
-          datafeed: createDatafeed(symbol),
+          datafeed: createDatafeed(symbol, () =>
+            ordersRef.current.some((o) => o.symbol === symbol && (o.status === "FILLED" || o.status === "PENDING"))
+          ),
           symbol: symbol,
           interval: "5",
           locale: "ko",

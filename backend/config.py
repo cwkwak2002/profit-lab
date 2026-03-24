@@ -33,13 +33,12 @@ RSI_RISK_INUNDATION_BARS = 10  # RSI below 30 for 10+ consecutive bars → no en
 RSI_RISK_DEAD_ZONE_EMA = 200   # 200 EMA for dead zone check
 RSI_RISK_DEAD_ZONE_PCT = 0.10  # price > 10% below 200 EMA → dead zone
 
-# Top 50 Binance Futures coins (90-day cumulative volume, 2026-Q1, excl. commodities)
+# Top 30 Bybit Futures coins — stable high-volume perpetuals (excl. commodities/stocks)
 TOP_COINS = [
-    "BTC", "ETH", "SOL", "XRP", "DOGE", "ZEC", "RIVER", "BNB", "1000PEPE", "HYPE",
-    "PIPPIN", "SUI", "ADA", "BCH", "AVAX", "LINK", "AXS", "ASTER", "DASH", "TAO",
-    "PUMP", "FIL", "POWER", "LTC", "ENA", "BEAT", "ENSO", "DOT", "TRUMP", "NEAR",
-    "SIREN", "UNI", "XMR", "FARTCOIN", "AAVE", "WLFI", "BERA", "WIF", "WLD", "IP",
-    "LIGHT", "XPL", "DUSK", "BULLA", "PENGU", "1000BONK", "1000SHIB", "ZKP", "SENT", "ARB",
+    "BTC", "ETH", "SOL", "XRP", "DOGE",
+    "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "CRV", "DOT", "ENA",
+    "FIL", "HBAR", "HYPE", "INJ", "LINK", "LTC", "NEAR", "OP", "PEPE", "RENDER",
+    "SUI", "TAO", "TRX", "UNI", "WIF",
 ]
 
 # EMA Trend Following strategy defaults
@@ -73,7 +72,7 @@ RISK_SPIKE_COOLDOWN_MS = 60 * 60 * 1000  # 60 min cooldown
 RISK_BTC_CRASH_PCT = -0.05       # BTC 1H -5%+ → no altcoin longs
 
 # Exchange
-EXCHANGE_ID = "binance"
+EXCHANGE_ID = "bybit"
 
 # AI Benchmark defaults
 BENCHMARK_SEED = 100.0

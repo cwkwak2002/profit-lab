@@ -145,6 +145,7 @@ def init_db():
             "ALTER TABLE benchmark_orders ADD COLUMN tp2_price REAL",
             "ALTER TABLE benchmark_orders ADD COLUMN tp1_hit INTEGER NOT NULL DEFAULT 0",
             "ALTER TABLE benchmark_orders ADD COLUMN tp1_pnl REAL",
+            "ALTER TABLE benchmark_orders ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'",
         ]:
             try:
                 conn.execute(col_sql)
@@ -271,14 +272,15 @@ def get_active_margin(conn: sqlite3.Connection, model_id: str) -> float:
 
 
 def insert_benchmark_order(conn: sqlite3.Connection, order: dict):
+    order.setdefault("source", "manual")
     conn.execute(
         """INSERT INTO benchmark_orders
            (model_id, batch_id, symbol, side, entry_price, tp_price, sl_price,
             description, margin, status, created_at, order_type, confidence,
-            tp2_price, fill_time)
+            tp2_price, fill_time, source)
            VALUES (:model_id, :batch_id, :symbol, :side, :entry_price, :tp_price, :sl_price,
                    :description, :margin, :status, :created_at, :order_type, :confidence,
-                   :tp2_price, :fill_time)""",
+                   :tp2_price, :fill_time, :source)""",
         order,
     )
 
@@ -307,9 +309,11 @@ def get_model_orders(conn: sqlite3.Connection, model_id: str) -> list[dict]:
     return [dict(r) for r in rows]
 
 
-def get_active_orders(conn: sqlite3.Connection) -> list[dict]:
+def get_active_orders(conn: sqlite3.Connection, exclude_sources: tuple = ("telegram",)) -> list[dict]:
+    placeholders = ",".join("?" for _ in exclude_sources)
     rows = conn.execute(
-        "SELECT * FROM benchmark_orders WHERE status IN ('PENDING', 'FILLED')"
+        f"SELECT * FROM benchmark_orders WHERE status IN ('PENDING', 'FILLED') AND source NOT IN ({placeholders})",
+        exclude_sources,
     ).fetchall()
     return [dict(r) for r in rows]
 

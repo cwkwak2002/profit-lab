@@ -205,6 +205,10 @@ export async function getCandles(
   );
 }
 
+export async function getTicker(symbol: string): Promise<{ symbol: string; price: number; timestamp: number }> {
+  return fetchApi(`/api/data/ticker?symbol=${symbol}`);
+}
+
 // --- AI Benchmark Types ---
 
 export interface BenchmarkModel {

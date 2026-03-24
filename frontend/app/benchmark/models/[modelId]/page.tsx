@@ -32,11 +32,10 @@ import {
 } from "@/lib/api";
 
 const TOP_COINS = [
-  "BTC", "ETH", "SOL", "XRP", "DOGE", "ZEC", "RIVER", "BNB", "1000PEPE", "HYPE",
-  "PIPPIN", "SUI", "ADA", "BCH", "AVAX", "LINK", "AXS", "ASTER", "DASH", "TAO",
-  "PUMP", "FIL", "POWER", "LTC", "ENA", "BEAT", "ENSO", "DOT", "TRUMP", "NEAR",
-  "SIREN", "UNI", "XMR", "FARTCOIN", "AAVE", "WLFI", "BERA", "WIF", "WLD", "IP",
-  "LIGHT", "XPL", "DUSK", "BULLA", "PENGU", "1000BONK", "1000SHIB", "ZKP", "SENT", "ARB",
+  "BTC", "ETH", "SOL", "XRP", "DOGE",
+  "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "CRV", "DOT", "ENA",
+  "FET", "HBAR", "HYPE", "INJ", "LINK", "LTC", "NEAR", "OP", "PEPE", "RENDER",
+  "SUI", "TAO", "TRX", "UNI", "WIF",
 ];
 
 
@@ -66,7 +65,7 @@ function reasonBadge(reason: string | null) {
   };
   const labels: Record<string, string> = {
     TP: "TP", TP2: "TP2", SL: "SL", SL_BE: "SL(BE)",
-    TIMEOUT_6H: "6H", CANCEL_30M: "30M", MANUAL: "삭제",
+    TIMEOUT_6H: "6H", CANCEL_30M: "30m 취소", MANUAL: "삭제",
   };
   return <span className={`text-[10px] font-mono font-medium ${colors[reason] || ""}`}>{labels[reason] || reason}</span>;
 }

@@ -37,29 +37,48 @@ def sync_data(req: SyncRequest):
     for symbol in req.coins:
         try:
             with get_db() as conn:
-                stored_min, stored_max = get_stored_range(conn, symbol, "1m")
-                total = 0
+                counts = {}
+                for tf in ("1m", "1h"):
+                    stored_min, stored_max = get_stored_range(conn, symbol, tf)
+                    total = 0
 
-                if stored_min is None:
-                    candles = fetch_ohlcv(exchange, symbol, "1m", since_ms, until_ms)
-                    save_candles(conn, symbol, "1m", candles)
-                    total = len(candles)
-                else:
-                    if since_ms < stored_min:
-                        candles = fetch_ohlcv(exchange, symbol, "1m", since_ms, stored_min - 1)
-                        save_candles(conn, symbol, "1m", candles)
-                        total += len(candles)
+                    if stored_min is None:
+                        candles = fetch_ohlcv(exchange, symbol, tf, since_ms, until_ms)
+                        save_candles(conn, symbol, tf, candles)
+                        total = len(candles)
+                    else:
+                        if since_ms < stored_min:
+                            candles = fetch_ohlcv(exchange, symbol, tf, since_ms, stored_min - 1)
+                            save_candles(conn, symbol, tf, candles)
+                            total += len(candles)
 
-                    if until_ms > stored_max:
-                        candles = fetch_ohlcv(exchange, symbol, "1m", stored_max + 1, until_ms)
-                        save_candles(conn, symbol, "1m", candles)
-                        total += len(candles)
+                        if until_ms > stored_max:
+                            candles = fetch_ohlcv(exchange, symbol, tf, stored_max + 1, until_ms)
+                            save_candles(conn, symbol, tf, candles)
+                            total += len(candles)
 
-                synced[symbol] = {"1m": total}
+                    counts[tf] = total
+                synced[symbol] = counts
         except Exception as e:
             errors[symbol] = str(e)
 
     return SyncResponse(synced=synced, errors=errors)
+
+
+@router.get("/ticker")
+def get_ticker(symbol: str = Query(...)):
+    """Return current price for a symbol from Bybit."""
+    from data.fetcher import symbol_to_pair
+    try:
+        exchange = get_exchange()
+        ticker = exchange.fetch_ticker(symbol_to_pair(symbol))
+        return {
+            "symbol": symbol,
+            "price": ticker["last"],
+            "timestamp": ticker.get("timestamp") or int(pd.Timestamp.utcnow().timestamp() * 1000),
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Failed to fetch ticker: {e}")
 
 
 @router.get("/symbols")
@@ -70,9 +89,12 @@ def get_symbols():
     return {"symbols": symbols}
 
 
+# Timeframes stored natively in DB (fetched directly from exchange)
+DB_TIMEFRAMES = {"1m", "1h"}
+
 RESAMPLE_MAP = {
     "5m": "5min", "15m": "15min", "30m": "30min",
-    "1h": "1h", "4h": "4h", "1D": "1D",
+    "4h": "4h", "1D": "1D",
 }
 
 VALID_TIMEFRAMES = {"1m", "5m", "15m", "30m", "1h", "4h", "1D"}
@@ -99,9 +121,17 @@ def get_candles_api(
     since_ms = date_to_ms(start_date)
     until_ms = end_date_to_ms(end_date)
 
-    # Auto-sync missing 1m candles
+    # Determine which DB timeframe to use as base
+    # 1m, 5m, 15m, 30m → base on 1m
+    # 1h, 4h, 1D → base on 1h
+    if timeframe in ("1h", "4h", "1D"):
+        base_tf = "1h"
+    else:
+        base_tf = "1m"
+
+    # Auto-sync missing candles for the base timeframe
     with get_db() as conn:
-        stored_min, stored_max = get_stored_range(conn, symbol, "1m")
+        stored_min, stored_max = get_stored_range(conn, symbol, base_tf)
         need_fetch = False
         if stored_min is None:
             need_fetch = True
@@ -113,19 +143,19 @@ def get_candles_api(
             try:
                 exchange = get_exchange()
                 if stored_min is None:
-                    candles = fetch_ohlcv(exchange, symbol, "1m", since_ms, until_ms)
-                    save_candles(conn, symbol, "1m", candles)
+                    candles = fetch_ohlcv(exchange, symbol, base_tf, since_ms, until_ms)
+                    save_candles(conn, symbol, base_tf, candles)
                 else:
                     if since_ms < stored_min:
-                        candles = fetch_ohlcv(exchange, symbol, "1m", since_ms, stored_min - 1)
-                        save_candles(conn, symbol, "1m", candles)
+                        candles = fetch_ohlcv(exchange, symbol, base_tf, since_ms, stored_min - 1)
+                        save_candles(conn, symbol, base_tf, candles)
                     if until_ms > stored_max:
-                        candles = fetch_ohlcv(exchange, symbol, "1m", stored_max + 1, until_ms)
-                        save_candles(conn, symbol, "1m", candles)
+                        candles = fetch_ohlcv(exchange, symbol, base_tf, stored_max + 1, until_ms)
+                        save_candles(conn, symbol, base_tf, candles)
             except Exception:
                 pass  # Best-effort: return whatever we have
 
-        rows = get_candles(conn, symbol, "1m", since_ms, until_ms)
+        rows = get_candles(conn, symbol, base_tf, since_ms, until_ms)
 
     if not rows:
         return {"candles": []}
@@ -134,7 +164,7 @@ def get_candles_api(
     df["datetime"] = pd.to_datetime(df["timestamp"], unit="ms", utc=True)
     df = df.set_index("datetime")
 
-    if timeframe != "1m":
+    if timeframe not in DB_TIMEFRAMES:
         rule = RESAMPLE_MAP[timeframe]
         df = df.resample(rule).agg({
             "timestamp": "first",
