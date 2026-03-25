@@ -86,7 +86,7 @@ export default function RootLayout({
           {/* ── TICKER TAPE ──────────────────────────────────────────── */}
           <TickerTape />
 
-          <main className="flex-1 p-6" style={{ color: "var(--px-white, #f0f0ff)" }}>
+          <main className="flex-1 flex flex-col p-6" style={{ color: "var(--px-white, #f0f0ff)" }}>
             {children}
           </main>
         </ThemeProvider>

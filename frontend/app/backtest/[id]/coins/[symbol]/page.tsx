@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EquityCurve } from "@/components/equity-curve";
 import { TradeTable } from "@/components/trade-table";
 import { TradingViewChart } from "@/components/tradingview-chart";
@@ -16,25 +15,65 @@ import {
   type CoinSummary,
 } from "@/lib/api";
 
+/* ── Design tokens ──────────────────────────────────────────────────────── */
+const PX = {
+  black:  "#0a0a1a",
+  panel:  "#12122a",
+  alt:    "#1a1a4e",
+  border: "#3355ff",
+  cyan:   "#00eeff",
+  pink:   "#ff2d78",
+  yellow: "#ffe000",
+  green:  "#00ff7f",
+  red:    "#ff3333",
+  white:  "#f0f0ff",
+  mid:    "#8888aa",
+  dim:    "#555577",
+  fp:     "'Press Start 2P', monospace",
+  fm:     "'JetBrains Mono', monospace",
+  fb:     "Pretendard, sans-serif",
+} as const;
+
+/* ── Stat card ───────────────────────────────────────────────────────────── */
+function StatCard({ label, value, color, accent }: {
+  label: string; value: string; color?: string; accent?: string;
+}) {
+  return (
+    <div style={{
+      background: "#1a1a2e",
+      borderLeft: `3px solid ${accent ?? PX.border}`,
+      padding: "10px 12px",
+    }}>
+      <div style={{
+        fontFamily: PX.fp, fontSize: 6, color: PX.dim,
+        letterSpacing: "0.07em", marginBottom: 7,
+        textTransform: "uppercase" as const,
+      }}>
+        {label}
+      </div>
+      <div style={{ fontFamily: PX.fm, fontSize: 15, fontWeight: 700, color: color ?? PX.white, lineHeight: 1 }}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+/* ── Page ────────────────────────────────────────────────────────────────── */
 export default function CoinDetailPage() {
-  const params = useParams();
-  const runId = params.id as string;
-  const symbol = params.symbol as string;
+  const params  = useParams();
+  const runId   = params.id     as string;
+  const symbol  = params.symbol as string;
 
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [summary, setSummary] = useState<CoinSummary | null>(null);
-  const [allCoins, setAllCoins] = useState<CoinSummary[]>([]);
+  const [trades,        setTrades]        = useState<Trade[]>([]);
+  const [summary,       setSummary]       = useState<CoinSummary | null>(null);
+  const [allCoins,      setAllCoins]      = useState<CoinSummary[]>([]);
   const [strategyLabel, setStrategyLabel] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading,       setLoading]       = useState(true);
+  const [error,         setError]         = useState("");
+  const [activeTab,     setActiveTab]     = useState<"equity" | "chart">("chart");
 
-  // Chart state
-  const [activeTab, setActiveTab] = useState<"equity" | "chart">("chart");
-
-  // Load initial data
   useEffect(() => {
     if (!runId || !symbol) return;
-
     async function load() {
       try {
         const [tradesData, coinsData, summaryData] = await Promise.all([
@@ -44,14 +83,13 @@ export default function CoinDetailPage() {
         ]);
         setTrades(tradesData.trades);
         setAllCoins(coinsData.coins);
-        const coinSummary = coinsData.coins.find((c) => c.symbol === symbol);
-        setSummary(coinSummary || null);
-        const strategyLabels: Record<string, string> = {
+        setSummary(coinsData.coins.find((c) => c.symbol === symbol) || null);
+        const labels: Record<string, string> = {
           rsi_divergence: "RSI Divergence",
-          ema_trend: "EMA Trend",
-          bb_squeeze: "BB Squeeze",
+          ema_trend:      "EMA Trend",
+          bb_squeeze:     "BB Squeeze",
         };
-        setStrategyLabel(strategyLabels[summaryData.run.params?.strategy as string] || "RSI Divergence");
+        setStrategyLabel(labels[summaryData.run.params?.strategy as string] || "");
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       } finally {
@@ -61,115 +99,214 @@ export default function CoinDetailPage() {
     load();
   }, [runId, symbol]);
 
-  // Handle trade row click (no-op with TradingView widget)
   const handleTradeClick = useCallback((_trade: Trade) => {}, []);
 
-  if (loading) return <div className="text-center py-12 text-muted-foreground">로딩 중...</div>;
-  if (error) return <div className="text-center py-12 text-red-500">오류: {error}</div>;
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh",
+      fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.1em" }}>
+      LOADING...
+    </div>
+  );
+  if (error) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh",
+      fontFamily: PX.fp, fontSize: 8, color: PX.red, letterSpacing: "0.08em" }}>
+      ERROR: {error}
+    </div>
+  );
+
+  const ret = summary?.cumulative_return ?? 0;
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col">
-      {/* Header */}
-      <div className="flex-shrink-0 px-4 py-2 border-b border-border bg-card">
-        <Link href={`/backtest/${runId}`} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-          ← 결과 요약으로 돌아가기
+    <div style={{
+      margin: "0 -24px -24px",
+      height: "calc(100vh - 110px)",
+      display: "flex",
+      flexDirection: "column",
+      background: PX.black,
+      color: PX.white,
+      overflow: "hidden",
+    }}>
+
+      {/* ── Header ─────────────────────────────────────────────────────── */}
+      <div style={{
+        flexShrink: 0,
+        display: "flex", alignItems: "center", gap: 16,
+        padding: "10px 20px",
+        background: PX.panel,
+        borderBottom: `2px solid ${PX.border}`,
+        boxShadow: "0 2px 0 rgba(51,85,255,0.2)",
+      }}>
+        <Link href={`/backtest/${runId}`} style={{
+          fontFamily: PX.fp, fontSize: 7, color: PX.mid,
+          textDecoration: "none", letterSpacing: "0.05em",
+          display: "flex", alignItems: "center", gap: 6,
+          transition: "color 0.1s steps(1)",
+        }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = PX.cyan; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = PX.mid; }}
+        >
+          ◀ 결과 요약
         </Link>
-        <h2 className="text-xl font-bold text-card-foreground">
-          {symbol} 상세 결과
-          {strategyLabel && <span className="ml-2 text-sm font-normal text-muted-foreground">| {strategyLabel}</span>}
-        </h2>
-      </div>
 
-      {/* Main layout: left sidebar + right content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar - stats */}
-        <aside className="w-48 flex-shrink-0 border-r border-border bg-card overflow-y-auto p-3 space-y-3">
-          {summary && (
-            <>
-              <StatCard
-                label="수익률"
-                value={`${summary.cumulative_return >= 0 ? "+" : ""}${summary.cumulative_return}%`}
-                color={summary.cumulative_return >= 0 ? "text-emerald-400" : "text-red-400"}
-              />
-              <StatCard label="승률" value={`${summary.win_rate}%`} />
-              <StatCard label="거래수" value={`${summary.total_trades}`} />
-              <StatCard
-                label="MDD"
-                value={`${summary.max_drawdown}%`}
-                color="text-amber-400"
-              />
-              <StatCard label="최종 잔액" value={`$${summary.final_balance.toFixed(2)}`} />
-            </>
-          )}
+        <div style={{ width: 1, height: 18, background: "rgba(51,85,255,0.5)" }} />
 
-          {/* Coin navigation */}
-          {allCoins.length > 0 && (
-            <div className="pt-2 border-t border-border">
-              <div className="text-xs text-muted-foreground mb-2">코인 목록</div>
-              <div className="space-y-0.5">
-                {allCoins.map((c) => (
-                  <Link
-                    key={c.symbol}
-                    href={`/backtest/${runId}/coins/${c.symbol}`}
-                    className={`block px-2 py-1.5 rounded text-xs transition-colors ${
-                      c.symbol === symbol
-                        ? "bg-primary text-white"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{c.symbol}</span>
-                      <span className={
-                        c.cumulative_return >= 0 ? "text-emerald-400" : "text-red-400"
-                      }>
-                        {c.cumulative_return >= 0 ? "+" : ""}{c.cumulative_return}%
-                      </span>
-                    </div>
-                  </Link>
-                ))}
+        <div style={{
+          fontFamily: PX.fp, fontSize: 12, color: PX.cyan,
+          letterSpacing: "0.1em", lineHeight: 1,
+          textShadow: `0 0 12px ${PX.cyan}`,
+        }}>
+          {symbol}
+        </div>
+
+        {strategyLabel && (
+          <div style={{
+            fontFamily: PX.fm, fontSize: 11, color: PX.mid,
+            padding: "2px 8px",
+            border: `1px solid rgba(51,85,255,0.4)`,
+            background: "rgba(51,85,255,0.08)",
+          }}>
+            {strategyLabel}
+          </div>
+        )}
+
+        {summary && (
+          <div style={{ marginLeft: "auto", display: "flex", gap: 20, alignItems: "center" }}>
+            <div style={{ textAlign: "center" as const }}>
+              <div style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>수익률</div>
+              <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: ret >= 0 ? PX.green : PX.red }}>
+                {ret >= 0 ? "+" : ""}{ret}%
               </div>
             </div>
-          )}
+            <div style={{ width: 1, height: 28, background: "rgba(51,85,255,0.3)" }} />
+            <div style={{ textAlign: "center" as const }}>
+              <div style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>승률</div>
+              <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: summary.win_rate >= 50 ? PX.green : PX.red }}>
+                {summary.win_rate}%
+              </div>
+            </div>
+            <div style={{ width: 1, height: 28, background: "rgba(51,85,255,0.3)" }} />
+            <div style={{ textAlign: "center" as const }}>
+              <div style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>MDD</div>
+              <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: PX.yellow }}>
+                {summary.max_drawdown}%
+              </div>
+            </div>
+            <div style={{ width: 1, height: 28, background: "rgba(51,85,255,0.3)" }} />
+            <div style={{ textAlign: "center" as const }}>
+              <div style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>최종잔액</div>
+              <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: PX.white }}>
+                ${summary.final_balance.toFixed(2)}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Body: sidebar + main ────────────────────────────────────────── */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+
+        {/* Sidebar */}
+        <aside style={{
+          width: 160,
+          flexShrink: 0,
+          background: PX.panel,
+          borderRight: `2px solid rgba(51,85,255,0.25)`,
+          overflowY: "auto" as const,
+          display: "flex",
+          flexDirection: "column" as const,
+        }}>
+          {/* Coin list header */}
+          <div style={{
+            padding: "10px 12px 8px",
+            borderBottom: `1px solid rgba(51,85,255,0.25)`,
+          }}>
+            <div style={{ fontFamily: PX.fp, fontSize: 6, color: PX.border, letterSpacing: "0.08em" }}>
+              코인 목록
+            </div>
+          </div>
+
+          {/* Coin links */}
+          <div style={{ flex: 1, padding: "6px 8px", display: "flex", flexDirection: "column" as const, gap: 2 }}>
+            {allCoins.map((c) => {
+              const active = c.symbol === symbol;
+              const r = c.cumulative_return;
+              return (
+                <Link
+                  key={c.symbol}
+                  href={`/backtest/${runId}/coins/${c.symbol}`}
+                  style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    padding: "6px 8px",
+                    background: active ? "rgba(0,238,255,0.1)" : "transparent",
+                    border: `1px solid ${active ? PX.cyan : "transparent"}`,
+                    textDecoration: "none",
+                    transition: "all 0.1s steps(1)",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!active) (e.currentTarget as HTMLAnchorElement).style.background = "rgba(51,85,255,0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active) (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
+                  }}
+                >
+                  <span style={{ fontFamily: PX.fm, fontSize: 11, fontWeight: 700, color: active ? PX.cyan : PX.mid }}>
+                    {c.symbol}
+                  </span>
+                  <span style={{ fontFamily: PX.fm, fontSize: 10, color: r >= 0 ? PX.green : PX.red }}>
+                    {r >= 0 ? "+" : ""}{r}%
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </aside>
 
-        {/* Right content - chart/table split */}
-        <main className="flex-1 overflow-hidden">
+        {/* Main content */}
+        <main style={{ flex: 1, overflow: "hidden" }}>
           <ResizableSplit
             top={
-              <div className="h-full flex flex-col">
-                {/* Tabs + timeframe selector */}
-                <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-b border-border bg-card">
-                  <button
-                    onClick={() => setActiveTab("equity")}
-                    className={`px-3 py-1 text-sm rounded transition-colors ${
-                      activeTab === "equity"
-                        ? "bg-primary text-white"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    수익 곡선
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("chart")}
-                    className={`px-3 py-1 text-sm rounded transition-colors ${
-                      activeTab === "chart"
-                        ? "bg-primary text-white"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    차트
-                  </button>
+              <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+                {/* Tab bar */}
+                <div style={{
+                  flexShrink: 0,
+                  display: "flex", gap: 4, alignItems: "center",
+                  padding: "8px 14px",
+                  background: PX.panel,
+                  borderBottom: `2px solid rgba(51,85,255,0.3)`,
+                }}>
+                  {(["chart", "equity"] as const).map((tab) => {
+                    const active = activeTab === tab;
+                    const label = tab === "chart" ? "차트" : "수익 곡선";
+                    return (
+                      <button key={tab} onClick={() => setActiveTab(tab)} style={{
+                        fontFamily: PX.fp, fontSize: 7, letterSpacing: "0.05em",
+                        padding: "6px 14px",
+                        border: `2px solid ${active ? PX.cyan : "rgba(51,85,255,0.4)"}`,
+                        background: active ? "rgba(0,238,255,0.12)" : "transparent",
+                        color: active ? PX.cyan : PX.mid,
+                        cursor: "pointer", borderRadius: 0,
+                        transition: "all 0.1s steps(1)",
+                        lineHeight: 1.6,
+                      }}>
+                        {label}
+                      </button>
+                    );
+                  })}
 
+                  <div style={{ marginLeft: "auto", fontFamily: PX.fm, fontSize: 10, color: PX.dim }}>
+                    {symbol}USDT · PERP
+                  </div>
                 </div>
 
-                {/* Chart content */}
-                <div className="flex-1 overflow-hidden p-2">
+                {/* Chart */}
+                <div style={{ flex: 1, overflow: "hidden", background: PX.black }}>
                   {activeTab === "equity" ? (
                     trades.length > 0 ? (
                       <EquityCurve trades={trades} initialBalance={100} />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-muted-foreground">
-                        거래 기록이 없습니다.
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%",
+                        fontFamily: PX.fp, fontSize: 8, color: PX.dim, letterSpacing: "0.08em" }}>
+                        거래 기록 없음
                       </div>
                     )
                   ) : (
@@ -179,13 +316,30 @@ export default function CoinDetailPage() {
               </div>
             }
             bottom={
-              <div className="h-full flex flex-col">
-                <div className="flex-shrink-0 px-3 py-2 border-b border-border bg-card">
-                  <span className="text-sm font-medium">
-                    포지션 상세 ({trades.length}건)
+              <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+                {/* Trade table header */}
+                <div style={{
+                  flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "8px 16px",
+                  background: PX.alt,
+                  borderBottom: `2px solid ${PX.border}`,
+                }}>
+                  <span style={{ fontFamily: PX.fp, fontSize: 7, color: PX.cyan, letterSpacing: "0.06em" }}>
+                    ■ 포지션 상세
+                  </span>
+                  <span style={{
+                    fontFamily: PX.fm, fontSize: 11, color: PX.mid,
+                    padding: "1px 8px",
+                    border: `1px solid rgba(51,85,255,0.35)`,
+                    background: "rgba(51,85,255,0.08)",
+                  }}>
+                    {trades.length}건
                   </span>
                 </div>
-                <div className="flex-1 overflow-auto">
+
+                {/* Trade table */}
+                <div style={{ flex: 1, overflow: "auto", background: PX.panel }}>
                   <TradeTable
                     data={trades}
                     onRowClick={handleTradeClick}
@@ -196,28 +350,8 @@ export default function CoinDetailPage() {
             }
           />
         </main>
+
       </div>
     </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: string;
-  color?: string;
-}) {
-  return (
-    <Card className="p-0">
-      <CardHeader className="p-3 pb-1">
-        <CardTitle className="text-xs text-muted-foreground">{label}</CardTitle>
-      </CardHeader>
-      <CardContent className="p-3 pt-0">
-        <div className={`text-lg font-bold ${color || ""}`}>{value}</div>
-      </CardContent>
-    </Card>
   );
 }

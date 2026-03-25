@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getBenchmarkModels, subscribeBenchmarkStream, type BenchmarkModel } from "@/lib/api";
+import { PxFooter } from "@/components/px-footer";
 
 /* ── Design tokens ──────────────────────────────────────────────────────── */
 const PX = {
@@ -34,7 +35,7 @@ function MetricCard({ label, value, sub, color, accent }: {
       flexDirection: "column",
       gap: 8,
     }}>
-      <span style={{ fontFamily: PX.fp, fontSize: 7, color: PX.mid, letterSpacing: "0.08em", lineHeight: 1.8, textTransform: "uppercase" as const }}>
+      <span style={{ fontFamily: PX.fp, fontSize: 11, color: PX.mid, letterSpacing: "0.06em", lineHeight: 1.8, textTransform: "uppercase" as const }}>
         {label}
       </span>
       <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
@@ -43,7 +44,7 @@ function MetricCard({ label, value, sub, color, accent }: {
         </span>
       </div>
       {sub && (
-        <span style={{ fontFamily: PX.fb, fontSize: 11, color: PX.mid }}>
+        <span style={{ fontFamily: PX.fb, fontSize: 11, color: PX.white }}>
           {sub}
         </span>
       )}
@@ -59,13 +60,13 @@ const RANK_CONFIGS = [
 ];
 
 /* ── Table header cell ───────────────────────────────────────────────────── */
-function TH({ children, align = "left" }: { children: React.ReactNode; align?: "left" | "right" }) {
+function TH({ children, align = "left", fontSize = 10 }: { children: React.ReactNode; align?: "left" | "right"; fontSize?: number }) {
   return (
     <th style={{
       fontFamily: PX.fp,
-      fontSize: 6,
+      fontSize,
       color: PX.mid,
-      letterSpacing: "0.08em",
+      letterSpacing: "0.06em",
       padding: "12px 14px",
       textAlign: align,
       fontWeight: "normal",
@@ -136,14 +137,15 @@ export default function LeaderboardPage() {
   const bestReturn  = ((bestModel.balance - bestModel.seed) / bestModel.seed) * 100;
 
   return (
-    <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, margin: "0 -24px -24px" }}>
+    <div style={{ maxWidth: 1120, margin: "0 auto", width: "100%", padding: "0 24px" }}>
 
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontFamily: PX.fp, fontSize: 13, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
+          <h1 style={{ fontFamily: PX.fp, fontSize: 13, color: PX.yellow, letterSpacing: 2, lineHeight: 1.4,
             textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 10 }}>
-            ★ AI 리더보드
+            ★ <span style={{ fontSize: 10 }}>AI</span> 트레이딩 리더보드
           </h1>
           <p style={{ fontFamily: PX.fb, fontSize: 13, color: PX.mid, margin: 0 }}>
             AI 모델 트레이딩 성과 비교
@@ -152,7 +154,7 @@ export default function LeaderboardPage() {
         <button
           onClick={() => router.push("/benchmark")}
           style={{
-            fontFamily: PX.fp, fontSize: 7, letterSpacing: "0.06em",
+            fontFamily: PX.fb, fontSize: 13,
             padding: "10px 18px",
             border: `2px solid ${PX.cyan}`,
             background: "rgba(0,238,255,0.08)",
@@ -199,8 +201,8 @@ export default function LeaderboardPage() {
               <TH align="right">잔액</TH>
               <TH align="right">수익률</TH>
               <TH align="right">승률</TH>
-              <TH align="right">MDD</TH>
-              <TH align="right">Profit Factor</TH>
+              <TH align="right" fontSize={7}>MDD</TH>
+              <TH align="right" fontSize={7}>Profit Factor</TH>
               <TH align="right">체결률</TH>
               <TH align="right">주문</TH>
             </tr>
@@ -225,23 +227,20 @@ export default function LeaderboardPage() {
                 >
                   {/* rank */}
                   <td style={{ padding: "11px 14px" }}>
-                    {isTop3 ? (
-                      <span style={{
-                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        width: 26, height: 26,
-                        background: rankCfg.bg,
-                        border: `2px solid ${rankCfg.color}`,
-                        fontFamily: PX.fp, fontSize: 7,
-                        color: rankCfg.color,
-                      }}>
-                        {rankCfg.label}
-                      </span>
-                    ) : (
-                      <span style={{ fontFamily: PX.fm, fontSize: 12, color: PX.mid }}>{idx + 1}</span>
-                    )}
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      width: 28, height: 28,
+                      background: isTop3 ? rankCfg.bg : "transparent",
+                      border: isTop3 ? `2px solid ${rankCfg.color}` : "none",
+                      borderRadius: "50%",
+                      fontFamily: PX.fm, fontSize: 13, fontWeight: 700,
+                      color: isTop3 ? rankCfg.color : PX.mid,
+                    }}>
+                      {idx + 1}
+                    </span>
                   </td>
                   {/* name */}
-                  <td style={{ padding: "11px 14px", fontFamily: PX.fb, fontSize: 14, fontWeight: 600, color: PX.white }}>
+                  <td style={{ padding: "11px 14px", fontFamily: PX.fp, fontSize: 9, color: PX.white }}>
                     {m.name}
                   </td>
                   {/* balance */}
@@ -281,6 +280,9 @@ export default function LeaderboardPage() {
           </tbody>
         </table>
       </div>
+    </div>
+      <div style={{ flex: 1 }} />
+      <PxFooter />
     </div>
   );
 }

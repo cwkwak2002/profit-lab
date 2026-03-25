@@ -7,6 +7,7 @@ import {
   submitBenchmarkOrders,
   type OrderInput,
 } from "@/lib/api";
+import { PxFooter } from "@/components/px-footer";
 
 /* ── Design tokens ──────────────────────────────────────────────────────── */
 const PX = {
@@ -189,10 +190,28 @@ function BenchmarkPageInner() {
   const isAnalysisOnly = orders.length === 0 && marketAnalysis.trim().length > 0;
 
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto" }}>
+    <div style={{
+      background: "linear-gradient(135deg, #05051e 0%, #1a0b2e 50%, #0c0c1d 100%)",
+      backgroundAttachment: "fixed",
+      flex: 1,
+      margin: "0 -24px -24px",
+      position: "relative",
+      color: PX.white,
+      display: "flex",
+      flexDirection: "column",
+    }}>
+      {/* Scanline overlay */}
+      <div style={{
+        position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+        background: "linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.18) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03))",
+        backgroundSize: "100% 4px, 3px 100%",
+        zIndex: 9998, pointerEvents: "none",
+      }} />
+
+    <div style={{ maxWidth: 960, width: "100%", margin: "0 auto", padding: "32px 24px 80px", position: "relative", zIndex: 1, flex: 1 }}>
 
       {/* ── Header ── */}
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 0, paddingBottom: 16, borderBottom: `2px solid #333345` }}>
         <div>
           <h1 style={{ fontFamily: PX.fp, fontSize: 13, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
             textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 10 }}>
@@ -205,20 +224,23 @@ function BenchmarkPageInner() {
         <button
           onClick={() => router.push("/benchmark/models")}
           style={{
-            fontFamily: PX.fp, fontSize: 7, letterSpacing: "0.06em",
-            padding: "8px 16px",
+            fontFamily: PX.fp, fontSize: 9, letterSpacing: "0.06em",
+            padding: "10px 20px",
             border: `2px solid ${PX.border}`,
-            background: "transparent",
-            color: PX.mid,
+            background: "#1e1e2f",
+            color: PX.white,
             cursor: "pointer",
             borderRadius: 0,
+            transition: "all 0.1s steps(1)",
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = PX.border; e.currentTarget.style.color = PX.white; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "#1e1e2f"; e.currentTarget.style.color = PX.white; }}
         >
           리더보드
         </button>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 24 }}>
 
         {/* ── Model & Analysis ── */}
         <section style={pxPanel}>
@@ -226,124 +248,129 @@ function BenchmarkPageInner() {
             ■ 모델 & 시장 분석
           </div>
 
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 24, marginBottom: 16 }}>
-            {/* Model name input with autocomplete */}
-            <div style={{ position: "relative", flex: "0 0 300px" }} ref={suggestRef}>
-              <label style={pxLabel}>모델 이름</label>
-              <input
-                type="text"
-                placeholder="예: GPT-4o-trader"
-                value={modelName}
-                onChange={(e) => { setModelName(e.target.value); setShowSuggestions(true); }}
-                onFocus={() => setShowSuggestions(true)}
-                style={pxInput}
-              />
-              {showSuggestions && filteredSuggestions.length > 0 && (
-                <div style={{
-                  position: "absolute",
-                  zIndex: 50,
-                  top: "100%",
-                  left: 0,
-                  right: 0,
-                  background: PX.panel,
-                  border: `2px solid ${PX.border}`,
-                  maxHeight: 160,
-                  overflowY: "auto",
-                }}>
-                  {filteredSuggestions.map((name) => (
-                    <button
-                      key={name}
-                      onClick={() => { setModelName(name); setShowSuggestions(false); }}
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        textAlign: "left",
-                        background: "transparent",
-                        border: "none",
-                        fontFamily: PX.fb,
-                        fontSize: 13,
-                        color: PX.white,
-                        cursor: "pointer",
-                        transition: "background 0.1s steps(1)",
-                        borderBottom: `1px solid rgba(51,85,255,0.3)`,
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = PX.alt)}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    >
-                      {name}
-                    </button>
-                  ))}
-                </div>
-              )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            {/* Left: Model name + balance */}
+            <div>
+              <div style={{ position: "relative" }} ref={suggestRef}>
+                <label style={pxLabel}>Model_ID_Input</label>
+                <input
+                  type="text"
+                  placeholder="ENTER_MODEL_NAME..."
+                  value={modelName}
+                  onChange={(e) => { setModelName(e.target.value); setShowSuggestions(true); }}
+                  onFocus={() => setShowSuggestions(true)}
+                  style={pxInput}
+                />
+                {showSuggestions && filteredSuggestions.length > 0 && (
+                  <div style={{
+                    position: "absolute",
+                    zIndex: 50,
+                    top: "100%",
+                    left: 0,
+                    right: 0,
+                    background: PX.panel,
+                    border: `2px solid ${PX.border}`,
+                    maxHeight: 160,
+                    overflowY: "auto",
+                  }}>
+                    {filteredSuggestions.map((name) => (
+                      <button
+                        key={name}
+                        onClick={() => { setModelName(name); setShowSuggestions(false); }}
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          textAlign: "left",
+                          background: "transparent",
+                          border: "none",
+                          fontFamily: PX.fb,
+                          fontSize: 13,
+                          color: PX.white,
+                          cursor: "pointer",
+                          transition: "background 0.1s steps(1)",
+                          borderBottom: `1px solid rgba(51,85,255,0.3)`,
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = PX.alt)}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, padding: "12px 0", borderTop: `1px solid rgba(51,85,255,0.2)` }}>
+                <span style={{ fontFamily: PX.fm, fontSize: 11, color: PX.mid }}>AVAILABLE_BALANCE</span>
+                <span style={{ fontFamily: PX.fp, fontSize: 14, color: PX.cyan, filter: "drop-shadow(0 0 8px #00eeff)" }}>
+                  {availableBalance !== null ? `$${availableBalance.toFixed(2)}` : "$--"}
+                </span>
+              </div>
             </div>
 
-            {availableBalance !== null && (
-              <div style={{ paddingTop: 24 }}>
-                <label style={pxLabel}>가용 잔액</label>
-                <div style={{ fontFamily: PX.fm, fontSize: 22, fontWeight: 700, color: PX.cyan }}>
-                  ${availableBalance.toFixed(2)}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label style={pxLabel}>시장 분석 (전체 주문에 적용)</label>
-            <textarea
-              rows={8}
-              placeholder="현재 시장 상황, 매매 근거, 전반적인 관점 등을 기록하세요..."
-              value={marketAnalysis}
-              onChange={(e) => setMarketAnalysis(e.target.value)}
-              style={{
-                ...pxInput,
-                resize: "vertical",
-                fontFamily: PX.fb,
-                lineHeight: 1.7,
-              }}
-            />
+            {/* Right: Market analysis */}
+            <div>
+              <label style={pxLabel}>Market_Analysis_Buffer</label>
+              <textarea
+                rows={6}
+                placeholder="INITIALIZING MARKET DATA SCAN..."
+                value={marketAnalysis}
+                onChange={(e) => setMarketAnalysis(e.target.value)}
+                style={{
+                  ...pxInput,
+                  resize: "vertical",
+                  fontFamily: PX.fb,
+                  lineHeight: 1.7,
+                  height: "100%",
+                  minHeight: 120,
+                }}
+              />
+            </div>
           </div>
         </section>
 
-        {/* ── Orders ── */}
-        <section style={pxPanel}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-            <div style={{ fontFamily: PX.fp, fontSize: 8, color: PX.cyan, letterSpacing: "0.06em" }}>
-              ■ 주문 목록{" "}
-              <span style={{ color: PX.white }}>[{orders.length}]</span>
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {orders.length > 0 && (
-                <button
-                  onClick={clearAllOrders}
-                  style={{
-                    fontFamily: PX.fp, fontSize: 7,
-                    padding: "6px 12px",
-                    border: `2px solid ${PX.border}`,
-                    background: "transparent",
-                    color: PX.mid,
-                    cursor: "pointer",
-                    borderRadius: 0,
-                  }}
-                >
-                  전체 삭제
-                </button>
-              )}
+        {/* ── Orders header row ── */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: "#333345", padding: "14px 20px",
+          borderBottom: `4px solid ${PX.pink}`,
+        }}>
+          <div style={{ fontFamily: PX.fp, fontSize: 8, letterSpacing: "0.06em" }}>
+            <span style={{ color: PX.pink }}>■</span>{" "}
+            <span style={{ color: PX.white }}>주문 목록 [{orders.length}]</span>
+          </div>
+          <div style={{ display: "flex", gap: 12 }}>
+            {orders.length > 0 && (
               <button
-                onClick={addOrder}
+                onClick={clearAllOrders}
                 style={{
-                  fontFamily: PX.fp, fontSize: 7,
-                  padding: "6px 14px",
-                  border: `2px solid ${PX.cyan}`,
-                  background: "rgba(0,238,255,0.08)",
-                  color: PX.cyan,
-                  cursor: "pointer",
-                  borderRadius: 0,
+                  fontFamily: PX.fp, fontSize: 8, padding: "4px 0",
+                  background: "transparent", border: "none",
+                  color: PX.red, cursor: "pointer",
+                  textDecoration: "underline",
                 }}
               >
-                + 주문 추가
+                전체삭제
               </button>
-            </div>
+            )}
+            <button
+              onClick={addOrder}
+              style={{
+                fontFamily: PX.fp, fontSize: 8,
+                padding: "6px 14px",
+                border: "none",
+                background: "#e00363",
+                color: PX.white,
+                cursor: "pointer",
+                borderRadius: 0,
+              }}
+            >
+              +추가
+            </button>
           </div>
+        </div>
+
+        {/* ── Orders ── */}
+        <section style={{ background: PX.panel, border: `2px solid ${PX.border}`, borderTop: "none", padding: "20px 24px" }}>
 
           {orders.length === 0 ? (
             <div style={{ textAlign: "center", padding: "32px 0", fontFamily: PX.fb, fontSize: 13, color: PX.mid }}>
@@ -385,41 +412,35 @@ function BenchmarkPageInner() {
           </div>
         )}
 
-        {/* ── Actions ── */}
-        <div style={{ display: "flex", gap: 12, paddingBottom: 32 }}>
+        {/* ── Submit ── */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, paddingTop: 24, paddingBottom: 32 }}>
+          <div style={{ height: 1, width: "100%", background: "linear-gradient(to right, transparent, rgba(51,85,255,0.5), transparent)", marginBottom: 8 }} />
           <button
             onClick={handleSubmit}
             disabled={loading}
             style={{
-              fontFamily: PX.fp, fontSize: 9, letterSpacing: "0.08em",
-              padding: "14px 28px",
+              fontFamily: PX.fp, fontSize: 14, letterSpacing: "0.08em",
+              padding: "18px 48px",
               border: `3px solid ${loading ? PX.mid : PX.cyan}`,
-              background: loading ? PX.alt : "rgba(0,238,255,0.12)",
+              background: loading ? PX.alt : "#1e1e2f",
               color: loading ? PX.mid : PX.cyan,
               cursor: loading ? "not-allowed" : "pointer",
               borderRadius: 0,
+              boxShadow: loading ? "none" : `0 0 20px rgba(0,219,235,0.3)`,
               transition: "all 0.1s steps(1)",
-              textShadow: loading ? "none" : `0 0 10px ${PX.cyan}`,
             }}
+            onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.background = PX.cyan; e.currentTarget.style.color = "#0a0a1a"; } }}
+            onMouseLeave={(e) => { if (!loading) { e.currentTarget.style.background = "#1e1e2f"; e.currentTarget.style.color = PX.cyan; } }}
           >
             {loading ? "제출 중..." : isAnalysisOnly ? "▶ 분석 제출" : "▶ 주문 제출"}
           </button>
-          <button
-            onClick={() => router.push("/benchmark/models")}
-            style={{
-              fontFamily: PX.fp, fontSize: 8, letterSpacing: "0.06em",
-              padding: "12px 20px",
-              border: `2px solid ${PX.border}`,
-              background: "transparent",
-              color: PX.mid,
-              cursor: "pointer",
-              borderRadius: 0,
-            }}
-          >
-            리더보드
-          </button>
+          <p style={{ fontFamily: PX.fm, fontSize: 10, color: "rgba(0,238,255,0.6)", letterSpacing: "0.08em", margin: 0, animation: "pulse 2s infinite" }}>
+            AWAITING USER EXECUTION COMMAND...
+          </p>
         </div>
       </div>
+    </div>
+      <PxFooter />
     </div>
   );
 }
@@ -517,14 +538,29 @@ function OrderCard({
           </select>
         </div>
         <div>
-          <label style={lbl}>방향</label>
-          <select style={{
-            ...pxSel,
-            color: order.side === "long" ? "var(--px-green,#00ff7f)" : "var(--px-red,#ff3333)",
-          }} value={order.side} onChange={(e) => onUpdate(order.key, "side", e.target.value)}>
-            <option value="long">LONG</option>
-            <option value="short">SHORT</option>
-          </select>
+          <label style={lbl}>SIDE</label>
+          <div style={{ display: "flex", height: 36, border: "2px solid var(--px-border,#3355ff)" }}>
+            <button
+              onClick={() => onUpdate(order.key, "side", "long")}
+              style={{
+                flex: 1, border: "none", cursor: "pointer", borderRadius: 0,
+                fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 7,
+                background: order.side === "long" ? "var(--tertiary-container,#00767f)" : "var(--px-black,#0a0a1a)",
+                color: order.side === "long" ? "#fff" : "var(--px-grey-mid,#8888aa)",
+                transition: "all 0.1s steps(1)",
+              }}
+            >LONG</button>
+            <button
+              onClick={() => onUpdate(order.key, "side", "short")}
+              style={{
+                flex: 1, border: "none", cursor: "pointer", borderRadius: 0,
+                fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 7,
+                background: order.side === "short" ? "var(--px-red,#ff3333)" : "var(--px-black,#0a0a1a)",
+                color: order.side === "short" ? "#fff" : "var(--px-grey-mid,#8888aa)",
+                transition: "all 0.1s steps(1)",
+              }}
+            >SHORT</button>
+          </div>
         </div>
         <div>
           <label style={lbl}>유형</label>
