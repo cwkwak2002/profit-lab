@@ -236,10 +236,10 @@ function BenchmarkPageInner() {
             {/* Left: Model name + balance */}
             <div>
               <div style={{ position: "relative" }} ref={suggestRef}>
-                <label style={pxLabel}>Model_ID_Input</label>
+                <label style={pxLabel}>AI 모델명</label>
                 <input
                   type="text"
-                  placeholder="ENTER_MODEL_NAME..."
+                  placeholder="모델 이름을 입력하세요"
                   value={modelName}
                   onChange={(e) => { setModelName(e.target.value); setShowSuggestions(true); }}
                   onFocus={() => setShowSuggestions(true)}
@@ -293,10 +293,10 @@ function BenchmarkPageInner() {
 
             {/* Right: Market analysis */}
             <div>
-              <label style={pxLabel}>Market_Analysis_Buffer</label>
+              <label style={pxLabel}>시장 분석</label>
               <textarea
                 rows={6}
-                placeholder="INITIALIZING MARKET DATA SCAN..."
+                placeholder="현재 시장 상황과 진입 근거를 작성하세요"
                 value={marketAnalysis}
                 onChange={(e) => setMarketAnalysis(e.target.value)}
                 style={{
@@ -533,7 +533,7 @@ function OrderCard({
                 color: order.side === "long" ? "#fff" : "var(--px-grey-mid,#8888aa)",
                 transition: "all 0.1s steps(1)",
               }}
-            >LONG</button>
+            >롱 (매수)</button>
             <button
               onClick={() => onUpdate(order.key, "side", "short")}
               style={{
@@ -543,14 +543,14 @@ function OrderCard({
                 color: order.side === "short" ? "#fff" : "var(--px-grey-mid,#8888aa)",
                 transition: "all 0.1s steps(1)",
               }}
-            >SHORT</button>
+            >숏 (매도)</button>
           </div>
         </div>
         <div>
           <label style={lbl}>유형</label>
           <select style={pxSel} value={order.order_type} onChange={(e) => onUpdate(order.key, "order_type", e.target.value)}>
-            <option value="limit">LIMIT</option>
-            <option value="market">MARKET</option>
+            <option value="limit">지정가</option>
+            <option value="market">시장가</option>
           </select>
         </div>
         <div>
