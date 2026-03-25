@@ -11,7 +11,7 @@ const links = [
 
 const BASE: React.CSSProperties = {
   fontFamily: "var(--font-pixel), monospace",
-  fontSize: 16,
+  fontSize: 12,
   color: "var(--px-cyan)",
   textDecoration: "none",
   padding: "4px 10px",
