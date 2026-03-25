@@ -22,22 +22,26 @@ const PX = {
 } as const;
 
 /* ── Metric card ─────────────────────────────────────────────────────────── */
-function MetricCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
+function MetricCard({ label, value, sub, color, accent }: {
+  label: string; value: string; sub?: string; color?: string; accent?: string;
+}) {
   return (
     <div style={{
-      background: PX.alt,
-      border: `2px solid ${PX.border}`,
+      background: "#1e1e2f",
+      borderLeft: `4px solid ${accent ?? PX.border}`,
       padding: "16px 20px",
       display: "flex",
       flexDirection: "column",
       gap: 8,
     }}>
-      <span style={{ fontFamily: PX.fp, fontSize: 7, color: PX.mid, letterSpacing: "0.08em", lineHeight: 1.8 }}>
+      <span style={{ fontFamily: PX.fp, fontSize: 7, color: PX.mid, letterSpacing: "0.08em", lineHeight: 1.8, textTransform: "uppercase" as const }}>
         {label}
       </span>
-      <span style={{ fontFamily: PX.fm, fontSize: 22, fontWeight: 700, color: color ?? PX.cyan, lineHeight: 1 }}>
-        {value}
-      </span>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+        <span style={{ fontFamily: PX.fm, fontSize: 22, fontWeight: 700, color: color ?? PX.cyan, lineHeight: 1 }}>
+          {value}
+        </span>
+      </div>
       {sub && (
         <span style={{ fontFamily: PX.fb, fontSize: 11, color: PX.mid }}>
           {sub}
@@ -164,23 +168,29 @@ export default function LeaderboardPage() {
 
       {/* ── Summary metrics ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 24 }}>
-        <MetricCard label="참여 모델" value={`${totalModels}`} />
+        <MetricCard label="참여 모델" value={`${totalModels}`} accent={PX.border} />
         <MetricCard
           label="평균 수익률"
           value={`${avgReturn >= 0 ? "+" : ""}${avgReturn.toFixed(1)}%`}
           color={avgReturn >= 0 ? PX.green : PX.red}
+          accent={avgReturn >= 0 ? PX.green : PX.red}
         />
         <MetricCard
           label="최고 수익률"
           value={`${bestReturn >= 0 ? "+" : ""}${bestReturn.toFixed(1)}%`}
           sub={bestModel.name}
           color={bestReturn >= 0 ? PX.green : PX.red}
+          accent={PX.pink}
         />
-        <MetricCard label="총 주문" value={`${models.reduce((s, m) => s + m.total_orders, 0)}`} />
+        <MetricCard
+          label="총 주문"
+          value={`${models.reduce((s, m) => s + m.total_orders, 0)}`}
+          accent={PX.mid}
+        />
       </div>
 
       {/* ── Rankings table ── */}
-      <div style={{ border: `2px solid ${PX.border}`, background: PX.panel, overflow: "hidden" }}>
+      <div style={{ border: `2px solid ${PX.border}`, background: "#1a1a2b", overflow: "hidden", padding: 1 }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ background: PX.alt }}>

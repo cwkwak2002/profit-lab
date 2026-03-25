@@ -466,31 +466,45 @@ function OrderCard({
 
   return (
     <div style={{
-      background: "var(--px-alt,#1a1a4e)",
-      border: "2px solid rgba(51,85,255,0.5)",
-      padding: "16px 18px",
+      background: "#1e1e2f",
+      border: "2px solid var(--px-border,#3355ff)",
+      padding: "20px 18px 16px",
+      position: "relative",
     }}>
-      {/* Order index + remove */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <span style={{ fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 7, color: "var(--px-cyan,#00eeff)" }}>
-          ORDER {String(idx + 1).padStart(2, "0")}
-        </span>
-        <button
-          onClick={() => onRemove(order.key)}
-          style={{
-            background: "none",
-            border: "none",
-            fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
-            fontSize: 7,
-            color: "var(--px-mid,#8888aa)",
-            cursor: "pointer",
-            padding: 0,
-          }}
-          title="삭제"
-        >
-          × 삭제
-        </button>
+      {/* Absolute "ORDER 0N" badge */}
+      <div style={{
+        position: "absolute",
+        top: -11,
+        left: 20,
+        background: "var(--px-black,#0a0a1a)",
+        padding: "0 10px",
+        fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
+        fontSize: 8,
+        color: "var(--px-cyan,#00eeff)",
+        lineHeight: 1,
+      }}>
+        ORDER {String(idx + 1).padStart(2, "0")}
       </div>
+      {/* Remove button */}
+      <button
+        onClick={() => onRemove(order.key)}
+        style={{
+          position: "absolute",
+          top: -11,
+          right: 16,
+          background: "var(--px-black,#0a0a1a)",
+          border: "none",
+          fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
+          fontSize: 7,
+          color: "var(--px-mid,#8888aa)",
+          cursor: "pointer",
+          padding: "0 6px",
+          lineHeight: 1,
+        }}
+        title="삭제"
+      >
+        × 삭제
+      </button>
 
       {/* Row 1: core fields */}
       <div style={{ display: "grid", gridTemplateColumns: "90px 80px 80px 1fr 1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>

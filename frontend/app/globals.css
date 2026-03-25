@@ -176,6 +176,18 @@
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+@keyframes robot-motion {
+  0%, 60%, 100% { transform: translateX(0) rotate(0deg); }
+  15%  { transform: translateX(-5px) rotate(-1deg); }
+  30%  { transform: translateX(5px) rotate(1deg); }
+  45%  { transform: translateX(-3px) rotate(-0.5deg); }
+}
+.animate-robot {
+  animation: robot-motion 5s ease-in-out infinite;
+}
+.ticker-scroll {
+  animation: px-ticker-scroll 22s linear infinite;
+}
 @keyframes px-twinkle {
   0%, 100% { opacity: 0.2; }
   50% { opacity: 1; }

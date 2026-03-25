@@ -132,7 +132,7 @@ function BacktestPageInner() {
   const currentStrategy = STRATEGIES.find((s) => s.id === strategy)!;
 
   return (
-    <div style={{ maxWidth: 896, margin: "0 auto" }}>
+    <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
       {/* ── Page title ── */}
       <div style={{ marginBottom: 28 }}>
@@ -173,108 +173,114 @@ function BacktestPageInner() {
         })}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* ── 12-col grid: left(config) + right(strategy + execution) ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,2fr)", gap: 20 }}>
 
-        {/* ── Period ── */}
-        <PxSection title="■ 기간 설정">
-          <div style={{ display: "flex", gap: 24 }}>
-            {[
-              { label: "시작일", value: startDate, setter: setStartDate },
-              { label: "종료일", value: endDate,   setter: setEndDate },
-            ].map(({ label, value, setter }) => (
-              <div key={label} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <label style={pxLabel}>{label}</label>
-                <input
-                  type="date"
-                  value={value}
-                  onChange={(e) => setter(e.target.value)}
-                  style={pxInput}
-                />
+        {/* ── LEFT COLUMN ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Period */}
+          <section style={{
+            background: PX.panel,
+            borderLeft: `4px solid ${PX.border}`,
+            padding: "16px 20px",
+          }}>
+            <div style={{ ...pxLabel, color: PX.cyan, fontSize: 8, marginBottom: 16 }}>■ 기간 설정</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[
+                { label: "시작일", value: startDate, setter: setStartDate },
+                { label: "종료일", value: endDate,   setter: setEndDate },
+              ].map(({ label, value, setter }) => (
+                <div key={label} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={pxLabel}>{label}</label>
+                  <input type="date" value={value} onChange={(e) => setter(e.target.value)} style={pxInput} />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Coin selector */}
+          <section style={{
+            background: PX.panel,
+            borderLeft: `4px solid ${PX.pink}`,
+            padding: "16px 20px",
+            flex: 1,
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ ...pxLabel, color: PX.pink, fontSize: 8, marginBottom: 0 }}>
+                ■ 코인 선택 [{selectedCoins.length}/{ALL_COINS.length}]
               </div>
-            ))}
-          </div>
-        </PxSection>
-
-        {/* ── Coin selector ── */}
-        <PxSection title={`■ 코인 선택 [${selectedCoins.length}/${ALL_COINS.length}]`}>
-          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-            {[
-              { label: "전체 선택", action: selectAll },
-              { label: "전체 해제", action: deselectAll },
-            ].map(({ label, action }) => (
-              <button
-                key={label}
-                onClick={action}
-                style={{
-                  fontFamily: PX.fp,
-                  fontSize: 7,
-                  padding: "6px 12px",
+            </div>
+            <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+              {[
+                { label: "전체 선택", action: selectAll },
+                { label: "전체 해제", action: deselectAll },
+              ].map(({ label, action }) => (
+                <button key={label} onClick={action} style={{
+                  fontFamily: PX.fp, fontSize: 7,
+                  padding: "5px 10px",
                   border: `2px solid ${PX.border}`,
                   background: "transparent",
                   color: PX.mid,
                   cursor: "pointer",
                   borderRadius: 0,
-                  transition: "all 0.1s steps(1)",
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {ALL_COINS.map((coin) => {
-              const sel = selectedCoins.includes(coin);
-              return (
-                <button
-                  key={coin}
-                  onClick={() => toggleCoin(coin)}
-                  style={{
-                    fontFamily: PX.fm,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    padding: "5px 10px",
-                    border: `2px solid ${sel ? PX.cyan : PX.border}`,
+                }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 4 }}>
+              {ALL_COINS.map((coin) => {
+                const sel = selectedCoins.includes(coin);
+                return (
+                  <button key={coin} onClick={() => toggleCoin(coin)} style={{
+                    fontFamily: PX.fm, fontSize: 11, fontWeight: 600,
+                    padding: "5px 8px",
+                    border: `2px solid ${sel ? PX.cyan : "rgba(51,85,255,0.3)"}`,
                     background: sel ? "rgba(0,238,255,0.15)" : PX.alt,
                     color: sel ? PX.cyan : PX.mid,
-                    cursor: "pointer",
-                    borderRadius: 0,
+                    cursor: "pointer", borderRadius: 0,
                     transition: "all 0.1s steps(1)",
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  {coin}
-                </button>
-              );
-            })}
-          </div>
-        </PxSection>
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                  }}>
+                    <span>{coin}</span>
+                    {sel && <span style={{ fontSize: 8, color: PX.cyan }}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        </div>
 
-        {/* ── Strategy rules (collapsible) ── */}
-        <div style={{ border: `2px solid ${PX.border}`, borderRadius: 0, background: PX.panel }}>
-          <button
-            onClick={() => setRulesOpen((o) => !o)}
-            style={{
-              width: "100%",
-              padding: "14px 24px",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.cyan, letterSpacing: "0.06em" }}>
-              ■ 전략 상세 규칙
-            </span>
-            <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid }}>
-              {rulesOpen ? "▲" : "▼"}
-            </span>
-          </button>
+        {/* ── RIGHT COLUMN ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Strategy rules (collapsible) */}
+          <section style={{ border: `2px solid ${PX.border}`, background: PX.panel, flex: 1 }}>
+            <button
+              onClick={() => setRulesOpen((o) => !o)}
+              style={{
+                width: "100%", padding: "14px 24px",
+                background: "transparent", border: "none",
+                cursor: "pointer", display: "flex",
+                justifyContent: "space-between", alignItems: "center",
+              }}
+            >
+              <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.cyan, letterSpacing: "0.06em" }}>
+                ■ 전략 상세 규칙
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontFamily: PX.fm, fontSize: 10, color: PX.mid, background: PX.alt, padding: "2px 8px" }}>
+                  v2.4.0_STABLE
+                </span>
+                <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid }}>
+                  {rulesOpen ? "▲" : "▼"}
+                </span>
+              </div>
+            </button>
 
           {rulesOpen && (
             <div style={{ padding: "0 24px 20px", fontFamily: PX.fb, fontSize: 13, color: PX.white, lineHeight: 1.8 }}>
-              {/* separator */}
               <div style={{ height: 1, background: PX.border, opacity: 0.4, marginBottom: 20 }} />
 
               {strategy === "rsi_divergence" ? (
@@ -359,55 +365,81 @@ function BacktestPageInner() {
               </RuleBlock>
             </div>
           )}
-        </div>
+          </section>
 
-        {/* ── Run button + progress ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <button
-            onClick={handleRun}
-            disabled={loading}
-            style={{
-              fontFamily: PX.fp,
-              fontSize: 9,
-              letterSpacing: "0.1em",
-              padding: "14px 32px",
-              border: `3px solid ${loading ? PX.mid : PX.cyan}`,
-              background: loading ? PX.alt : "rgba(0,238,255,0.12)",
-              color: loading ? PX.mid : PX.cyan,
-              cursor: loading ? "not-allowed" : "pointer",
-              borderRadius: 0,
-              alignSelf: "flex-start",
-              transition: "all 0.1s steps(1)",
-              textShadow: loading ? "none" : `0 0 10px ${PX.cyan}`,
-              boxShadow: loading ? "none" : `0 0 12px rgba(0,238,255,0.2)`,
-            }}
-          >
-            {loading ? "▶▶ 실행 중..." : "▶ 백테스트 실행"}
-          </button>
-
-          {loading && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {/* HP bar */}
-              <div style={{ width: "100%", height: 12, background: PX.alt, border: `2px solid ${PX.border}`, position: "relative", overflow: "hidden" }}>
-                <div style={{
-                  height: "100%",
-                  width: `${progress}%`,
-                  background: progress < 30 ? PX.red : progress < 70 ? PX.yellow : PX.green,
-                  transition: "width 0.3s ease-out",
-                }} />
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontFamily: PX.fb, fontSize: 12, color: PX.mid }}>{status}</span>
-                <span style={{ fontFamily: PX.fm, fontSize: 12, color: PX.cyan }}>{progress}%</span>
-              </div>
+          {/* ── Execution section ── */}
+          <section style={{
+            background: PX.black,
+            border: `2px solid rgba(51,85,255,0.3)`,
+            padding: "20px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}>
+            {/* Results grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+              {[
+                { label: "TOTAL_TRADES", val: "--" },
+                { label: "WIN_RATE", val: "--%"},
+                { label: "PROFIT_FACTOR", val: "0.00" },
+                { label: "NET_PROFIT", val: "$0.00" },
+              ].map(({ label, val }) => (
+                <div key={label} style={{ background: PX.panel, padding: "10px 14px" }}>
+                  <div style={{ fontFamily: PX.fp, fontSize: 6, color: PX.mid, marginBottom: 6 }}>{label}</div>
+                  <div style={{ fontFamily: PX.fm, fontSize: 18, fontWeight: 700, color: PX.white }}>{val}</div>
+                </div>
+              ))}
             </div>
-          )}
 
-          {!loading && status && (
-            <span style={{ fontFamily: PX.fb, fontSize: 13, color: PX.mid }}>{status}</span>
-          )}
-        </div>
-      </div>
+            {/* Run button + progress */}
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <button
+                onClick={handleRun}
+                disabled={loading}
+                style={{
+                  fontFamily: PX.fp, fontSize: 9, letterSpacing: "0.1em",
+                  padding: "14px 28px",
+                  border: `3px solid ${loading ? PX.mid : PX.cyan}`,
+                  background: loading ? PX.alt : "transparent",
+                  color: loading ? PX.mid : PX.cyan,
+                  cursor: loading ? "not-allowed" : "pointer",
+                  borderRadius: 0,
+                  transition: "all 0.1s steps(1)",
+                  textShadow: loading ? "none" : `0 0 10px ${PX.cyan}`,
+                  boxShadow: loading ? "none" : `0 0 20px rgba(0,238,255,0.4)`,
+                  whiteSpace: "nowrap" as const,
+                }}
+              >
+                {loading ? "▶▶ 실행 중..." : "▶ 백테스트 실행"}
+              </button>
+
+              {loading && (
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ fontFamily: PX.fm, fontSize: 10, color: PX.mid }}>{status || "INITIALIZING BACKTEST ENGINE..."}</span>
+                    <span style={{ fontFamily: PX.fm, fontSize: 13, color: PX.cyan, fontWeight: 700 }}>{progress}%</span>
+                  </div>
+                  {/* Neon progress bar */}
+                  <div style={{ height: 16, background: PX.alt, border: `1px solid rgba(51,85,255,0.4)`, overflow: "hidden" }}>
+                    <div style={{
+                      height: "100%",
+                      width: `${progress}%`,
+                      background: `linear-gradient(90deg, #0a0a2e 0%, #4b0082 50%, ${PX.cyan} 100%)`,
+                      boxShadow: `inset 0 0 10px rgba(0,238,255,0.5), 0 0 15px rgba(75,0,130,0.4)`,
+                      transition: "width 0.3s ease-out",
+                    }} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {!loading && status && (
+              <span style={{ fontFamily: PX.fb, fontSize: 13, color: PX.mid }}>{status}</span>
+            )}
+          </section>
+
+        </div>{/* end right column */}
+      </div>{/* end 12-col grid */}
     </div>
   );
 }

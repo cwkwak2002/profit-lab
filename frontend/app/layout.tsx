@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { NavLinks } from "@/components/nav-links";
 import { PixelCoin } from "@/components/pixel-coin";
+import { TickerTape } from "@/components/ticker-tape";
 import { ThemeProvider } from "@/design-system/providers/theme-provider";
 import "./globals.css";
 
@@ -17,6 +18,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="theme-pixel h-full antialiased">
       <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* Pretendard — 한글 최적화 산세리프 */}
@@ -27,6 +29,11 @@ export default function RootLayout({
         {/* JetBrains Mono — 숫자/데이터용 모노스페이스 + Press Start 2P — 픽셀 레트로 타이틀 */}
         <link
           href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Press+Start+2P&display=swap"
+          rel="stylesheet"
+        />
+        {/* Material Symbols Outlined — 아이콘 */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
           rel="stylesheet"
         />
       </head>
@@ -75,6 +82,9 @@ export default function RootLayout({
               ♥ ♥ ♥
             </div>
           </header>
+
+          {/* ── TICKER TAPE ──────────────────────────────────────────── */}
+          <TickerTape />
 
           <main className="flex-1 p-6" style={{ color: "var(--px-white, #f0f0ff)" }}>
             {children}
