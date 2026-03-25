@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PxFooter } from "@/components/px-footer";
+import { PX } from "@/design-system/tokens/px";
 import { TableCell, TableRow } from "@/components/ui/table";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -23,23 +24,6 @@ import {
   type BenchmarkBatch,
 } from "@/lib/api";
 
-/* ── Design tokens ──────────────────────────────────────────────────────── */
-const PX = {
-  panel:   "#12122a",
-  alt:     "#1a1a4e",
-  border:  "#3355ff",
-  cyan:    "#00eeff",
-  pink:    "#ff2d78",
-  yellow:  "#ffe000",
-  green:   "#00ff7f",
-  red:     "#ff3333",
-  white:   "#f0f0ff",
-  mid:     "#8888aa",
-  dim:     "#555577",
-  fp:      "'Press Start 2P', monospace",
-  fm:      "'JetBrains Mono', monospace",
-  fb:      "Pretendard, sans-serif",
-} as const;
 
 const TOP_COINS = [
   "BTC", "ETH", "SOL", "XRP", "DOGE",

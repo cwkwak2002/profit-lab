@@ -10,22 +10,7 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 import type { CoinSummary } from "@/lib/api";
-
-/* ── Design tokens ──────────────────────────────────────────────────────── */
-const PX = {
-  alt:    "#1a1a4e",
-  border: "#3355ff",
-  cyan:   "#00eeff",
-  green:  "#00ff7f",
-  red:    "#ff3333",
-  yellow: "#ffe000",
-  white:  "#f0f0ff",
-  mid:    "#8888aa",
-  dim:    "#555577",
-  fp:     "'Press Start 2P', monospace",
-  fm:     "'JetBrains Mono', monospace",
-  fb:     "Pretendard, sans-serif",
-} as const;
+import { PX } from "@/design-system/tokens/px";
 
 const columns: ColumnDef<CoinSummary>[] = [
   { accessorKey: "symbol",           header: "코인" },

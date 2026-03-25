@@ -1,3 +1,7 @@
+/**
+ * globals.css — Profit Lab global stylesheet
+ * @design-credit Frontend design by angrybear
+ */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";

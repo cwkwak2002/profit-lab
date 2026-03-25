@@ -5,25 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { runBacktestStream, type ProgressEvent } from "@/lib/api";
 import { PxFooter } from "@/components/px-footer";
-
-/* ── Design tokens ──────────────────────────────────────────────────────── */
-const PX = {
-  black:   "var(--px-black,#0a0a1a)",
-  panel:   "var(--px-panel,#12122a)",
-  alt:     "var(--px-panel-alt,#1a1a4e)",
-  border:  "var(--px-border,#3355ff)",
-  blue:    "var(--px-blue,#3355ff)",
-  cyan:    "var(--px-cyan,#00eeff)",
-  pink:    "var(--px-pink,#ff2d78)",
-  yellow:  "var(--px-yellow,#ffe000)",
-  green:   "var(--px-green,#00ff7f)",
-  red:     "var(--px-red,#ff3333)",
-  white:   "var(--px-white,#f0f0ff)",
-  mid:     "var(--px-grey-mid,#8888aa)",
-  fp:      "var(--ff-pixel,'Press Start 2P',monospace)",
-  fm:      "var(--ff-mono,'JetBrains Mono',monospace)",
-  fb:      "var(--ff-body,Pretendard,sans-serif)",
-} as const;
+import { PX } from "@/design-system/tokens/px";
 
 const pxLabel: React.CSSProperties = {
   fontFamily: PX.fp,

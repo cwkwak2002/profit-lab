@@ -1,17 +1,11 @@
 "use client";
 
-/* ── Shared pixel-retro footer ──────────────────────────────────────────── */
-const PX = {
-  cyan:   "#00eeff",
-  border: "#3355ff",
-  mid:    "#8888aa",
-  dim:    "#555577",
-  green:  "#00ff7f",
-  yellow: "#ffe000",
-  fp:     "'Press Start 2P', monospace",
-  fm:     "'JetBrains Mono', monospace",
-  fb:     "Pretendard, sans-serif",
-} as const;
+/**
+ * @component PxFooter
+ * @description Shared pixel-retro footer used across all Profit Lab pages.
+ * @design-credit Frontend design by angrybear
+ */
+import { PX, DESIGN_ATTRIBUTION } from "@/design-system/tokens/px";
 
 const NAV = [
   { label: "전략 검증",  href: "/backtest" },
@@ -30,7 +24,7 @@ const STATUS_ITEMS = [
 
 export function PxFooter() {
   return (
-    <footer style={{ marginTop: 48, borderTop: "1px solid rgba(51,85,255,0.25)", position: "relative", overflow: "hidden" }}>
+    <footer data-design={DESIGN_ATTRIBUTION} style={{ marginTop: 48, borderTop: "1px solid rgba(51,85,255,0.25)", position: "relative", overflow: "hidden" }}>
       {/* Accent bar */}
       <div style={{
         height: 3,
