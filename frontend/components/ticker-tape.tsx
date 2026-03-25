@@ -17,8 +17,17 @@ export function TickerTape() {
       padding: "6px 0",
       flexShrink: 0,
     }}>
+      <style>{`
+        @keyframes ticker-move {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .ticker-inner {
+          animation: ticker-move 20s linear infinite;
+        }
+      `}</style>
       <div
-        className="ticker-scroll"
+        className="ticker-inner"
         style={{ display: "flex", gap: 40, whiteSpace: "nowrap", width: "max-content" }}
       >
         {doubled.map((t, i) => {

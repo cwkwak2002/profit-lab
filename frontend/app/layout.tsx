@@ -74,14 +74,13 @@ export default function RootLayout({
               style={{
                 fontFamily: "'Press Start 2P', monospace",
                 fontSize: 8,
-                color: "var(--px-pink)",
+                color: "#ff3333",
                 letterSpacing: 1,
                 lineHeight: 1,
               }}
             >
               ♥ ♥ ♥
             </div>
-            <span className="text-xs text-muted-foreground">v{process.env.APP_VERSION}</span>
           </header>
 
           {/* ── TICKER TAPE ──────────────────────────────────────────── */}

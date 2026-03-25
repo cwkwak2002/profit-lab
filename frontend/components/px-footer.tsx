@@ -118,7 +118,7 @@ export function PxFooter() {
         {/* Bottom bar */}
         <div style={{ maxWidth: 1100, margin: "16px auto 0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" as const, gap: 8 }}>
           <span style={{ fontFamily: PX.fp, fontSize: 7, color: PX.border, letterSpacing: "0.06em" }}>
-            PROFIT LAB // v2.4.0_STABLE
+            PROFIT LAB // v{process.env.APP_VERSION}
           </span>
           <span style={{ fontFamily: PX.fm, fontSize: 10, color: PX.dim, letterSpacing: "0.04em" }}>
             © 2025 PROFIT LAB · FOR RESEARCH PURPOSES ONLY · NOT FINANCIAL ADVICE

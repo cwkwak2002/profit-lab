@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const links = [
   { href: "/backtest",         label: "▶ 전략 검증",   match: "/backtest" },
@@ -10,7 +11,7 @@ const links = [
 
 const BASE: React.CSSProperties = {
   fontFamily: "var(--font-pixel), monospace",
-  fontSize: 8,
+  fontSize: 16,
   color: "var(--px-cyan)",
   textDecoration: "none",
   padding: "4px 10px",
@@ -22,20 +23,30 @@ const BASE: React.CSSProperties = {
 
 const ACTIVE: React.CSSProperties = {
   ...BASE,
-  borderColor: "var(--px-cyan)",
-  background: "rgba(0,238,255,0.1)",
+};
+
+const HOVER: React.CSSProperties = {
+  ...BASE,
   color: "#fff",
 };
 
 export function NavLinks() {
   const pathname = usePathname();
+  const [hovered, setHovered] = useState<string | null>(null);
 
   return (
     <nav style={{ display: "flex", gap: 16 }}>
       {links.map(({ href, label, match }) => {
         const active = pathname.startsWith(match);
+        const style = active ? ACTIVE : hovered === href ? HOVER : BASE;
         return (
-          <Link key={href} href={href} style={active ? ACTIVE : BASE}>
+          <Link
+            key={href}
+            href={href}
+            style={style}
+            onMouseEnter={() => setHovered(href)}
+            onMouseLeave={() => setHovered(null)}
+          >
             {label}
           </Link>
         );
