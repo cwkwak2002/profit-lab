@@ -20,7 +20,7 @@ const pxPanel: React.CSSProperties = {
 const pxLabel: React.CSSProperties = {
   display: "block",
   fontFamily: PX.fp,
-  fontSize: 7,
+  fontSize: 9,
   color: PX.mid,
   letterSpacing: "0.08em",
   marginBottom: 8,
@@ -453,7 +453,7 @@ function OrderCard({
   const pxSel: React.CSSProperties = { ...pxInput, cursor: "pointer" };
   const lbl: React.CSSProperties = {
     fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
-    fontSize: 6,
+    fontSize: 9,
     color: "var(--px-grey-mid,#8888aa)",
     display: "block",
     marginBottom: 6,
@@ -484,7 +484,7 @@ function OrderCard({
         background: "var(--px-black,#0a0a1a)",
         padding: "0 10px",
         fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
-        fontSize: 8,
+        fontSize: 9,
         color: "var(--px-cyan,#00eeff)",
         lineHeight: 1,
       }}>
@@ -500,7 +500,7 @@ function OrderCard({
           background: "var(--px-black,#0a0a1a)",
           border: "none",
           fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
-          fontSize: 7,
+          fontSize: 9,
           color: "var(--px-mid,#8888aa)",
           cursor: "pointer",
           padding: "0 6px",
@@ -528,7 +528,7 @@ function OrderCard({
               onClick={() => onUpdate(order.key, "side", "long")}
               style={{
                 flex: 1, border: "none", cursor: "pointer", borderRadius: 0,
-                fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 7,
+                fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 9,
                 background: order.side === "long" ? "var(--tertiary-container,#00767f)" : "var(--px-black,#0a0a1a)",
                 color: order.side === "long" ? "#fff" : "var(--px-grey-mid,#8888aa)",
                 transition: "all 0.1s steps(1)",
@@ -538,7 +538,7 @@ function OrderCard({
               onClick={() => onUpdate(order.key, "side", "short")}
               style={{
                 flex: 1, border: "none", cursor: "pointer", borderRadius: 0,
-                fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 7,
+                fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 9,
                 background: order.side === "short" ? "var(--px-red,#ff3333)" : "var(--px-black,#0a0a1a)",
                 color: order.side === "short" ? "#fff" : "var(--px-grey-mid,#8888aa)",
                 transition: "all 0.1s steps(1)",
