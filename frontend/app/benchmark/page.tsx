@@ -22,7 +22,7 @@ interface OrderRow extends OrderInput {
 
 function newOrderRow(): OrderRow {
   return {
-    key: crypto.randomUUID(),
+    key: Math.random().toString(36).slice(2) + Date.now().toString(36),
     symbol: "BTC",
     side: "long",
     entry_price: 0,
