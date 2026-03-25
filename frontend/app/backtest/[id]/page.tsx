@@ -116,7 +116,7 @@ export default function BacktestResultPage() {
             onMouseEnter={(e) => { e.currentTarget.style.color = PX.white; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = PX.cyan; }}
           >
-            ← 전략 백테스트
+            ← Strategy Backtest
           </button>
           <span style={{ fontFamily: PX.fm, fontSize: 10, color: PX.dim, background: PX.alt, padding: "4px 10px", border: `1px solid ${PX.border}`, alignSelf: "center" }}>
             RUN {run.id.slice(0, 8)}

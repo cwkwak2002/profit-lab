@@ -220,7 +220,7 @@ function BenchmarkPageInner() {
           onMouseEnter={(e) => { e.currentTarget.style.background = PX.border; e.currentTarget.style.color = PX.white; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "#1e1e2f"; e.currentTarget.style.color = PX.white; }}
         >
-          리더보드
+          Live Benchmark
         </button>
       </div>
 

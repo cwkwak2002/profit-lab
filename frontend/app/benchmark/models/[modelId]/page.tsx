@@ -572,7 +572,7 @@ export default function ModelDetailPage() {
             onMouseEnter={(e) => { e.currentTarget.style.color = PX.white; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = PX.cyan; }}
           >
-            ← 리더보드
+            ← Live Benchmark
           </button>
 
           <div style={{ width: 1, height: 20, background: PX.border }} />

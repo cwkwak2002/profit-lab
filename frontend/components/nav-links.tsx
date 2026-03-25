@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const links = [
-  { href: "/backtest",         label: "▶ 전략 백테스트",   match: "/backtest" },
-  { href: "/benchmark/models", label: "★ 라이브 벤치마크", match: "/benchmark" },
+  { href: "/backtest",         label: "▶ Strategy Backtest", match: "/backtest" },
+  { href: "/benchmark/models", label: "★ Live Benchmark",    match: "/benchmark" },
 ];
 
 const BASE: React.CSSProperties = {

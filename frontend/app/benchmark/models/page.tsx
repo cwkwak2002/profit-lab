@@ -133,7 +133,7 @@ export default function LeaderboardPage() {
           <div>
           <h1 style={{ fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1.4,
             textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 14 }}>
-            ★ <span style={{ fontSize: 14 }}>AI</span> 트레이딩 리더보드
+            ★ Live Benchmark
           </h1>
           <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
             AI 모델 트레이딩 성과 비교

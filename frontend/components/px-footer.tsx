@@ -8,9 +8,8 @@
 import { PX, DESIGN_ATTRIBUTION } from "@/design-system/tokens/px";
 
 const NAV = [
-  { label: "전략 백테스트",  href: "/backtest" },
-  { label: "라이브 벤치마크",  href: "/benchmark" },
-  { label: "리더보드",         href: "/benchmark/models" },
+  { label: "Strategy Backtest", href: "/backtest" },
+  { label: "Live Benchmark",    href: "/benchmark/models" },
 ];
 
 const ENGINES = ["RSI Divergence", "EMA Trend", "BB Squeeze", "Risk Filter v2"];
