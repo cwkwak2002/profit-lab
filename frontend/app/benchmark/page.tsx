@@ -533,7 +533,7 @@ function OrderCard({
                 color: order.side === "long" ? "#fff" : "var(--px-grey-mid,#8888aa)",
                 transition: "all 0.1s steps(1)",
               }}
-            >롱 (매수)</button>
+            >LONG</button>
             <button
               onClick={() => onUpdate(order.key, "side", "short")}
               style={{
@@ -543,14 +543,14 @@ function OrderCard({
                 color: order.side === "short" ? "#fff" : "var(--px-grey-mid,#8888aa)",
                 transition: "all 0.1s steps(1)",
               }}
-            >숏 (매도)</button>
+            >SHORT</button>
           </div>
         </div>
         <div>
           <label style={lbl}>유형</label>
           <select style={pxSel} value={order.order_type} onChange={(e) => onUpdate(order.key, "order_type", e.target.value)}>
-            <option value="limit">지정가</option>
-            <option value="market">시장가</option>
+            <option value="limit">LIMIT</option>
+            <option value="market">MARKET</option>
           </select>
         </div>
         <div>
