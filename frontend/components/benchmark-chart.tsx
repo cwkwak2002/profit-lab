@@ -31,7 +31,7 @@ function getPriceScale(sym: string): number {
 
 const REASON_LABELS: Record<string, string> = {
   TP: "TP", TP2: "TP2", SL: "SL", SL_BE: "SL(BE)",
-  TIMEOUT_6H: "6H", CANCEL_30M: "30M", MANUAL: "DEL",
+  TIMEOUT_6H: "6h", CANCEL_30M: "30m", MANUAL: "DEL",
 };
 
 function createDatafeed(symbol: string, hasOpenPosition: () => boolean) {
@@ -138,11 +138,18 @@ function createDatafeed(symbol: string, hasOpenPosition: () => boolean) {
   };
 }
 
-/** Add execution shapes (arrows with text) for order entries and exits. */
-function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
+/** Add execution shapes (arrows with text) for order entries and exits.
+ *  shapesRef holds previously created shapes so they can be removed before re-adding. */
+function addExecutionShapes(widget: any, orders: BenchmarkOrder[], shapesRef: React.MutableRefObject<any[]>) {
   try {
     const chart = widget.activeChart();
     if (!chart) return;
+
+    // Remove previously created shapes to prevent duplicates
+    for (const s of shapesRef.current) {
+      try { s.remove(); } catch { /* ignore */ }
+    }
+    shapesRef.current = [];
 
     for (const order of orders) {
       // Order placed marker (show when created_at differs from fill_time)
@@ -162,6 +169,7 @@ function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
               .setDirection(isBuy ? "buy" : "sell")
               .setTime(createdTimeSec)
               .setFont("11px sans-serif");
+            shapesRef.current.push(shape);
           }
         }
       }
@@ -180,6 +188,7 @@ function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
             .setDirection(isBuy ? "buy" : "sell")
             .setTime(fillTimeSec)
             .setFont("bold 11px sans-serif");
+          shapesRef.current.push(shape);
         }
       }
 
@@ -192,7 +201,6 @@ function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
         const pnlStr = order.pnl !== null
           ? ` (${order.pnl > 0 ? "+" : ""}${order.pnl.toFixed(2)})`
           : "";
-        // Exit direction is opposite of entry
         const isBuy = order.side === "long";
         const shape = chart.createExecutionShape();
         if (shape) {
@@ -204,6 +212,7 @@ function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
             .setDirection(isBuy ? "sell" : "buy")
             .setTime(closeTimeSec)
             .setFont("bold 11px sans-serif");
+          shapesRef.current.push(shape);
         }
       }
     }
@@ -317,6 +326,7 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
     ordersRef.current = orders;
     const pendingScrollRef = useRef<number | null>(null);
     const saveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const executionShapesRef = useRef<any[]>([]); // eslint-disable-line @typescript-eslint/no-explicit-any
 
     function doScroll(widget: any, timeSeconds: number) { // eslint-disable-line @typescript-eslint/no-explicit-any
       try {
@@ -401,7 +411,7 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
           // Delay to ensure chart series is fully initialized before adding shapes
           setTimeout(() => {
             addOrderLines(widget, ordersRef.current);
-            addExecutionShapes(widget, ordersRef.current);
+            addExecutionShapes(widget, ordersRef.current, executionShapesRef);
 
             if (pendingScrollRef.current !== null) {
               doScroll(widget, pendingScrollRef.current);
@@ -458,7 +468,7 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
     useEffect(() => {
       if (!widgetRef.current || !chartReadyRef.current) return;
       try {
-        addExecutionShapes(widgetRef.current, orders);
+        addExecutionShapes(widgetRef.current, orders, executionShapesRef);
       } catch { /* ignore */ }
     }, [orders]);
 
