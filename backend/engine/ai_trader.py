@@ -248,8 +248,8 @@ def _submit_orders(
 
         active_margin = get_active_margin(conn, model_id)
         available = model["balance"] - active_margin
-        if available <= 0:
-            logger.warning("No available balance for %s — skipping", MODEL_NAME)
+        if available < 1.0:
+            logger.warning("Available balance $%.4f < $1 for %s — skipping", available, MODEL_NAME)
             return
 
         margin_per_order = round(available / len(orders), 4)

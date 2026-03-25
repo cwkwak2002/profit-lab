@@ -8,7 +8,7 @@ from config import DB_PATH
 
 def get_connection() -> sqlite3.Connection:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(DB_PATH))
+    conn = sqlite3.connect(str(DB_PATH), timeout=30)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
@@ -161,6 +161,15 @@ def save_candles(conn: sqlite3.Connection, symbol: str, timeframe: str, candles:
            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
         [(symbol, timeframe, int(c[0]), c[1], c[2], c[3], c[4], c[5]) for c in candles],
     )
+
+
+def count_candles(conn: sqlite3.Connection, symbol: str, timeframe: str,
+                  start_ts: int, end_ts: int) -> int:
+    row = conn.execute(
+        "SELECT COUNT(*) FROM candles WHERE symbol=? AND timeframe=? AND timestamp>=? AND timestamp<=?",
+        (symbol, timeframe, start_ts, end_ts),
+    ).fetchone()
+    return row[0] if row else 0
 
 
 def get_candles(conn: sqlite3.Connection, symbol: str, timeframe: str,

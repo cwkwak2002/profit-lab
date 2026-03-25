@@ -241,6 +241,9 @@ function EditableOrderRow({
           {order.pnl !== null ? `${order.pnl > 0 ? "+" : ""}${order.pnl.toFixed(2)}` : order.tp1_pnl !== null ? <span className="text-amber-400">+{order.tp1_pnl.toFixed(2)}</span> : "-"}
         </TableCell>
         <TableCell className="py-2">{reasonBadge(order.close_reason)}</TableCell>
+        <TableCell className="py-2 text-right font-mono tabular-nums text-muted-foreground">
+          {order.balance_after !== null ? `$${order.balance_after.toFixed(2)}` : "-"}
+        </TableCell>
         <TableCell className="py-2">
           <button className="text-primary hover:underline font-mono text-[10px]" onClick={() => onClickAnalysis(order.batch_id)} title="시장 분석 보기">분석</button>
         </TableCell>
@@ -297,6 +300,9 @@ function EditableOrderRow({
         <TableCell className="py-2 text-right font-mono tabular-nums text-muted-foreground">${order.margin.toFixed(2)}</TableCell>
         <TableCell className="py-2 text-right font-mono tabular-nums text-muted-foreground">-</TableCell>
         <TableCell className="py-2">{reasonBadge(order.close_reason)}</TableCell>
+        <TableCell className="py-2 text-right font-mono tabular-nums text-muted-foreground">
+          {order.balance_after !== null ? `$${order.balance_after.toFixed(2)}` : "-"}
+        </TableCell>
         <TableCell className="py-2"></TableCell>
         <TableCell className="py-2">
           <textarea className="w-full rounded-md border border-border bg-background px-1 py-1 text-xs resize-y" rows={3} value={draft.description ?? ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
@@ -308,7 +314,7 @@ function EditableOrderRow({
           </div>
         </TableCell>
       </TableRow>
-      {error && <TableRow><TableCell colSpan={15} className="text-xs text-destructive py-1">{error}</TableCell></TableRow>}
+      {error && <TableRow><TableCell colSpan={16} className="text-xs text-destructive py-1">{error}</TableCell></TableRow>}
     </>
   );
 }
@@ -573,6 +579,7 @@ export default function ModelDetailPage() {
                           <TableHead className="text-[10px] uppercase tracking-wider font-medium text-right">마진</TableHead>
                           <TableHead className="text-[10px] uppercase tracking-wider font-medium text-right">P&L</TableHead>
                           <TableHead className="text-[10px] uppercase tracking-wider font-medium">사유</TableHead>
+                          <TableHead className="text-[10px] uppercase tracking-wider font-medium text-right">잔액</TableHead>
                           <TableHead className="text-[10px] uppercase tracking-wider font-medium">분석</TableHead>
                           <TableHead className="text-[10px] uppercase tracking-wider font-medium">근거</TableHead>
                           <TableHead className="w-8"></TableHead>

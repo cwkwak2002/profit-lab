@@ -144,12 +144,15 @@ def find_entry_signals(df_1h: pd.DataFrame, lookback: int = LOOKBACK_CANDLES,
             continue
 
         # === FILTER 4: Candle Confirmation ===
+        # Signal candle is at a price low, so it tends to be bearish.
+        # Confirm reversal via: hammer on signal candle OR entry candle (i+1) is bullish.
+        next_candle = df.iloc[i + 1]
         prev_candle = df.iloc[i - 1]
-        if not _is_hammer(current) and not _is_bullish_engulfing(current, prev_candle):
+        entry_candle_bullish = next_candle["close"] > next_candle["open"]
+        if not _is_hammer(current) and not _is_bullish_engulfing(current, prev_candle) and not entry_candle_bullish:
             continue
 
         # --- Build signal ---
-        next_candle = df.iloc[i + 1]
         entry_price = next_candle["open"]
         sl_price = current["low"] * (1 - SL_OFFSET_PCT)
 

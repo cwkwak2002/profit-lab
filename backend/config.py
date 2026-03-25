@@ -25,7 +25,7 @@ BB_PERIOD = 20
 BB_STD = 2.0
 
 # Hammer candle detection
-HAMMER_WICK_RATIO = 2.0  # lower wick >= 2x body
+HAMMER_WICK_RATIO = 1.0  # lower wick >= 1x body
 ENGULFING_COVER_PCT = 0.5  # engulfing must cover 50% of prior body
 
 # RSI-specific risk filters

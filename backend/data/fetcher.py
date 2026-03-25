@@ -54,14 +54,15 @@ def fetch_ohlcv(exchange: ccxt.Exchange, symbol: str, timeframe: str,
             break
 
         # Filter out candles beyond until_ms
-        candles = [c for c in candles if c[0] <= until_ms]
-        all_candles.extend(candles)
+        filtered = [c for c in candles if c[0] <= until_ms]
+        all_candles.extend(filtered)
 
-        if len(candles) < limit:
+        # Stop if no candles in range, or last candle reached/passed until_ms
+        if not filtered or filtered[-1][0] >= until_ms:
             break
 
         # Move to next batch
-        current_since = candles[-1][0] + 1
+        current_since = filtered[-1][0] + 1
         time.sleep(exchange.rateLimit / 1000)
 
     return all_candles

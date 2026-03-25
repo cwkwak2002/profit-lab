@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from config import DEFAULT_SEED, DEFAULT_LEVERAGE
 from data.db import (
-    get_db, get_candles, save_candles, save_backtest_run, save_coin_summary,
+    get_db, get_candles, count_candles, save_candles, save_backtest_run, save_coin_summary,
     save_trades, get_backtest_run, get_coin_summaries, get_trades_for_coin,
 )
 from data.fetcher import date_to_ms, end_date_to_ms, get_exchange, fetch_ohlcv, get_stored_range
@@ -48,36 +48,55 @@ def _resample(df_1m_indexed: pd.DataFrame, freq: str) -> pd.DataFrame:
     return df
 
 
-def _prepare_dfs(df_1m: pd.DataFrame, strategy: str):
-    """Prepare resampled DataFrames needed by the strategy."""
+def _prepare_dfs(df_1m: pd.DataFrame, strategy: str, df_1h_raw: pd.DataFrame | None = None):
+    """Prepare DataFrames needed by the strategy.
+
+    df_1h_raw: pre-fetched 1H candles from DB (preferred over resampled 1m).
+    """
     df_1m_indexed = df_1m.copy()
     df_1m_indexed["datetime"] = pd.to_datetime(df_1m_indexed["timestamp"], unit="ms", utc=True)
     df_1m_indexed = df_1m_indexed.set_index("datetime")
 
-    df_1h = _resample(df_1m_indexed, "1h")
-    # All strategies use 15m data (RSI for TP2, EMA/BB for entry+exit)
+    if df_1h_raw is not None and not df_1h_raw.empty:
+        df_1h = df_1h_raw.reset_index(drop=True)
+    else:
+        df_1h = _resample(df_1m_indexed, "1h")
+
+    # 15m is always resampled from 1m (not stored in DB)
     df_15m = _resample(df_1m_indexed, "15min")
 
     return df_1h, df_15m
 
 
 def _ensure_btc_synced(conn, exchange, since_ms: int, until_ms: int):
-    """Ensure BTC 1m data is synced for the given date range (needed by risk filters)."""
-    stored_min, stored_max = get_stored_range(conn, "BTC", "1m")
-    if stored_min is None:
-        candles = fetch_ohlcv(exchange, "BTC", "1m", since_ms, until_ms)
-        save_candles(conn, "BTC", "1m", candles)
-    else:
-        if since_ms < stored_min:
-            candles = fetch_ohlcv(exchange, "BTC", "1m", since_ms, stored_min - 1)
-            save_candles(conn, "BTC", "1m", candles)
-        if until_ms > stored_max:
-            candles = fetch_ohlcv(exchange, "BTC", "1m", stored_max + 1, until_ms)
-            save_candles(conn, "BTC", "1m", candles)
+    """Ensure BTC 1h and 1m data is synced for the given date range (needed by risk filters)."""
+    for tf in ("1h", "1m"):
+        tf_ms = 3_600_000 if tf == "1h" else 60_000
+        stored_min, stored_max = get_stored_range(conn, "BTC", tf)
+        if stored_min is None:
+            candles = fetch_ohlcv(exchange, "BTC", tf, since_ms, until_ms)
+            save_candles(conn, "BTC", tf, candles)
+        else:
+            if since_ms < stored_min:
+                candles = fetch_ohlcv(exchange, "BTC", tf, since_ms, stored_min - 1)
+                save_candles(conn, "BTC", tf, candles)
+            if until_ms > stored_max:
+                candles = fetch_ohlcv(exchange, "BTC", tf, stored_max + 1, until_ms)
+                save_candles(conn, "BTC", tf, candles)
+            expected = (min(until_ms, stored_max) - max(since_ms, stored_min)) // tf_ms + 1
+            if expected > 100:
+                actual = count_candles(conn, "BTC", tf, since_ms, until_ms)
+                if actual < expected * 0.9:
+                    candles = fetch_ohlcv(exchange, "BTC", tf, since_ms, until_ms)
+                    save_candles(conn, "BTC", tf, candles)
 
 
 def _get_btc_1h(conn, since_ms: int, until_ms: int) -> pd.DataFrame | None:
-    """Load BTC 1m data and resample to 1H for risk filter."""
+    """Load BTC 1H data from DB (prefer direct 1H over resampled 1m)."""
+    raw_1h = get_candles(conn, "BTC", "1h", since_ms, until_ms)
+    if raw_1h:
+        return pd.DataFrame(raw_1h)
+    # Fallback: resample from 1m if 1H not available
     btc_raw = get_candles(conn, "BTC", "1m", since_ms, until_ms)
     if not btc_raw:
         return None
@@ -110,13 +129,15 @@ def run_backtest(req: BacktestRequest):
 
         for symbol in req.coins:
             candles_1m_raw = get_candles(conn, symbol, "1m", since_ms, until_ms)
+            candles_1h_raw = get_candles(conn, symbol, "1h", since_ms, until_ms)
 
-            if not candles_1m_raw:
+            if not candles_1m_raw and not candles_1h_raw:
                 save_coin_summary(conn, run_id, symbol, 0, 0, 0, 0, req.seed)
                 continue
 
-            df_1m = pd.DataFrame(candles_1m_raw)
-            df_1h, df_15m = _prepare_dfs(df_1m, req.strategy)
+            df_1m = pd.DataFrame(candles_1m_raw) if candles_1m_raw else pd.DataFrame()
+            df_1h_db = pd.DataFrame(candles_1h_raw) if candles_1h_raw else None
+            df_1h, df_15m = _prepare_dfs(df_1m, req.strategy, df_1h_raw=df_1h_db)
 
             result = run_backtest_for_coin(
                 df_1h, df_1m, symbol, req.seed, req.leverage,
@@ -168,22 +189,32 @@ def run_backtest_stream(req: BacktestRequest):
 
             try:
                 with get_db() as conn:
-                    stored_min, stored_max = get_stored_range(conn, symbol, "1m")
                     total = 0
-
-                    if stored_min is None:
-                        candles = fetch_ohlcv(exchange, symbol, "1m", since_ms, until_ms)
-                        save_candles(conn, symbol, "1m", candles)
-                        total = len(candles)
-                    else:
-                        if since_ms < stored_min:
-                            candles = fetch_ohlcv(exchange, symbol, "1m", since_ms, stored_min - 1)
-                            save_candles(conn, symbol, "1m", candles)
+                    # Sync 1H and 1m for the requested date range
+                    for tf in ("1h", "1m"):
+                        tf_ms = 3_600_000 if tf == "1h" else 60_000
+                        s_min, s_max = get_stored_range(conn, symbol, tf)
+                        if s_min is None:
+                            candles = fetch_ohlcv(exchange, symbol, tf, since_ms, until_ms)
+                            save_candles(conn, symbol, tf, candles)
                             total += len(candles)
-                        if until_ms > stored_max:
-                            candles = fetch_ohlcv(exchange, symbol, "1m", stored_max + 1, until_ms)
-                            save_candles(conn, symbol, "1m", candles)
-                            total += len(candles)
+                        else:
+                            if since_ms < s_min:
+                                candles = fetch_ohlcv(exchange, symbol, tf, since_ms, s_min - 1)
+                                save_candles(conn, symbol, tf, candles)
+                                total += len(candles)
+                            if until_ms > s_max:
+                                candles = fetch_ohlcv(exchange, symbol, tf, s_max + 1, until_ms)
+                                save_candles(conn, symbol, tf, candles)
+                                total += len(candles)
+                            # Gap detection: if stored candles < 90% of expected, refetch the range
+                            expected = (min(until_ms, s_max) - max(since_ms, s_min)) // tf_ms + 1
+                            if expected > 100:
+                                actual = count_candles(conn, symbol, tf, since_ms, until_ms)
+                                if actual < expected * 0.9:
+                                    candles = fetch_ohlcv(exchange, symbol, tf, since_ms, until_ms)
+                                    save_candles(conn, symbol, tf, candles)
+                                    total += len(candles)
 
                 yield _sse_event({
                     "phase": "sync",
@@ -227,8 +258,9 @@ def run_backtest_stream(req: BacktestRequest):
                 })
 
                 candles_1m_raw = get_candles(conn, symbol, "1m", since_ms, until_ms)
+                candles_1h_raw = get_candles(conn, symbol, "1h", since_ms, until_ms)
 
-                if not candles_1m_raw:
+                if not candles_1m_raw and not candles_1h_raw:
                     save_coin_summary(conn, run_id, symbol, 0, 0, 0, 0, req.seed)
                     yield _sse_event({
                         "phase": "backtest",
@@ -238,8 +270,9 @@ def run_backtest_stream(req: BacktestRequest):
                     })
                     continue
 
-                df_1m = pd.DataFrame(candles_1m_raw)
-                df_1h, df_15m = _prepare_dfs(df_1m, strategy)
+                df_1m = pd.DataFrame(candles_1m_raw) if candles_1m_raw else pd.DataFrame()
+                df_1h_db = pd.DataFrame(candles_1h_raw) if candles_1h_raw else None
+                df_1h, df_15m = _prepare_dfs(df_1m, strategy, df_1h_raw=df_1h_db)
 
                 result = run_backtest_for_coin(
                     df_1h, df_1m, symbol, req.seed, req.leverage,
