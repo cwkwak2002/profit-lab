@@ -120,7 +120,7 @@ export default function CoinDetailPage() {
         boxShadow: "0 2px 0 rgba(51,85,255,0.2)",
       }}>
         <Link href={`/backtest/${runId}`} style={{
-          fontFamily: PX.fp, fontSize: 7, color: PX.mid,
+          fontFamily: PX.fp, fontSize: 9, color: PX.mid,
           textDecoration: "none", letterSpacing: "0.05em",
           display: "flex", alignItems: "center", gap: 6,
           transition: "color 0.1s steps(1)",
@@ -134,7 +134,7 @@ export default function CoinDetailPage() {
         <div style={{ width: 1, height: 18, background: "rgba(51,85,255,0.5)" }} />
 
         <div style={{
-          fontFamily: PX.fp, fontSize: 12, color: PX.cyan,
+          fontFamily: PX.fp, fontSize: 18, color: PX.cyan,
           letterSpacing: "0.1em", lineHeight: 1,
           textShadow: `0 0 12px ${PX.cyan}`,
         }}>
@@ -155,28 +155,28 @@ export default function CoinDetailPage() {
         {summary && (
           <div style={{ marginLeft: "auto", display: "flex", gap: 20, alignItems: "center" }}>
             <div style={{ textAlign: "center" as const }}>
-              <div style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>수익률</div>
+              <div style={{ fontFamily: PX.fp, fontSize: 9, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>수익률</div>
               <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: ret >= 0 ? PX.green : PX.red }}>
                 {ret >= 0 ? "+" : ""}{ret}%
               </div>
             </div>
             <div style={{ width: 1, height: 28, background: "rgba(51,85,255,0.3)" }} />
             <div style={{ textAlign: "center" as const }}>
-              <div style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>승률</div>
+              <div style={{ fontFamily: PX.fp, fontSize: 9, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>승률</div>
               <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: summary.win_rate >= 50 ? PX.green : PX.red }}>
                 {summary.win_rate}%
               </div>
             </div>
             <div style={{ width: 1, height: 28, background: "rgba(51,85,255,0.3)" }} />
             <div style={{ textAlign: "center" as const }}>
-              <div style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>MDD</div>
+              <div style={{ fontFamily: PX.fp, fontSize: 9, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>MDD</div>
               <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: PX.yellow }}>
                 {summary.max_drawdown}%
               </div>
             </div>
             <div style={{ width: 1, height: 28, background: "rgba(51,85,255,0.3)" }} />
             <div style={{ textAlign: "center" as const }}>
-              <div style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>최종잔액</div>
+              <div style={{ fontFamily: PX.fp, fontSize: 9, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>최종잔액</div>
               <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: PX.white }}>
                 ${summary.final_balance.toFixed(2)}
               </div>
@@ -203,7 +203,7 @@ export default function CoinDetailPage() {
             padding: "10px 12px 8px",
             borderBottom: `1px solid rgba(51,85,255,0.25)`,
           }}>
-            <div style={{ fontFamily: PX.fp, fontSize: 6, color: PX.border, letterSpacing: "0.08em" }}>
+            <div style={{ fontFamily: PX.fp, fontSize: 9, color: PX.border, letterSpacing: "0.08em" }}>
               코인 목록
             </div>
           </div>
@@ -262,7 +262,7 @@ export default function CoinDetailPage() {
                     const label = tab === "chart" ? "차트" : "수익 곡선";
                     return (
                       <button key={tab} onClick={() => setActiveTab(tab)} style={{
-                        fontFamily: PX.fp, fontSize: 7, letterSpacing: "0.05em",
+                        fontFamily: PX.fp, fontSize: 10, letterSpacing: "0.05em",
                         padding: "6px 14px",
                         border: `2px solid ${active ? PX.cyan : "rgba(51,85,255,0.4)"}`,
                         background: active ? "rgba(0,238,255,0.12)" : "transparent",
@@ -308,7 +308,7 @@ export default function CoinDetailPage() {
                   background: PX.alt,
                   borderBottom: `2px solid ${PX.border}`,
                 }}>
-                  <span style={{ fontFamily: PX.fp, fontSize: 7, color: PX.cyan, letterSpacing: "0.06em" }}>
+                  <span style={{ fontFamily: PX.fp, fontSize: 10, color: PX.cyan, letterSpacing: "0.06em" }}>
                     ■ 포지션 상세
                   </span>
                   <span style={{

@@ -122,8 +122,8 @@ function BacktestPageInner() {
 
       {/* ── Page header: title only ── */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontFamily: PX.fp, fontSize: 13, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
-          textShadow: `2px 2px 0 #886600, 4px 4px 0 #443300`, marginBottom: 10 }}>
+        <h1 style={{ fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
+          textShadow: `2px 2px 0 #886600, 4px 4px 0 #443300`, marginBottom: 14 }}>
           ▶ 전략 검증
         </h1>
         <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
@@ -140,7 +140,7 @@ function BacktestPageInner() {
               key={s.id}
               onClick={() => setStrategy(s.id)}
               style={{
-                fontFamily: PX.fp, fontSize: 8, letterSpacing: "0.05em",
+                fontFamily: PX.fp, fontSize: 10, letterSpacing: "0.05em",
                 padding: "9px 16px",
                 border: `2px solid ${active ? PX.cyan : PX.border}`,
                 background: active ? "rgba(0,238,255,0.12)" : PX.panel,
@@ -192,7 +192,7 @@ function BacktestPageInner() {
                 { label: "전체 해제", action: deselectAll },
               ].map(({ label, action }) => (
                 <button key={label} onClick={action} style={{
-                  fontFamily: PX.fp, fontSize: 7, padding: "5px 10px",
+                  fontFamily: PX.fp, fontSize: 9, padding: "5px 10px",
                   border: `2px solid ${PX.border}`, background: "transparent",
                   color: PX.mid, cursor: "pointer", borderRadius: 0,
                 }}>
@@ -257,7 +257,7 @@ function BacktestPageInner() {
               onClick={handleRun}
               disabled={loading}
               style={{
-                fontFamily: PX.fp, fontSize: 9, letterSpacing: "0.1em",
+                fontFamily: PX.fp, fontSize: 11, letterSpacing: "0.1em",
                 padding: "16px 32px",
                 border: `3px solid ${loading ? PX.mid : PX.cyan}`,
                 background: loading ? PX.alt : "transparent",
@@ -303,7 +303,7 @@ function BacktestPageInner() {
               { label: "NET_PROFIT",   value: "$0.00" },
             ].map(({ label, value, color }) => (
               <div key={label} style={{ padding: "12px 14px", background: "#1e1e2f" }}>
-                <div style={{ fontFamily: PX.fm, fontSize: 9, color: PX.mid, marginBottom: 6, letterSpacing: "0.06em" }}>{label}</div>
+                <div style={{ fontFamily: PX.fm, fontSize: 11, color: PX.mid, marginBottom: 6, letterSpacing: "0.06em" }}>{label}</div>
                 <div style={{ fontFamily: PX.fm, fontSize: 20, fontWeight: 700, color: color ?? PX.white }}>{value}</div>
               </div>
             ))}
@@ -318,7 +318,7 @@ function BacktestPageInner() {
             background: PX.alt,
             display: "flex", justifyContent: "space-between", alignItems: "center",
           }}>
-            <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.cyan, letterSpacing: "0.06em" }}>
+            <span style={{ fontFamily: PX.fp, fontSize: 10, color: PX.cyan, letterSpacing: "0.06em" }}>
               ■ 전략 상세 규칙
             </span>
             <span style={{ fontFamily: PX.fm, fontSize: 10, color: PX.mid, background: "#0d0d22", padding: "2px 8px", border: `1px solid ${PX.border}` }}>

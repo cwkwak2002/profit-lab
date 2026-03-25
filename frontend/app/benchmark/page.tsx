@@ -197,11 +197,11 @@ function BenchmarkPageInner() {
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 0, paddingBottom: 16, borderBottom: `2px solid #333345` }}>
         <div>
-          <h1 style={{ fontFamily: PX.fp, fontSize: 13, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
-            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 10 }}>
+          <h1 style={{ fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
+            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 14 }}>
             ★ 주문 입력
           </h1>
-          <p style={{ fontFamily: PX.fb, fontSize: 13, color: PX.mid, margin: 0 }}>
+          <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
             AI 모델의 트레이딩 주문을 기록합니다
           </p>
         </div>

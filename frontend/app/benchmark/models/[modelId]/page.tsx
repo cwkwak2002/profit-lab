@@ -151,7 +151,7 @@ function EditableAnalysis({ batch, onSave }: { batch: BenchmarkBatch; onSave: ()
         )}
         <span style={{
           position: "absolute", top: 6, right: 10,
-          fontFamily: PX.fp, fontSize: 6, color: PX.mid,
+          fontFamily: PX.fp, fontSize: 8, color: PX.mid,
           opacity: 0,
         }}
           className="edit-hint"
@@ -178,7 +178,7 @@ function EditableAnalysis({ batch, onSave }: { batch: BenchmarkBatch; onSave: ()
         <button
           onClick={handleSave} disabled={saving}
           style={{
-            padding: "6px 14px", fontFamily: PX.fp, fontSize: 7,
+            padding: "6px 14px", fontFamily: PX.fp, fontSize: 9,
             background: saving ? PX.dim : PX.cyan, color: "#000",
             border: "none", cursor: saving ? "default" : "pointer",
           }}
@@ -188,7 +188,7 @@ function EditableAnalysis({ batch, onSave }: { batch: BenchmarkBatch; onSave: ()
         <button
           onClick={() => setEditing(false)}
           style={{
-            padding: "6px 14px", fontFamily: PX.fp, fontSize: 7,
+            padding: "6px 14px", fontFamily: PX.fp, fontSize: 9,
             background: "transparent", color: PX.mid,
             border: `1px solid ${PX.mid}`, cursor: "pointer",
           }}
@@ -323,7 +323,7 @@ function EditableOrderRow({
         </TableCell>
         <TableCell style={td}>
           <button
-            style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, background: "none", border: "none", cursor: "pointer", opacity: 0 }}
+            style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer", opacity: 0 }}
             className="group-hover:opacity-100-btn"
             onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = PX.cyan; }}
             onMouseLeave={(e) => { e.currentTarget.style.opacity = "0"; e.currentTarget.style.color = PX.dim; }}
@@ -387,8 +387,8 @@ function EditableOrderRow({
         </TableCell>
         <TableCell style={td}>
           <div style={{ display: "flex", gap: 6 }}>
-            <button style={{ fontFamily: PX.fp, fontSize: 6, color: PX.cyan, background: "none", border: "none", cursor: "pointer" }} onClick={handleSave} disabled={saving}>{saving ? "..." : "저장"}</button>
-            <button style={{ fontFamily: PX.fp, fontSize: 6, color: PX.mid, background: "none", border: "none", cursor: "pointer" }} onClick={() => setEditing(false)}>취소</button>
+            <button style={{ fontFamily: PX.fp, fontSize: 9, color: PX.cyan, background: "none", border: "none", cursor: "pointer" }} onClick={handleSave} disabled={saving}>{saving ? "..." : "저장"}</button>
+            <button style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid, background: "none", border: "none", cursor: "pointer" }} onClick={() => setEditing(false)}>취소</button>
           </div>
         </TableCell>
       </TableRow>
@@ -519,7 +519,7 @@ export default function ModelDetailPage() {
   function TH({ children, align = "left" }: { children?: React.ReactNode; align?: "left" | "right" }) {
     return (
       <th style={{
-        fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.06em",
+        fontFamily: PX.fp, fontSize: 10, color: PX.mid, letterSpacing: "0.06em",
         padding: "10px 10px", textAlign: align, fontWeight: "normal",
         borderBottom: `2px solid ${PX.border}`, whiteSpace: "nowrap" as const,
         background: PX.alt,
@@ -577,8 +577,8 @@ export default function ModelDetailPage() {
                 onKeyDown={(e) => { if (e.key === "Enter") handleRename(); if (e.key === "Escape") setRenaming(false); }}
                 autoFocus
               />
-              <button onClick={handleRename} style={{ fontFamily: PX.fp, fontSize: 7, padding: "5px 12px", background: PX.cyan, color: "#000", border: "none", cursor: "pointer" }}>저장</button>
-              <button onClick={() => setRenaming(false)} style={{ fontFamily: PX.fp, fontSize: 7, padding: "5px 12px", background: "transparent", color: PX.mid, border: `1px solid ${PX.mid}`, cursor: "pointer" }}>취소</button>
+              <button onClick={handleRename} style={{ fontFamily: PX.fp, fontSize: 9, padding: "5px 12px", background: PX.cyan, color: "#000", border: "none", cursor: "pointer" }}>저장</button>
+              <button onClick={() => setRenaming(false)} style={{ fontFamily: PX.fp, fontSize: 9, padding: "5px 12px", background: "transparent", color: PX.mid, border: `1px solid ${PX.mid}`, cursor: "pointer" }}>취소</button>
               {renameError && <span style={{ fontFamily: PX.fb, fontSize: 11, color: PX.red }}>{renameError}</span>}
             </div>
           ) : (
@@ -588,7 +588,7 @@ export default function ModelDetailPage() {
               </h1>
               <button
                 onClick={() => { setNewName(model.name); setRenaming(true); setRenameError(""); }}
-                style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
+                style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = PX.mid; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}
               >
@@ -617,7 +617,7 @@ export default function ModelDetailPage() {
           </button>
           <button
             onClick={handleDeleteModel}
-            style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
+            style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
             onMouseEnter={(e) => { e.currentTarget.style.color = PX.red; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}
           >
@@ -848,7 +848,7 @@ export default function ModelDetailPage() {
                               {(isAnalysisOnly || hasPending || allTerminal) && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); handleDeleteBatch(batch.id); }}
-                                  style={{ fontFamily: PX.fp, fontSize: 6, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
+                                  style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
                                   onMouseEnter={(e) => { e.currentTarget.style.color = PX.red; }}
                                   onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}
                                 >삭제</button>

@@ -1,5 +1,5 @@
 // Tokens — single source of truth for pixel-retro design values
-export { PX, DESIGN_ATTRIBUTION, pxLabel, pxInput, pxPanel, pxSectionHeader } from "./tokens/px"
+export { PX, pxSz, DESIGN_ATTRIBUTION, pxLabel, pxInput, pxPanel, pxSectionHeader } from "./tokens/px"
 export type { PxTokens } from "./tokens/px"
 
 // Primitives

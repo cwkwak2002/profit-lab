@@ -127,11 +127,11 @@ export default function LeaderboardPage() {
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontFamily: PX.fp, fontSize: 13, color: PX.yellow, letterSpacing: 2, lineHeight: 1.4,
-            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 10 }}>
-            ★ <span style={{ fontSize: 10 }}>AI</span> 트레이딩 리더보드
+          <h1 style={{ fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1.4,
+            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 14 }}>
+            ★ <span style={{ fontSize: 14 }}>AI</span> 트레이딩 리더보드
           </h1>
-          <p style={{ fontFamily: PX.fb, fontSize: 13, color: PX.mid, margin: 0 }}>
+          <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
             AI 모델 트레이딩 성과 비교
           </p>
         </div>
@@ -185,8 +185,8 @@ export default function LeaderboardPage() {
               <TH align="right">잔액</TH>
               <TH align="right">수익률</TH>
               <TH align="right">승률</TH>
-              <TH align="right" fontSize={7}>MDD</TH>
-              <TH align="right" fontSize={7}>Profit Factor</TH>
+              <TH align="right">MDD</TH>
+              <TH align="right">Profit Factor</TH>
               <TH align="right">체결률</TH>
               <TH align="right">주문</TH>
             </tr>

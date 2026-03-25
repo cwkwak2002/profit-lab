@@ -91,12 +91,12 @@ export default function BacktestResultPage() {
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
         <div>
           <h1 style={{
-            fontFamily: PX.fp, fontSize: 13, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
-            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 10,
+            fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
+            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 14,
           }}>
             ◀ 백테스트 결과
           </h1>
-          <p style={{ fontFamily: PX.fb, fontSize: 13, color: PX.mid, margin: 0 }}>
+          <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
             {strategyLabel} &nbsp;·&nbsp; {run.start_date} ~ {run.end_date} &nbsp;·&nbsp; {run.coins.length}개 코인
           </p>
         </div>

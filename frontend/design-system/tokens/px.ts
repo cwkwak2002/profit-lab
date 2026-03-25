@@ -66,6 +66,31 @@ export const PX = {
 export type PxTokens = typeof PX;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Typography scale
+// Consistent named sizes — use these instead of raw numbers.
+// Press Start 2P renders large visually; sizes below account for that.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const pxSz = {
+  // Pixel font (PX.fp) — Press Start 2P
+  pageTitle:    20,  // h1 main page title
+  sectionTitle: 13,  // section / panel heading
+  tableHeader:  10,  // table <th> / column label
+  label:         9,  // form field label, sidebar header
+  micro:         8,  // badge, status, tag text
+
+  // Mono font (PX.fm) — JetBrains Mono
+  dataXl:       22,  // hero metric (e.g. backtest return %)
+  dataLg:       18,  // large data value
+  dataMd:       14,  // standard data cell
+  dataSm:       12,  // secondary / sub value
+
+  // Body font (PX.fb) — Pretendard
+  body:         14,  // paragraph, description
+  bodySm:       12,  // secondary description
+} as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Base style presets
 // Spread and override as needed — these are starting points, not constraints.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -74,7 +99,7 @@ export type PxTokens = typeof PX;
 export const pxLabel: CSSProperties = {
   display: "block",
   fontFamily: PX.fp,
-  fontSize: 7,
+  fontSize: pxSz.label,   // 9px
   color: PX.mid,
   letterSpacing: "0.08em",
   lineHeight: 1.8,
@@ -106,7 +131,7 @@ export const pxPanel: CSSProperties = {
 /** Section header — small pixel font, border-color, wide tracking. */
 export const pxSectionHeader: CSSProperties = {
   fontFamily: PX.fp,
-  fontSize: 7,
+  fontSize: pxSz.label,   // 9px
   color: PX.border,
   letterSpacing: "0.08em",
   marginBottom: 14,
