@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PxFooter } from "@/components/px-footer";
+import { PxPageShell } from "@/components/px-page-shell";
+import { PxPixelDeco } from "@/components/px-pixel-deco";
 import { PX } from "@/design-system/tokens/px";
 import { TableCell, TableRow } from "@/components/ui/table";
 import ReactMarkdown from "react-markdown";
@@ -530,8 +532,8 @@ export default function ModelDetailPage() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1, margin: "0 -24px -24px" }}>
-    <div className="px-page" style={{ flex: 1, display: "flex", flexDirection: "column", background: PX.panel }}>
+    <PxPageShell>
+    <div className="px-page" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <style>{`
         .px-page *::-webkit-scrollbar { width: 4px; height: 4px; }
         .px-page *::-webkit-scrollbar-track { background: #0c0c1e; }
@@ -551,6 +553,7 @@ export default function ModelDetailPage() {
       }}>
         {/* Left: back + title */}
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <PxPixelDeco variant="brain" size={36} />
           <button
             onClick={() => router.push("/benchmark/models")}
             style={{
@@ -893,7 +896,7 @@ export default function ModelDetailPage() {
     </div>
       <div style={{ flex: 1 }} />
       <PxFooter />
-    </div>
+    </PxPageShell>
   );
 }
 

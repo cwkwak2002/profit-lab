@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getBenchmarkModels, subscribeBenchmarkStream, type BenchmarkModel } from "@/lib/api";
 import { PxFooter } from "@/components/px-footer";
+import { PxPageShell } from "@/components/px-page-shell";
+import { PxPixelDeco } from "@/components/px-pixel-deco";
 import { PX } from "@/design-system/tokens/px";
 
 /* ── Metric card ─────────────────────────────────────────────────────────── */
@@ -121,12 +123,14 @@ export default function LeaderboardPage() {
   const bestReturn  = ((bestModel.balance - bestModel.seed) / bestModel.seed) * 100;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1, margin: "0 -24px -24px" }}>
-    <div style={{ maxWidth: 1120, margin: "0 auto", width: "100%", padding: "0 24px" }}>
+    <PxPageShell>
+    <div style={{ maxWidth: 1120, margin: "0 auto", width: "100%", padding: "32px 24px 0" }}>
 
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
-        <div>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <PxPixelDeco variant="trophy" size={52} />
+          <div>
           <h1 style={{ fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1.4,
             textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 14 }}>
             ★ <span style={{ fontSize: 14 }}>AI</span> 트레이딩 리더보드
@@ -134,6 +138,7 @@ export default function LeaderboardPage() {
           <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
             AI 모델 트레이딩 성과 비교
           </p>
+          </div>
         </div>
         <button
           onClick={() => router.push("/benchmark")}
@@ -267,6 +272,6 @@ export default function LeaderboardPage() {
     </div>
       <div style={{ flex: 1 }} />
       <PxFooter />
-    </div>
+    </PxPageShell>
   );
 }

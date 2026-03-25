@@ -10,6 +10,8 @@ import {
   type CoinSummary,
 } from "@/lib/api";
 import { PxFooter } from "@/components/px-footer";
+import { PxPageShell } from "@/components/px-page-shell";
+import { PxPixelDeco } from "@/components/px-pixel-deco";
 import { PX } from "@/design-system/tokens/px";
 
 const STRATEGY_LABELS: Record<string, string> = {
@@ -84,12 +86,14 @@ export default function BacktestResultPage() {
   const strategyLabel = STRATEGY_LABELS[run.params?.strategy as string] || "BACKTEST";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1, margin: "0 -24px -24px" }}>
-    <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%", padding: "0 24px" }}>
+    <PxPageShell>
+    <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%", padding: "32px 24px 0" }}>
 
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
-        <div>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <PxPixelDeco variant="chart" size={52} />
+          <div>
           <h1 style={{
             fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
             textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 14,
@@ -99,6 +103,7 @@ export default function BacktestResultPage() {
           <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
             {strategyLabel} &nbsp;·&nbsp; {run.start_date} ~ {run.end_date} &nbsp;·&nbsp; {run.coins.length}개 코인
           </p>
+          </div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button
@@ -167,6 +172,6 @@ export default function BacktestResultPage() {
     </div>
       <div style={{ flex: 1 }} />
       <PxFooter />
-    </div>
+    </PxPageShell>
   );
 }

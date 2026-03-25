@@ -15,6 +15,7 @@ import {
   type CoinSummary,
 } from "@/lib/api";
 
+import { PxPixelDeco } from "@/components/px-pixel-deco";
 import { PX } from "@/design-system/tokens/px";
 
 /* ── Stat card ───────────────────────────────────────────────────────────── */
@@ -105,20 +106,30 @@ export default function CoinDetailPage() {
       height: "calc(100vh - 110px)",
       display: "flex",
       flexDirection: "column",
-      background: PX.black,
+      background: "linear-gradient(135deg, #05051e 0%, #1a0b2e 50%, #0c0c1d 100%)",
       color: PX.white,
       overflow: "hidden",
+      position: "relative",
     }}>
+      {/* CRT scanline */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
+        background: "linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.18) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03))",
+        backgroundSize: "100% 4px, 3px 100%",
+        zIndex: 0, pointerEvents: "none",
+      }} aria-hidden="true" />
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div style={{
-        flexShrink: 0,
+        flexShrink: 0, position: "relative", zIndex: 1,
         display: "flex", alignItems: "center", gap: 16,
         padding: "10px 20px",
-        background: PX.panel,
+        background: "rgba(18,18,42,0.9)",
+        backdropFilter: "blur(4px)",
         borderBottom: `2px solid ${PX.border}`,
         boxShadow: "0 2px 0 rgba(51,85,255,0.2)",
       }}>
+        <PxPixelDeco variant="coin" size={32} />
         <Link href={`/backtest/${runId}`} style={{
           fontFamily: PX.fp, fontSize: 9, color: PX.mid,
           textDecoration: "none", letterSpacing: "0.05em",
@@ -186,7 +197,7 @@ export default function CoinDetailPage() {
       </div>
 
       {/* ── Body: sidebar + main ────────────────────────────────────────── */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative", zIndex: 1 }}>
 
         {/* Sidebar */}
         <aside style={{
