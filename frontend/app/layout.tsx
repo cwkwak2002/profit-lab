@@ -31,6 +31,7 @@ export default function RootLayout({
             </a>
             <NavLinks />
           </div>
+          <span className="text-xs text-muted-foreground">v{process.env.APP_VERSION}</span>
         </header>
         <main className="flex-1 p-6">{children}</main>
       </body>

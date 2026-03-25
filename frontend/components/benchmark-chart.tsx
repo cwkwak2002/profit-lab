@@ -142,6 +142,7 @@ function createDatafeed(symbol: string, hasOpenPosition: () => boolean) {
 function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
   try {
     const chart = widget.activeChart();
+    if (!chart) return;
 
     for (const order of orders) {
       // Order placed marker (show when created_at differs from fill_time)
@@ -151,14 +152,17 @@ function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
         const isSameTime = order.fill_time && Math.abs(createdTimeSec - fillTimeSec) < 60;
         if (!isSameTime) {
           const isBuy = order.side === "long";
-          chart.createExecutionShape()
-            .setText(isBuy ? "Long 주문" : "Short 주문")
-            .setTooltip(`주문 @ ${order.entry_price.toLocaleString()}`)
-            .setTextColor("#9ca3af")
-            .setArrowColor("#9ca3af")
-            .setDirection(isBuy ? "buy" : "sell")
-            .setTime(createdTimeSec)
-            .setFont("11px sans-serif");
+          const shape = chart.createExecutionShape();
+          if (shape) {
+            shape
+              .setText(isBuy ? "Long 주문" : "Short 주문")
+              .setTooltip(`주문 @ ${order.entry_price.toLocaleString()}`)
+              .setTextColor("#9ca3af")
+              .setArrowColor("#9ca3af")
+              .setDirection(isBuy ? "buy" : "sell")
+              .setTime(createdTimeSec)
+              .setFont("11px sans-serif");
+          }
         }
       }
 
@@ -166,14 +170,17 @@ function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
       if (order.fill_time) {
         const fillTimeSec = new Date(order.fill_time).getTime() / 1000;
         const isBuy = order.side === "long";
-        chart.createExecutionShape()
-          .setText(isBuy ? "Long 진입" : "Short 진입")
-          .setTooltip(`${isBuy ? "Long" : "Short"} @ ${order.entry_price.toLocaleString()}`)
-          .setTextColor(isBuy ? "#22c55e" : "#ef4444")
-          .setArrowColor(isBuy ? "#22c55e" : "#ef4444")
-          .setDirection(isBuy ? "buy" : "sell")
-          .setTime(fillTimeSec)
-          .setFont("bold 11px sans-serif");
+        const shape = chart.createExecutionShape();
+        if (shape) {
+          shape
+            .setText(isBuy ? "Long 진입" : "Short 진입")
+            .setTooltip(`${isBuy ? "Long" : "Short"} @ ${order.entry_price.toLocaleString()}`)
+            .setTextColor(isBuy ? "#22c55e" : "#ef4444")
+            .setArrowColor(isBuy ? "#22c55e" : "#ef4444")
+            .setDirection(isBuy ? "buy" : "sell")
+            .setTime(fillTimeSec)
+            .setFont("bold 11px sans-serif");
+        }
       }
 
       // Exit arrow
@@ -187,14 +194,17 @@ function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
           : "";
         // Exit direction is opposite of entry
         const isBuy = order.side === "long";
-        chart.createExecutionShape()
-          .setText(`${label} ${reason === "CANCEL_30M" ? "취소" : "청산"}${pnlStr}`)
-          .setTooltip(`${label} @ ${order.close_price?.toLocaleString() || "?"}${pnlStr}`)
-          .setTextColor(isProfit ? "#22c55e" : "#ef4444")
-          .setArrowColor(isProfit ? "#22c55e" : "#ef4444")
-          .setDirection(isBuy ? "sell" : "buy")
-          .setTime(closeTimeSec)
-          .setFont("bold 11px sans-serif");
+        const shape = chart.createExecutionShape();
+        if (shape) {
+          shape
+            .setText(`${label} ${reason === "CANCEL_30M" ? "취소" : "청산"}${pnlStr}`)
+            .setTooltip(`${label} @ ${order.close_price?.toLocaleString() || "?"}${pnlStr}`)
+            .setTextColor(isProfit ? "#22c55e" : "#ef4444")
+            .setArrowColor(isProfit ? "#22c55e" : "#ef4444")
+            .setDirection(isBuy ? "sell" : "buy")
+            .setTime(closeTimeSec)
+            .setFont("bold 11px sans-serif");
+        }
       }
     }
   } catch (e) {
@@ -205,6 +215,7 @@ function addExecutionShapes(widget: any, orders: BenchmarkOrder[]) {
 function addOrderLines(widget: any, orders: BenchmarkOrder[]) {
   try {
     const chart = widget.activeChart();
+    if (!chart) return;
 
     for (const order of orders) {
       if (order.status !== "FILLED") continue;
@@ -265,21 +276,36 @@ function addOrderLines(widget: any, orders: BenchmarkOrder[]) {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-const STORAGE_KEY = "benchmark-chart-state";
+const STUDIES_KEY = "benchmark-chart-studies";
 
-function saveChartState(widget: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+// Studies that TradingView adds by default — skip when saving/restoring
+const DEFAULT_STUDIES = new Set(["Volume"]);
+
+function saveStudies(widget: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
   try {
-    widget.save((state: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    });
+    const chart = widget.activeChart();
+    const studies = chart.getAllStudies();
+    const list = studies
+      .filter((s: any) => !DEFAULT_STUDIES.has(s.name)) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .map((s: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+        name: s.name,
+        inputs: chart.getStudyById(s.id)?.getInputValues?.() || {},
+      }));
+    localStorage.setItem(STUDIES_KEY, JSON.stringify(list));
   } catch { /* ignore */ }
 }
 
-function loadChartState(): any | null { // eslint-disable-line @typescript-eslint/no-explicit-any
+function restoreStudies(widget: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+    const raw = localStorage.getItem(STUDIES_KEY);
+    if (!raw) return;
+    const list = JSON.parse(raw);
+    const chart = widget.activeChart();
+    for (const s of list) {
+      if (DEFAULT_STUDIES.has(s.name)) continue;
+      chart.createStudy(s.name, false, false, s.inputs || {});
+    }
+  } catch { /* ignore */ }
 }
 
 export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
@@ -322,8 +348,6 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
         const TV = (window as any).TradingView; // eslint-disable-line @typescript-eslint/no-explicit-any
         if (!TV?.widget) return;
 
-        const savedState = loadChartState();
-
         const widget = new TV.widget({
           container: el,
           library_path: "/tradingview/",
@@ -364,20 +388,18 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
             "hide_left_toolbar_by_default",
           ],
           loading_screen: { backgroundColor: "#0d1526", foregroundColor: "#3b82f6" },
-          ...(savedState ? { saved_data: savedState } : {}),
         });
 
         widgetRef.current = widget;
 
         widget.onChartReady(() => {
           chartReadyRef.current = true;
-          const chart = widget.activeChart();
 
-          // Override symbol to current coin (saved_data may contain a different symbol)
-          try { chart.setSymbol(symbol); } catch { /* */ }
+          // Restore saved studies (indicators)
+          restoreStudies(widget);
 
-          // Scroll to correct position after data loads for this symbol
-          const scrollAfterLoad = () => {
+          // Delay to ensure chart series is fully initialized before adding shapes
+          setTimeout(() => {
             addOrderLines(widget, ordersRef.current);
             addExecutionShapes(widget, ordersRef.current);
 
@@ -392,17 +414,10 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
                 doScroll(widget, t);
               }
             }
-          };
+          }, 300);
 
-          try {
-            chart.onDataLoaded().subscribe(null, scrollAfterLoad, true);
-          } catch {
-            // Fallback: small delay for data to load
-            setTimeout(scrollAfterLoad, 500);
-          }
-
-          // Periodically save chart state (studies, drawings, etc.)
-          saveTimerRef.current = setInterval(() => saveChartState(widget), 3000);
+          // Periodically save studies list
+          saveTimerRef.current = setInterval(() => saveStudies(widget), 3000);
         });
       }
 
@@ -428,7 +443,7 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
           saveTimerRef.current = null;
         }
         if (widgetRef.current && chartReadyRef.current) {
-          saveChartState(widgetRef.current);
+          saveStudies(widgetRef.current);
         }
         chartReadyRef.current = false;
         pendingScrollRef.current = null;
