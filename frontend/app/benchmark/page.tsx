@@ -367,7 +367,7 @@ function BenchmarkPageInner() {
               </button>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
               {orders.map((order, idx) => (
                 <OrderCard
                   key={order.key}
@@ -498,12 +498,12 @@ function OrderCard({
           top: -11,
           right: 16,
           background: "var(--px-black,#0a0a1a)",
-          border: "none",
+          border: "1px solid var(--px-red,#ff3333)",
           fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
           fontSize: 9,
-          color: "var(--px-mid,#8888aa)",
+          color: "var(--px-red,#ff3333)",
           cursor: "pointer",
-          padding: "0 6px",
+          padding: "2px 8px",
           lineHeight: 1,
         }}
         title="삭제"
