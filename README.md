@@ -19,7 +19,7 @@
 | **AI** | Anthropic Claude API (claude-sonnet-4) |
 | **메시징** | Telethon (Telegram userbot) |
 | **배포** | Docker, Docker Compose |
-| **UI** | shadcn/ui, Lucide Icons |
+| **UI 디자인** | Pixel-Retro 디자인 시스템 (Press Start 2P, JetBrains Mono), shadcn/ui |
 
 ## Features
 
@@ -58,6 +58,7 @@ Claude Sonnet 4 API를 활용한 자동 매매 시스템.
 - 5분 간격으로 Bybit Futures 마켓 데이터 수집 (30개 코인)
 - Claude API에 시세/펀딩레이트/변동률 전송 → 3~5개 추천 수신
 - 진입가, TP, SL, 확신도, 추천 근거를 포함한 주문 자동 제출
+- 가용 잔액 $1 미만 시 주문 제출 생략 (잔액 소진 방지)
 - 모든 prompt/response를 `data/ai_trader_logs/`에 타임스탬프 로그 저장
 
 ### 5. Telegram Listener (Mirroly Live)
@@ -79,8 +80,8 @@ profit-lab/
 │   ├── config.py                  # 설정 (코인 목록, 전략 파라미터, 수수료)
 │   ├── Dockerfile                 # Backend Docker 이미지
 │   ├── data/
-│   │   ├── db.py                  # SQLite DB 연산
-│   │   └── fetcher.py             # CCXT Bybit Futures 데이터 수집
+│   │   ├── db.py                  # SQLite DB 연산 (WAL, timeout=30)
+│   │   └── fetcher.py             # CCXT Bybit Futures (linear) 데이터 수집
 │   ├── strategy/
 │   │   ├── rsi_divergence.py      # RSI 다이버전스 전략
 │   │   ├── ema_trend.py           # EMA 추세 추종 전략
@@ -89,11 +90,11 @@ profit-lab/
 │   ├── engine/
 │   │   ├── backtester.py          # 백테스트 엔진
 │   │   ├── benchmark_monitor.py   # 실시간 가격 모니터링
-│   │   ├── ai_trader.py           # Claude API 자동 매매
+│   │   ├── ai_trader.py           # Claude API 자동 매매 (Calico)
 │   │   └── telegram_listener.py   # Telegram 시그널 리스너
 │   └── routers/
 │       ├── data.py                # 데이터 동기화/캔들/티커 API
-│       ├── backtest.py            # 백테스트 실행/결과 API
+│       ├── backtest.py            # 백테스트 실행/결과 API (gap detection)
 │       └── benchmark.py           # 벤치마크 API + SSE
 │
 ├── frontend/
@@ -103,12 +104,23 @@ profit-lab/
 │   ├── components/
 │   │   ├── benchmark-chart.tsx    # TradingView 벤치마크 차트 (실시간 업데이트)
 │   │   ├── tradingview-chart.tsx  # TradingView 백테스트 차트
+│   │   ├── ticker-tape.tsx        # 상단 스크롤 티커
 │   │   └── ...                    # UI 컴포넌트
+│   ├── design-system/             # Pixel-Retro 디자인 시스템
+│   │   ├── tokens/                # CSS 토큰 (px.ts, pixel-retro.css)
+│   │   ├── primitives/            # 기본 UI 컴포넌트 (Button, Card, Badge 등)
+│   │   ├── patterns/              # 복합 패턴 (MetricRow, StatCard 등)
+│   │   └── providers/             # ThemeProvider
 │   ├── lib/api.ts                 # API 클라이언트
 │   └── Dockerfile                 # Frontend Docker 이미지
 │
+├── stitch/                        # UI 목업 & 디자인 스펙
+│   ├── spec-01-backtest.md
+│   ├── spec-02-leaderboard.md
+│   └── spec-03-order-input.md
+│
 ├── data/                          # DB, 로그 (gitignore)
-│   ├── profit-lab.db
+│   ├── profit-lab.db              # Docker 볼륨 마운트: ./data:/data
 │   ├── ai_trader_logs/
 │   └── telegram_logs/
 │
@@ -157,6 +169,8 @@ export REQUESTS_CA_BUNDLE=~/.config/certs/cloudflare-warp.pem
 export NODE_EXTRA_CA_CERTS=~/.config/certs/cloudflare-warp.pem
 ```
 
+백엔드 서버는 시작 시 `certifi` 표준 CA와 WARP CA를 결합한 번들을 자동으로 생성하여 `httpx`, `requests`, `anthropic` SDK 등 모든 HTTP 클라이언트에 적용합니다.
+
 ---
 
 ### 방법 1: 직접 실행 (로컬 개발)
@@ -192,7 +206,7 @@ docker compose up -d --build
 ```
 
 - `.env` 파일의 `API_URL`이 `docker-compose.yml`에서 `NEXT_PUBLIC_API_URL` 빌드 arg로 전달됩니다.
-- DB는 `./data` 볼륨으로 마운트되어 컨테이너 재시작 시에도 유지됩니다.
+- DB는 `./data` 볼륨으로 마운트되어 컨테이너 재시작 시에도 유지됩니다. 컨테이너 내부 경로: `/data/profit-lab.db`
 - Telegram 세션 파일(`data/telegram.session`)은 로컬에서 생성 후 서버로 복사해야 합니다.
 
 ```bash
