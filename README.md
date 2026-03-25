@@ -123,41 +123,112 @@ profit-lab/
 
 - Python 3.12+
 - Node.js 22+
+- Docker & Docker Compose (Docker 배포 시)
 
 ### Environment Setup
 
 ```bash
+# 환경 변수 템플릿 복사
 cp .env.example .env
-# .env 파일에 API 키 입력:
-#   ANTHROPIC_API_KEY=sk-ant-...
-#   TELEGRAM_API_ID=...
-#   TELEGRAM_API_HASH=...
-#   TELEGRAM_CHANNEL=MirrorlyLive
 ```
 
-### Local Development
+`.env` 파일에 필요한 키를 입력합니다:
+
+```env
+ANTHROPIC_API_KEY=sk-ant-...          # AI Auto-Trader용
+TELEGRAM_API_ID=12345678              # Telegram Listener용
+TELEGRAM_API_HASH=abcdef...           # Telegram Listener용
+TELEGRAM_CHANNEL=MirrorlyLive         # Telegram 채널명
+API_URL=http://138.2.114.50:8000      # Docker 배포 시 Backend URL
+```
+
+> **로컬 개발 시** `.env.local` 파일을 만들면 `.env`를 오버라이드합니다. `.env.local`은 git에 포함되지 않으므로 개인 설정에 적합합니다.
+
+#### SSL 인증서 설정 (Cloudflare WARP 등 사용 시)
+
+기업 프록시나 Cloudflare WARP 환경에서는 커스텀 CA 인증서를 설정해야 합니다. `~/.zshrc`에 추가:
 
 ```bash
-# Backend
+# Python (requests, urllib3, httpx)
+export SSL_CERT_FILE=~/.config/certs/cloudflare-warp.pem
+export REQUESTS_CA_BUNDLE=~/.config/certs/cloudflare-warp.pem
+
+# Node.js
+export NODE_EXTRA_CA_CERTS=~/.config/certs/cloudflare-warp.pem
+```
+
+---
+
+### 방법 1: 직접 실행 (로컬 개발)
+
+```bash
+# 1) Backend
 cd backend
 pip install -r requirements.txt
 uvicorn main:app --reload
-# http://localhost:8000
+# → http://localhost:8000
 
-# Frontend
+# 2) Frontend (별도 터미널)
 cd frontend
 npm install
 npm run dev
-# http://localhost:3000
+# → http://localhost:3000
 ```
 
-### Docker Deployment
+- Backend는 `.env.local` → `.env` 순으로 환경 변수를 로드합니다.
+- Frontend는 `NEXT_PUBLIC_API_URL` 미설정 시 `http://localhost:8000`을 기본 사용합니다.
+- DB 파일은 `data/profit-lab.db`에 자동 생성됩니다.
+
+---
+
+### 방법 2: Docker 배포
 
 ```bash
+# 빌드 & 실행
 docker compose up -d --build
-# Frontend: http://localhost:5000
-# Backend:  http://localhost:8000
+
+# → Frontend: http://localhost:3000
+# → Backend:  http://localhost:8000
 ```
+
+- `.env` 파일의 `API_URL`이 `docker-compose.yml`에서 `NEXT_PUBLIC_API_URL` 빌드 arg로 전달됩니다.
+- DB는 `./data` 볼륨으로 마운트되어 컨테이너 재시작 시에도 유지됩니다.
+- Telegram 세션 파일(`data/telegram.session`)은 로컬에서 생성 후 서버로 복사해야 합니다.
+
+```bash
+# 로그 확인
+docker compose logs -f backend
+docker compose logs -f frontend
+
+# 재빌드 (코드 변경 후)
+git pull && docker compose up -d --build
+
+# 중지
+docker compose down
+```
+
+#### 원격 서버 배포 (OCI Ubuntu 등)
+
+```bash
+# 1) Docker 설치
+sudo apt update && sudo apt install -y docker.io docker-compose-v2
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER  # 재로그인 필요
+
+# 2) 코드 클론 & 환경 설정
+git clone <repo-url> ~/Work/profit-lab
+cd ~/Work/profit-lab
+cp .env.example .env
+vi .env  # API 키, API_URL 설정
+
+# 3) Telegram 세션 파일 복사 (로컬에서)
+scp data/telegram.session user@server:~/Work/profit-lab/data/
+
+# 4) 실행
+docker compose up -d --build
+```
+
+> **방화벽**: 서버의 Security List(OCI) 또는 Security Group(AWS)에서 3000, 8000 포트 인그레스를 허용해야 합니다.
 
 ## Configuration
 

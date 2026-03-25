@@ -133,7 +133,12 @@ def _call_claude(user_prompt: str) -> tuple[str, list[dict]]:
 
     Returns (raw_response_text, parsed_recommendations).
     """
-    client = anthropic.Anthropic()
+    import httpx, os as _os
+    ca = _os.environ.get("SSL_CERT_FILE") or _os.environ.get("REQUESTS_CA_BUNDLE")
+    if ca:
+        ca = _os.path.expanduser(ca)
+    http_client = httpx.Client(verify=ca) if ca and _os.path.exists(ca) else None
+    client = anthropic.Anthropic(http_client=http_client) if http_client else anthropic.Anthropic()
     resp = client.messages.create(
         model=CLAUDE_MODEL,
         max_tokens=2000,

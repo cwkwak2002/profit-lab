@@ -6,11 +6,22 @@ from config import EXCHANGE_ID, TOP_COINS
 
 
 def get_exchange() -> ccxt.Exchange:
+    import os
+    ca = os.environ.get("REQUESTS_CA_BUNDLE") or os.environ.get("SSL_CERT_FILE")
+
     exchange_class = getattr(ccxt, EXCHANGE_ID)
     exchange = exchange_class({
         "enableRateLimit": True,
-        "options": {"defaultType": "future"},
+        "options": {
+            "defaultType": "linear",
+            "fetchMarkets": ["linear"],
+        },
     })
+    if ca:
+        import os as _os
+        ca = _os.path.expanduser(ca)
+        if _os.path.exists(ca):
+            exchange.session.verify = ca
     return exchange
 
 

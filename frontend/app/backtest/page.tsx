@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { runBacktestStream, type ProgressEvent } from "@/lib/api";
 
 const ALL_COINS = [
-  "BTC", "ETH", "SOL", "XRP", "DOGE",
-  "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "CRV", "DOT", "ENA",
-  "FET", "HBAR", "HYPE", "INJ", "LINK", "LTC", "NEAR", "OP", "PEPE", "RENDER",
+  "BTC", "ETH", "SOL", "XRP", "HYPE",
+  "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "CRV", "DOGE", "DOT",
+  "ENA", "FET", "HBAR", "INJ", "LINK", "LTC", "NEAR", "OP", "PEPE", "RENDER",
   "SUI", "TAO", "TRX", "UNI", "WIF",
 ];
 
@@ -28,12 +28,14 @@ function BacktestPageInner() {
   const initialStrategy = searchParams.get("strategy") || "rsi_divergence";
 
   const [strategy, setStrategy] = useState(initialStrategy);
-  const [startDate, setStartDate] = useState("2026-01-01");
-  const [endDate, setEndDate] = useState("2026-03-21");
+  const [startDate, setStartDate] = useState("2025-01-01");
+  const [endDate, setEndDate] = useState("2025-12-31");
   const [selectedCoins, setSelectedCoins] = useState<string[]>(DEFAULT_COINS);
   const [status, setStatus] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
   const [loading, setLoading] = useState(false);
+
+  const restoredRef = useRef(false);
 
   // Restore from sessionStorage on mount
   useEffect(() => {
@@ -47,10 +49,12 @@ function BacktestPageInner() {
     if (c) {
       try { setSelectedCoins(JSON.parse(c)); } catch { /* ignore */ }
     }
+    restoredRef.current = true;
   }, []);
 
-  // Persist selections to sessionStorage
+  // Persist selections to sessionStorage (skip until restore completes)
   useEffect(() => {
+    if (!restoredRef.current) return;
     sessionStorage.setItem("bt_strategy", strategy);
     sessionStorage.setItem("bt_startDate", startDate);
     sessionStorage.setItem("bt_endDate", endDate);
