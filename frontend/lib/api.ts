@@ -1,12 +1,7 @@
-function getApiBase() {
-  if (typeof window === "undefined") return "http://localhost:8000";
-  return `http://${window.location.hostname}:8000`;
-}
-
-const API_BASE = getApiBase();
+const _apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${_apiBase}${path}`, {
     ...options,
     headers: { "Content-Type": "application/json", ...options?.headers },
   });
@@ -123,7 +118,7 @@ export async function runBacktestStream(
   req: BacktestRequest,
   onProgress: (event: ProgressEvent) => void,
 ): Promise<string> {
-  const res = await fetch(`${API_BASE}/api/backtest/run-stream`, {
+  const res = await fetch(`${_apiBase}/api/backtest/run-stream`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(req),
@@ -373,7 +368,7 @@ export async function deleteBenchmarkBatch(
 export function subscribeBenchmarkStream(
   onEvent: (event: Record<string, unknown>) => void,
 ): EventSource {
-  const es = new EventSource(`${API_BASE}/api/benchmark/stream`);
+  const es = new EventSource(`${_apiBase}/api/benchmark/stream`);
   es.onmessage = (e) => {
     onEvent(JSON.parse(e.data));
   };

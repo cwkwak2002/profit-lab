@@ -19,14 +19,14 @@ export function ResizableSplit({
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [ratio, setRatio] = useState(defaultRatio);
-  const dragging = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    dragging.current = true;
+    setIsDragging(true);
 
     const onMouseMove = (e: MouseEvent) => {
-      if (!dragging.current || !containerRef.current) return;
+      if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const totalHeight = rect.height;
       const y = e.clientY - rect.top;
@@ -38,7 +38,7 @@ export function ResizableSplit({
     };
 
     const onMouseUp = () => {
-      dragging.current = false;
+      setIsDragging(false);
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
     };
@@ -48,7 +48,8 @@ export function ResizableSplit({
   }, [minTopPx, minBottomPx]);
 
   return (
-    <div ref={containerRef} className="flex flex-col h-full overflow-hidden">
+    <div ref={containerRef} className="flex flex-col h-full overflow-hidden relative">
+      {isDragging && <div className="absolute inset-0 z-50" />}
       <div style={{ flex: `0 0 ${ratio * 100}%` }} className="overflow-hidden">
         {top}
       </div>

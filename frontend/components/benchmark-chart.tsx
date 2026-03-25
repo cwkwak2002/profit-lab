@@ -355,41 +355,53 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
             "timeframes_toolbar",
             "go_to_date",
             "order_panel",
+            "dom_widget",
             "object_tree_legend_mode",
             "show_object_tree",
+            "trading_account_manager",
           ],
           enabled_features: [
             "hide_left_toolbar_by_default",
           ],
           loading_screen: { backgroundColor: "#0d1526", foregroundColor: "#3b82f6" },
           ...(savedState ? { saved_data: savedState } : {}),
-          auto_save_delay: 3,
         });
 
         widgetRef.current = widget;
 
         widget.onChartReady(() => {
           chartReadyRef.current = true;
+          const chart = widget.activeChart();
 
           // Override symbol to current coin (saved_data may contain a different symbol)
-          try { widget.activeChart().setSymbol(symbol); } catch { /* */ }
+          try { chart.setSymbol(symbol); } catch { /* */ }
 
-          addOrderLines(widget, ordersRef.current);
-          addExecutionShapes(widget, ordersRef.current);
+          // Scroll to correct position after data loads for this symbol
+          const scrollAfterLoad = () => {
+            addOrderLines(widget, ordersRef.current);
+            addExecutionShapes(widget, ordersRef.current);
 
-          if (pendingScrollRef.current !== null) {
-            doScroll(widget, pendingScrollRef.current);
-            pendingScrollRef.current = null;
-          } else {
-            const latestOrder = [...ordersRef.current]
-              .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
-            if (latestOrder) {
-              const t = new Date(latestOrder.fill_time || latestOrder.created_at).getTime() / 1000;
-              doScroll(widget, t);
+            if (pendingScrollRef.current !== null) {
+              doScroll(widget, pendingScrollRef.current);
+              pendingScrollRef.current = null;
+            } else {
+              const latestOrder = [...ordersRef.current]
+                .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+              if (latestOrder) {
+                const t = new Date(latestOrder.fill_time || latestOrder.created_at).getTime() / 1000;
+                doScroll(widget, t);
+              }
             }
+          };
+
+          try {
+            chart.onDataLoaded().subscribe(null, scrollAfterLoad, true);
+          } catch {
+            // Fallback: small delay for data to load
+            setTimeout(scrollAfterLoad, 500);
           }
 
-          // Periodically save chart state (interval, studies, drawing tools, etc.)
+          // Periodically save chart state (studies, drawings, etc.)
           saveTimerRef.current = setInterval(() => saveChartState(widget), 3000);
         });
       }
@@ -415,7 +427,6 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
           clearInterval(saveTimerRef.current);
           saveTimerRef.current = null;
         }
-        // Save state one last time before destroying
         if (widgetRef.current && chartReadyRef.current) {
           saveChartState(widgetRef.current);
         }

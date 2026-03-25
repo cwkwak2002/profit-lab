@@ -8,7 +8,10 @@ from fastapi import FastAPI
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 
-load_dotenv(Path(__file__).parent.parent / ".env")
+# .env.local overrides .env (local dev uses .env.local, Docker uses .env)
+_root = Path(__file__).parent.parent
+load_dotenv(_root / ".env.local", override=True)
+load_dotenv(_root / ".env")
 from fastapi.middleware.cors import CORSMiddleware
 
 from data.db import init_db
@@ -55,3 +58,5 @@ app.include_router(benchmark_router)
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
+
+
