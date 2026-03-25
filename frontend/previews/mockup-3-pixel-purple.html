@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROFIT LAB — Pixel Purple (Hostinger Palette)</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ─────────────────────────────────────────────────────────────────────────
+     Mockup-3: Pixel Purple
+     Base: mockup-1-pixel-retro.html
+     Color source: Hostinger brand palette (hostinger.com)
+       Primary purple  #674CC4  → replaces blue  #3355ff
+       Light purple    #9b7ef8  → hover / highlight
+       Deep purple     #3d2a8a  → panel-alt / header
+       Very deep       #1a0e3d  → header bg
+     Design language: 100% Pixel Retro (unchanged)
+  ───────────────────────────────────────────────────────────────────────── */
+
+  :root {
+    /* Backgrounds */
+    --px-bg:        #0a0a1a;
+    --px-bg2:       #12122a;
+
+    /* Hostinger purple replaces blue */
+    --px-purple-deep: #1a0e3d;   /* header/footer bg */
+    --px-navy:        #3d2a8a;   /* elevated panels  */
+    --px-blue:        #674CC4;   /* primary (Hostinger) */
+    --px-blue-hi:     #9b7ef8;   /* hover / highlight */
+
+    /* Accent colours (unchanged from mockup-1) */
+    --px-cyan:      #00eeff;
+    --px-pink:      #ff2d78;
+    --px-yellow:    #ffe000;
+    --px-green:     #00ff7f;
+    --px-red:       #ff3333;
+
+    /* Neutrals */
+    --px-white:     #f0f0ff;
+    --px-gray:      #8888aa;
+
+    /* Border — Hostinger primary purple */
+    --px-border:    #674CC4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  img, canvas { image-rendering: pixelated; }
+
+  body {
+    background: var(--px-bg);
+    color: var(--px-white);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  /* ── CRT SCANLINES (unchanged) ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent, transparent 2px,
+      rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── HERO PURPLE GLOW (Hostinger gradient → pixel version) ── */
+  /* Hostinger uses soft radial gradients on hero.
+     Here we simulate it as a hard-edged pixel "aura" behind the hero. */
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 60% at 70% 50%,
+        rgba(103, 76, 196, 0.18) 0%,
+        rgba(103, 76, 196, 0.06) 50%,
+        transparent 70%);
+    z-index: 0;
+  }
+
+  /* ── PIXEL BORDER util ── */
+  .px-box {
+    border: 3px solid var(--px-border);
+    box-shadow: 4px 4px 0 var(--px-blue-hi), inset 0 0 0 1px rgba(155,126,248,0.08);
+    background: var(--px-bg2);
+  }
+  .px-box-pink   { border-color: var(--px-pink);   box-shadow: 4px 4px 0 var(--px-pink); }
+  .px-box-yellow { border-color: var(--px-yellow);  box-shadow: 4px 4px 0 var(--px-yellow); }
+  .px-box-green  { border-color: var(--px-green);   box-shadow: 4px 4px 0 var(--px-green); }
+  .px-box-purple { border-color: var(--px-blue-hi); box-shadow: 4px 4px 0 var(--px-blue-hi); }
+
+  /* ── HEADER ── */
+  header {
+    /* Hostinger: deep dark with purple tint */
+    background: var(--px-purple-deep);
+    border-bottom: 3px solid var(--px-blue);
+    box-shadow: 0 2px 0 rgba(103,76,196,0.4);
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo-block { display: flex; align-items: center; gap: 12px; }
+
+  .coin-sprite {
+    width: 24px; height: 24px;
+    display: grid;
+    grid-template-columns: repeat(8,3px);
+    grid-template-rows: repeat(8,3px);
+    animation: coin-spin 1.2s steps(1) infinite;
+  }
+  @keyframes coin-spin {
+    0%   { transform: scaleX(1); }
+    25%  { transform: scaleX(0.5); }
+    50%  { transform: scaleX(0.1); }
+    75%  { transform: scaleX(0.5); }
+    100% { transform: scaleX(1); }
+  }
+  .coin-sprite div { background: var(--px-yellow); }
+
+  .logo-text {
+    font-size: 14px;
+    /* Hostinger: purple gradient brand feel → pixel hard shadow in purple */
+    color: var(--px-blue-hi);
+    text-shadow: 2px 2px 0 #3d2a8a, 4px 4px 0 #1a0e3d;
+    letter-spacing: 2px;
+  }
+  .logo-text em {
+    color: var(--px-yellow);
+    text-shadow: 2px 2px 0 #886600, 4px 4px 0 #443300;
+    font-style: normal;
+  }
+
+  nav { display: flex; gap: 24px; }
+  nav a {
+    color: var(--px-blue-hi);
+    text-decoration: none;
+    font-size: 8px;
+    padding: 4px 8px;
+    border: 2px solid transparent;
+    transition: all 0.1s steps(1);
+  }
+  nav a:hover {
+    border-color: var(--px-blue-hi);
+    background: rgba(103,76,196,0.2);
+    color: #fff;
+  }
+
+  .header-lives {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 8px;
+    color: var(--px-pink);
+  }
+
+  /* ── TICKER TAPE — Hostinger purple ── */
+  .ticker {
+    /* Hostinger primary purple as ticker background */
+    background: var(--px-blue);
+    overflow: hidden;
+    padding: 6px 0;
+    border-top: 2px solid var(--px-blue-hi);
+    border-bottom: 2px solid var(--px-blue-hi);
+  }
+  .ticker-inner {
+    display: flex;
+    animation: ticker-scroll 20s linear infinite;
+    white-space: nowrap;
+    gap: 40px;
+    width: max-content;
+  }
+  @keyframes ticker-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .tick-item { font-size: 7px; color: #fff; }
+  .tick-item .pos { color: var(--px-green); }
+  .tick-item .neg { color: var(--px-red); }
+
+  /* ── HERO ── */
+  .hero-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+  .hero {
+    position: relative;
+    z-index: 1;
+    padding: 60px 32px 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .insert-coin {
+    font-size: 8px;
+    color: var(--px-gray);
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+    animation: blink 1.2s steps(1) infinite;
+  }
+  @keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  .hero-title { font-size: 32px; line-height: 1.3; margin-bottom: 8px; }
+  .hero-title .t1 {
+    color: var(--px-yellow);
+    text-shadow: 3px 3px 0 #996600, 6px 6px 0 #443300;
+    display: block;
+  }
+  .hero-title .t2 {
+    /* Hostinger purple replaces cyan for the second hero word */
+    color: var(--px-blue-hi);
+    text-shadow: 3px 3px 0 #3d2a8a, 6px 6px 0 #1a0e3d;
+    display: block;
+    margin-top: 4px;
+  }
+
+  .hero-sub {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    color: var(--px-gray);
+    margin: 20px 0 28px;
+    line-height: 1.6;
+    max-width: 420px;
+  }
+
+  .btn-group { display: flex; gap: 16px; flex-wrap: wrap; }
+
+  .px-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    padding: 12px 20px;
+    border: 3px solid;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.1s steps(1);
+  }
+  .px-btn-primary {
+    /* Hostinger purple primary button */
+    background: var(--px-blue);
+    border-color: var(--px-blue-hi);
+    color: #fff;
+    box-shadow: 4px 4px 0 var(--px-blue-hi);
+  }
+  .px-btn-primary:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--px-blue-hi);
+    background: #7a5fd4;
+  }
+  .px-btn-secondary {
+    background: transparent;
+    border-color: var(--px-pink);
+    color: var(--px-pink);
+    box-shadow: 4px 4px 0 var(--px-pink);
+  }
+  .px-btn-secondary:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--px-pink);
+  }
+
+  /* ── HERO RIGHT: pixel screen ── */
+  .hero-screen {
+    aspect-ratio: 4/3;
+    background: #000;
+    border: 4px solid var(--px-blue);
+    /* Hostinger purple glow around the screen element */
+    box-shadow:
+      0 0 0 2px var(--px-purple-deep),
+      8px 8px 0 var(--px-blue),
+      0 0 40px rgba(103,76,196,0.4),
+      0 0 80px rgba(103,76,196,0.15);
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .screen-header {
+    color: var(--px-green);
+    font-size: 7px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #003300;
+    padding-bottom: 8px;
+  }
+
+  /* Mini pixel chart */
+  .px-chart {
+    width: 100%;
+    height: 140px;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    padding: 0 4px;
+    margin-bottom: 12px;
+  }
+  .bar { flex: 1; min-width: 8px; position: relative; display: flex; flex-direction: column; justify-content: flex-end; }
+  .bar-body { width: 100%; border: 1px solid; }
+  .bar-up   .bar-body { background: var(--px-green); border-color: #00aa55; }
+  .bar-down .bar-body { background: var(--px-red);   border-color: #aa0000; }
+  .bar-wick { width: 1px; background: #888; margin: 0 auto; }
+
+  .px-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    font-size: 6px;
+  }
+  .stat-cell {
+    background: #0a0a1a;
+    border: 1px solid rgba(103,76,196,0.3);
+    padding: 6px 8px;
+    text-align: center;
+  }
+  .stat-label { color: var(--px-gray); margin-bottom: 2px; }
+  .stat-up   { color: var(--px-green); }
+  .stat-down { color: var(--px-red); }
+  .stat-neu  { color: var(--px-yellow); }
+
+  .cursor-blink {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--px-green);
+    animation: blink 0.8s steps(1) infinite;
+    vertical-align: middle;
+  }
+
+  /* ── SECTION TITLES ── */
+  .section-title {
+    text-align: center;
+    font-size: 11px;
+    color: var(--px-yellow);
+    margin: 48px 0 8px;
+    letter-spacing: 3px;
+  }
+  .section-sub {
+    text-align: center;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 12px;
+    color: var(--px-gray);
+    margin-bottom: 32px;
+  }
+
+  /* ── STRATEGY GRID ── */
+  .strategy-grid {
+    max-width: 1100px;
+    margin: 0 auto 60px;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .strategy-card { padding: 20px; cursor: pointer; transition: all 0.1s steps(1); }
+  .strategy-card:hover { transform: translate(-2px, -2px); }
+  .strategy-card:hover .px-box { box-shadow: 6px 6px 0 var(--px-blue-hi); }
+
+  .s-icon { font-size: 28px; margin-bottom: 12px; display: block; filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.8)); }
+  .s-title { font-size: 9px; color: var(--px-blue-hi); margin-bottom: 8px; letter-spacing: 1px; }
+  .s-desc  { font-family: 'Noto Sans KR', sans-serif; font-size: 11px; color: var(--px-gray); line-height: 1.5; }
+  .s-level { margin-top: 12px; font-size: 7px; display: flex; gap: 3px; }
+  .s-lv-pip { width: 10px; height: 10px; background: var(--px-blue); border: 1px solid var(--px-blue-hi); }
+  .s-lv-pip.off { background: #1a1a3a; border-color: #334; }
+
+  /* ── AI BENCHMARK SECTION ── */
+  .ai-section {
+    background: var(--px-navy);  /* Hostinger deep purple */
+    border-top: 3px solid var(--px-pink);
+    border-bottom: 3px solid var(--px-pink);
+    padding: 40px 32px;
+    margin-bottom: 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Subtle Hostinger-inspired purple background shimmer (pixelated) */
+  .ai-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 50% 80% at 100% 50%,
+      rgba(103,76,196,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .ai-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .ai-badge {
+    display: inline-block;
+    background: var(--px-pink);
+    color: #fff;
+    font-size: 7px;
+    padding: 4px 8px;
+    margin-bottom: 12px;
+  }
+  .ai-title {
+    font-size: 16px;
+    color: var(--px-white);
+    text-shadow: 2px 2px 0 var(--px-pink);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .ai-desc {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 12px;
+    color: var(--px-gray);
+    line-height: 1.6;
+  }
+
+  /* Leaderboard */
+  .px-leaderboard { font-size: 7px; }
+  .lb-header {
+    display: grid;
+    grid-template-columns: 30px 1fr 80px 80px;
+    gap: 8px;
+    color: var(--px-gray);
+    padding: 6px 8px;
+    border-bottom: 2px solid var(--px-pink);
+    margin-bottom: 4px;
+  }
+  .lb-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 80px 80px;
+    gap: 8px;
+    padding: 8px;
+    border-bottom: 1px solid rgba(103,76,196,0.2);
+    align-items: center;
+  }
+  .lb-row:hover { background: rgba(103,76,196,0.1); }
+  .lb-rank { color: var(--px-yellow); }
+  .lb-rank.gold { color: #ffd700; text-shadow: 1px 1px 0 #886600; }
+  .lb-model { color: var(--px-white); }
+  .lb-ret.pos { color: var(--px-green); }
+  .lb-ret.neg { color: var(--px-red); }
+  .hp-bar-wrap { height: 8px; background: #111; border: 1px solid rgba(103,76,196,0.4); }
+  .hp-bar-fill { height: 100%; background: var(--px-green); }
+
+  /* ── STAR FIELD ── */
+  .star-field { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .star { position: absolute; background: #fff; animation: twinkle var(--d, 3s) ease-in-out infinite; }
+  /* Some stars in Hostinger purple */
+  .star.purple { background: #9b7ef8; }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 3px solid var(--px-blue);
+    padding: 24px 32px;
+    text-align: center;
+    font-size: 7px;
+    color: var(--px-gray);
+    background: var(--px-purple-deep);
+  }
+  footer span { color: var(--px-blue-hi); }
+  footer em   { color: var(--px-yellow); font-style: normal; }
+  .footer-pixel-art {
+    margin: 0 auto 12px;
+    width: fit-content;
+    font-size: 16px;
+    letter-spacing: 4px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-screen { display: none; }
+    .strategy-grid { grid-template-columns: 1fr; }
+    .ai-inner { grid-template-columns: 1fr; }
+    .hero-title { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Star field (some purple stars for Hostinger feel) -->
+<div class="star-field" id="stars"></div>
+
+<!-- TICKER TAPE — Hostinger purple background -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker"></div>
+</div>
+
+<!-- HEADER — deep purple (Hostinger-inspired) -->
+<header>
+  <div class="logo-block">
+    <div class="coin-sprite" id="coin"></div>
+    <span class="logo-text"><em>PROFIT</em> LAB</span>
+  </div>
+  <nav>
+    <a href="#">▶ 전략 검증</a>
+    <a href="#">★ AI 벤치마크</a>
+    <a href="#">? 가이드</a>
+  </nav>
+  <div class="header-lives">
+    ♥ ♥ ♥ &nbsp; CREDITS: 3
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero-wrap">
+  <div class="hero-glow"></div>
+  <section class="hero">
+    <div class="hero-left">
+      <div class="insert-coin">— INSERT COIN TO CONTINUE —</div>
+      <h1 class="hero-title">
+        <span class="t1">TRADE</span>
+        <span class="t2">SMARTER</span>
+      </h1>
+      <p class="hero-sub">
+        전략 백테스트 + AI 모델 벤치마크.<br>
+        당신의 트레이딩 전략을 검증하고,<br>
+        AI와 수익률을 겨루어 보세요.
+      </p>
+      <div class="btn-group">
+        <a href="#" class="px-btn px-btn-primary">▶ PLAY NOW</a>
+        <a href="#" class="px-btn px-btn-secondary">★ RANKINGS</a>
+      </div>
+    </div>
+
+    <!-- Pixel screen — purple border glow -->
+    <div class="hero-screen">
+      <div class="screen-header">
+        PROFIT_LAB.EXE &nbsp;|&nbsp; v0.1.0 &nbsp;|&nbsp; BTC/USDT
+        <span class="cursor-blink"></span>
+      </div>
+      <div class="px-chart" id="miniChart"></div>
+      <div class="px-stats">
+        <div class="stat-cell"><div class="stat-label">RETURN</div><div class="stat-up">+24.7%</div></div>
+        <div class="stat-cell"><div class="stat-label">WIN RATE</div><div class="stat-up">68%</div></div>
+        <div class="stat-cell"><div class="stat-label">DRAWDOWN</div><div class="stat-down">-8.3%</div></div>
+        <div class="stat-cell"><div class="stat-label">TRADES</div><div class="stat-neu">142</div></div>
+        <div class="stat-cell"><div class="stat-label">PROFIT</div><div class="stat-up">+$2,470</div></div>
+        <div class="stat-cell"><div class="stat-label">STRATEGY</div><div class="stat-neu">RSI DIV</div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- SELECT STRATEGY -->
+<div class="section-title">── SELECT YOUR STRATEGY ──</div>
+<div class="section-sub">3가지 전략 중 하나를 선택하고 백테스트를 시작하세요</div>
+
+<div class="strategy-grid">
+
+  <div class="strategy-card">
+    <div class="px-box" style="padding:20px">
+      <span class="s-icon">📉</span>
+      <div class="s-title">RSI DIVERGENCE</div>
+      <div class="s-desc">RSI 다이버전스 + 볼린저밴드 재진입 + W패턴으로 반등 신호 포착</div>
+      <div class="s-level">
+        <div class="s-lv-pip"></div><div class="s-lv-pip"></div><div class="s-lv-pip"></div>
+        <div class="s-lv-pip off"></div><div class="s-lv-pip off"></div>
+        &nbsp;HARD LV.3
+      </div>
+    </div>
+  </div>
+
+  <div class="strategy-card">
+    <div class="px-box px-box-yellow" style="padding:20px">
+      <span class="s-icon">📈</span>
+      <div class="s-title" style="color:var(--px-yellow)">EMA TREND</div>
+      <div class="s-desc">EMA50/200 골든크로스 + ADX 추세 확인으로 모멘텀 추종</div>
+      <div class="s-level" style="color:var(--px-yellow)">
+        <div class="s-lv-pip" style="background:var(--px-yellow);border-color:#886600"></div>
+        <div class="s-lv-pip" style="background:var(--px-yellow);border-color:#886600"></div>
+        <div class="s-lv-pip off"></div><div class="s-lv-pip off"></div><div class="s-lv-pip off"></div>
+        &nbsp;NORMAL LV.2
+      </div>
+    </div>
+  </div>
+
+  <div class="strategy-card">
+    <div class="px-box px-box-pink" style="padding:20px">
+      <span class="s-icon">🎯</span>
+      <div class="s-title" style="color:var(--px-pink)">BB SQUEEZE</div>
+      <div class="s-desc">볼린저밴드 압축 후 거래량 폭발 시 브레이크아웃 진입</div>
+      <div class="s-level" style="color:var(--px-pink)">
+        <div class="s-lv-pip" style="background:var(--px-pink);border-color:#881144"></div>
+        <div class="s-lv-pip off"></div><div class="s-lv-pip off"></div>
+        <div class="s-lv-pip off"></div><div class="s-lv-pip off"></div>
+        &nbsp;EASY LV.1
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- AI BENCHMARK SECTION — Hostinger deep purple bg -->
+<div class="ai-section">
+  <div class="ai-inner">
+    <div class="ai-text">
+      <span class="ai-badge">★ NEW CHALLENGER</span>
+      <h2 class="ai-title">AI 모델과<br>수익률을 겨루다</h2>
+      <p class="ai-desc">
+        GPT-4, Claude, Gemini 등 AI 모델들이<br>
+        실제 시장에서 내린 트레이딩 판단을 검증합니다.<br>
+        당신의 전략이 AI를 이길 수 있을까요?
+      </p>
+      <div style="margin-top:20px">
+        <a href="#" class="px-btn px-btn-secondary" style="font-size:8px">★ LEADERBOARD 보기</a>
+      </div>
+    </div>
+
+    <div class="px-box px-box-pink" style="padding:16px">
+      <div class="px-leaderboard">
+        <div class="lb-header">
+          <span>#</span><span>MODEL</span><span>RETURN</span><span>WIN%</span>
+        </div>
+        <div class="lb-row">
+          <span class="lb-rank gold">🥇 1</span>
+          <span class="lb-model">GPT-4o</span>
+          <span class="lb-ret pos">+31.2%</span>
+          <span><div class="hp-bar-wrap"><div class="hp-bar-fill" style="width:78%"></div></div></span>
+        </div>
+        <div class="lb-row">
+          <span class="lb-rank" style="color:#c0c0c0">🥈 2</span>
+          <span class="lb-model">Claude 3.7</span>
+          <span class="lb-ret pos">+28.8%</span>
+          <span><div class="hp-bar-wrap"><div class="hp-bar-fill" style="width:72%"></div></div></span>
+        </div>
+        <div class="lb-row">
+          <span class="lb-rank" style="color:#cd7f32">🥉 3</span>
+          <span class="lb-model">Gemini Pro</span>
+          <span class="lb-ret pos">+19.4%</span>
+          <span><div class="hp-bar-wrap"><div class="hp-bar-fill" style="width:48%"></div></div></span>
+        </div>
+        <div class="lb-row">
+          <span class="lb-rank">4</span>
+          <span class="lb-model">Llama 3.1</span>
+          <span class="lb-ret neg">-4.1%</span>
+          <span><div class="hp-bar-wrap"><div class="hp-bar-fill" style="width:10%;background:var(--px-red)"></div></div></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER — Hostinger deep purple -->
+<footer>
+  <div class="footer-pixel-art">⬛🟪⬛ &nbsp; ⬛🟨⬛ &nbsp; ⬛🟥⬛</div>
+  <div>
+    <span>PROFIT LAB</span> &nbsp;|&nbsp;
+    © 2024 &nbsp;|&nbsp;
+    <em>Made with ♥ & 8 bits</em>
+  </div>
+  <div style="margin-top:8px;font-size:6px">
+    ALL TRADING IS SIMULATED · NOT FINANCIAL ADVICE · PRESS START TO PLAY
+  </div>
+</footer>
+
+<script>
+// ── Generate stars (mix white + purple) ──
+const starField = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const s = document.createElement('div');
+  const isPurple = Math.random() < 0.25;
+  s.className = 'star' + (isPurple ? ' purple' : '');
+  const sz = Math.random() < 0.7 ? 1 : 2;
+  s.style.cssText = `
+    width:${sz}px; height:${sz}px;
+    left:${Math.random()*100}%;
+    top:${Math.random()*100}%;
+    --d:${(2 + Math.random()*4).toFixed(1)}s;
+    animation-delay:${(Math.random()*4).toFixed(1)}s;
+  `;
+  starField.appendChild(s);
+}
+
+// ── Pixel coin sprite ──
+const coinEl = document.getElementById('coin');
+const pattern = [0,0,1,1,1,1,0,0, 0,1,1,1,1,1,1,0, 1,1,0,1,1,0,1,1, 1,1,1,1,1,1,1,1,
+                 1,1,0,1,1,0,1,1, 1,1,1,0,0,1,1,1, 0,1,1,1,1,1,1,0, 0,0,1,1,1,1,0,0];
+pattern.forEach(on => {
+  const d = document.createElement('div');
+  d.style.background = on ? '#ffe000' : 'transparent';
+  coinEl.appendChild(d);
+});
+
+// ── Mini pixel chart ──
+const chartEl = document.getElementById('miniChart');
+const bars = [
+  {h:60,l:30,o:35,c:55,up:true},{h:70,l:50,o:55,c:65,up:true},
+  {h:75,l:55,o:65,c:58,up:false},{h:65,l:45,o:58,c:50,up:false},
+  {h:60,l:35,o:50,c:55,up:true},{h:70,l:52,o:55,c:68,up:true},
+  {h:80,l:60,o:68,c:72,up:true},{h:85,l:65,o:72,c:70,up:false},
+  {h:78,l:58,o:70,c:75,up:true},{h:88,l:70,o:75,c:85,up:true},
+  {h:90,l:72,o:85,c:78,up:false},{h:82,l:60,o:78,c:65,up:false},
+  {h:70,l:48,o:65,c:55,up:false},{h:65,l:45,o:55,c:62,up:true},
+  {h:72,l:55,o:62,c:70,up:true},{h:78,l:62,o:70,c:75,up:true},
+];
+const maxH = Math.max(...bars.map(b=>b.h));
+bars.forEach(b => {
+  const wrap = document.createElement('div');
+  wrap.className = `bar ${b.up ? 'bar-up' : 'bar-down'}`;
+  const scale = 120 / maxH;
+  const wickTop = document.createElement('div');
+  wickTop.className = 'bar-wick';
+  wickTop.style.height = `${(b.h - Math.max(b.o,b.c)) * scale}px`;
+  const body = document.createElement('div');
+  body.className = 'bar-body';
+  body.style.height = `${Math.abs(b.c - b.o) * scale + 2}px`;
+  const wickBot = document.createElement('div');
+  wickBot.className = 'bar-wick';
+  wickBot.style.height = `${(Math.min(b.o,b.c) - b.l) * scale}px`;
+  wrap.appendChild(wickTop);
+  wrap.appendChild(body);
+  wrap.appendChild(wickBot);
+  chartEl.appendChild(wrap);
+});
+
+// ── Ticker tape ──
+const tickers = [
+  'BTC/USDT +2.3%', 'ETH/USDT +1.8%', 'SOL/USDT +4.1%',
+  'RSI DIV WIN RATE 68%', 'EMA TREND +24.7%', 'BB SQUEEZE ACTIVE',
+  'AI RANK #1: GPT-4o', 'NEW HIGH: 142 TRADES', 'PROFIT LAB v0.1.0',
+];
+const tickEl = document.getElementById('ticker');
+[...tickers, ...tickers].forEach(t => {
+  const span = document.createElement('span');
+  span.className = 'tick-item';
+  const parts = t.split(' ');
+  const last = parts[parts.length-1];
+  const isPos = last.startsWith('+');
+  const isNeg = last.startsWith('-');
+  if (isPos || isNeg) {
+    span.innerHTML = `${parts.slice(0,-1).join(' ')} <span class="${isPos?'pos':'neg'}">${last}</span> ◆`;
+  } else {
+    span.innerHTML = `${t} ◆`;
+  }
+  tickEl.appendChild(span);
+});
+</script>
+</body>
+</html>

@@ -2,26 +2,78 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { getBenchmarkModels, subscribeBenchmarkStream, type BenchmarkModel } from "@/lib/api";
 
-function MetricCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+/* ── Design tokens ──────────────────────────────────────────────────────── */
+const PX = {
+  panel:   "var(--px-panel,#12122a)",
+  alt:     "var(--px-panel-alt,#1a1a4e)",
+  border:  "var(--px-border,#3355ff)",
+  cyan:    "var(--px-cyan,#00eeff)",
+  pink:    "var(--px-pink,#ff2d78)",
+  yellow:  "var(--px-yellow,#ffe000)",
+  green:   "var(--px-green,#00ff7f)",
+  red:     "var(--px-red,#ff3333)",
+  white:   "var(--px-white,#f0f0ff)",
+  mid:     "var(--px-grey-mid,#8888aa)",
+  fp:      "var(--ff-pixel,'Press Start 2P',monospace)",
+  fm:      "var(--ff-mono,'JetBrains Mono',monospace)",
+  fb:      "var(--ff-body,Pretendard,sans-serif)",
+} as const;
+
+/* ── Metric card ─────────────────────────────────────────────────────────── */
+function MetricCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs text-muted-foreground uppercase tracking-wider">{label}</span>
-      <span className="text-2xl font-semibold font-mono tabular-nums">{value}</span>
-      {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+    <div style={{
+      background: PX.alt,
+      border: `2px solid ${PX.border}`,
+      padding: "16px 20px",
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+    }}>
+      <span style={{ fontFamily: PX.fp, fontSize: 7, color: PX.mid, letterSpacing: "0.08em", lineHeight: 1.8 }}>
+        {label}
+      </span>
+      <span style={{ fontFamily: PX.fm, fontSize: 22, fontWeight: 700, color: color ?? PX.cyan, lineHeight: 1 }}>
+        {value}
+      </span>
+      {sub && (
+        <span style={{ fontFamily: PX.fb, fontSize: 11, color: PX.mid }}>
+          {sub}
+        </span>
+      )}
     </div>
   );
 }
 
+/* ── Rank badge ──────────────────────────────────────────────────────────── */
+const RANK_CONFIGS = [
+  { color: PX.yellow,   bg: "rgba(255,224,0,0.12)",   label: "★" },
+  { color: "#c0c0d0",   bg: "rgba(192,192,208,0.12)", label: "♦" },
+  { color: "#cd7f3a",   bg: "rgba(205,127,58,0.12)",  label: "♣" },
+];
+
+/* ── Table header cell ───────────────────────────────────────────────────── */
+function TH({ children, align = "left" }: { children: React.ReactNode; align?: "left" | "right" }) {
+  return (
+    <th style={{
+      fontFamily: PX.fp,
+      fontSize: 6,
+      color: PX.mid,
+      letterSpacing: "0.08em",
+      padding: "12px 14px",
+      textAlign: align,
+      fontWeight: "normal",
+      borderBottom: `2px solid var(--px-border,#3355ff)`,
+      whiteSpace: "nowrap" as const,
+    }}>
+      {children}
+    </th>
+  );
+}
+
+/* ── Main page ───────────────────────────────────────────────────────────── */
 export default function LeaderboardPage() {
   const router = useRouter();
   const [models, setModels] = useState<BenchmarkModel[]>([]);
@@ -43,105 +95,181 @@ export default function LeaderboardPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-20 text-muted-foreground text-sm">불러오는 중...</div>;
+    return (
+      <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+        LOADING...
+      </div>
+    );
   }
 
   if (models.length === 0) {
     return (
-      <div className="max-w-3xl mx-auto text-center py-20 space-y-4">
-        <p className="text-muted-foreground">아직 등록된 모델이 없습니다.</p>
-        <button className="text-primary hover:underline text-sm" onClick={() => router.push("/benchmark")}>
-          주문 입력하기
+      <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center", padding: "80px 0" }}>
+        <p style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid, marginBottom: 24, letterSpacing: "0.08em" }}>
+          등록된 모델 없음
+        </p>
+        <button
+          onClick={() => router.push("/benchmark")}
+          style={{
+            fontFamily: PX.fp, fontSize: 8,
+            padding: "10px 20px",
+            border: `2px solid ${PX.cyan}`,
+            background: "rgba(0,238,255,0.08)",
+            color: PX.cyan,
+            cursor: "pointer",
+            borderRadius: 0,
+          }}
+        >
+          ▶ 주문 입력하기
         </button>
       </div>
     );
   }
 
-  // Aggregate stats
   const totalModels = models.length;
-  const avgReturn = models.reduce((s, m) => s + ((m.balance - m.seed) / m.seed) * 100, 0) / totalModels;
-  const bestModel = models[0];
-  const bestReturn = ((bestModel.balance - bestModel.seed) / bestModel.seed) * 100;
+  const avgReturn   = models.reduce((s, m) => s + ((m.balance - m.seed) / m.seed) * 100, 0) / totalModels;
+  const bestModel   = models[0];
+  const bestReturn  = ((bestModel.balance - bestModel.seed) / bestModel.seed) * 100;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      {/* Page header */}
-      <div className="flex items-end justify-between">
+    <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">AI 트레이딩 리더보드</h1>
-          <p className="text-sm text-muted-foreground mt-1">AI 모델 트레이딩 성과 비교</p>
+          <h1 style={{ fontFamily: PX.fp, fontSize: 13, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
+            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 10 }}>
+            ★ AI 리더보드
+          </h1>
+          <p style={{ fontFamily: PX.fb, fontSize: 13, color: PX.mid, margin: 0 }}>
+            AI 모델 트레이딩 성과 비교
+          </p>
         </div>
         <button
-          className="text-sm px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
           onClick={() => router.push("/benchmark")}
+          style={{
+            fontFamily: PX.fp, fontSize: 7, letterSpacing: "0.06em",
+            padding: "10px 18px",
+            border: `2px solid ${PX.cyan}`,
+            background: "rgba(0,238,255,0.08)",
+            color: PX.cyan,
+            cursor: "pointer",
+            borderRadius: 0,
+            transition: "all 0.1s steps(1)",
+          }}
         >
           + 주문 입력
         </button>
       </div>
 
-      {/* Summary metrics */}
-      <div className="grid grid-cols-4 gap-6 rounded-xl border border-border bg-card p-6">
+      {/* ── Summary metrics ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 24 }}>
         <MetricCard label="참여 모델" value={`${totalModels}`} />
-        <MetricCard label="평균 수익률" value={`${avgReturn >= 0 ? "+" : ""}${avgReturn.toFixed(1)}%`} />
-        <MetricCard label="최고 수익률" value={`${bestReturn >= 0 ? "+" : ""}${bestReturn.toFixed(1)}%`} sub={bestModel.name} />
+        <MetricCard
+          label="평균 수익률"
+          value={`${avgReturn >= 0 ? "+" : ""}${avgReturn.toFixed(1)}%`}
+          color={avgReturn >= 0 ? PX.green : PX.red}
+        />
+        <MetricCard
+          label="최고 수익률"
+          value={`${bestReturn >= 0 ? "+" : ""}${bestReturn.toFixed(1)}%`}
+          sub={bestModel.name}
+          color={bestReturn >= 0 ? PX.green : PX.red}
+        />
         <MetricCard label="총 주문" value={`${models.reduce((s, m) => s + m.total_orders, 0)}`} />
       </div>
 
-      {/* Rankings table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-border/60 hover:bg-transparent">
-              <TableHead className="w-14 text-xs uppercase tracking-wider text-muted-foreground font-medium">#</TableHead>
-              <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-medium">모델</TableHead>
-              <TableHead className="text-right text-xs uppercase tracking-wider text-muted-foreground font-medium">잔액</TableHead>
-              <TableHead className="text-right text-xs uppercase tracking-wider text-muted-foreground font-medium">수익률</TableHead>
-              <TableHead className="text-right text-xs uppercase tracking-wider text-muted-foreground font-medium">승률</TableHead>
-              <TableHead className="text-right text-xs uppercase tracking-wider text-muted-foreground font-medium">MDD</TableHead>
-              <TableHead className="text-right text-xs uppercase tracking-wider text-muted-foreground font-medium">Profit Factor</TableHead>
-              <TableHead className="text-right text-xs uppercase tracking-wider text-muted-foreground font-medium">체결률</TableHead>
-              <TableHead className="text-right text-xs uppercase tracking-wider text-muted-foreground font-medium">주문</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      {/* ── Rankings table ── */}
+      <div style={{ border: `2px solid ${PX.border}`, background: PX.panel, overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ background: PX.alt }}>
+              <TH>#</TH>
+              <TH>모델</TH>
+              <TH align="right">잔액</TH>
+              <TH align="right">수익률</TH>
+              <TH align="right">승률</TH>
+              <TH align="right">MDD</TH>
+              <TH align="right">Profit Factor</TH>
+              <TH align="right">체결률</TH>
+              <TH align="right">주문</TH>
+            </tr>
+          </thead>
+          <tbody>
             {models.map((m, idx) => {
               const returnPct = ((m.balance - m.seed) / m.seed) * 100;
+              const rankCfg   = RANK_CONFIGS[idx];
+              const isTop3    = idx < 3;
+
               return (
-                <TableRow
+                <tr
                   key={m.id}
-                  className="cursor-pointer border-border/40 hover:bg-accent/40 transition-colors"
                   onClick={() => router.push(`/benchmark/models/${m.id}`)}
+                  style={{
+                    cursor: "pointer",
+                    borderBottom: `1px solid rgba(51,85,255,0.3)`,
+                    transition: "background 0.1s steps(1)",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(51,85,255,0.12)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 >
-                  <TableCell className="font-mono text-muted-foreground text-sm">
-                    {idx < 3 ? (
-                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                        idx === 0 ? "bg-yellow-500/20 text-yellow-400" :
-                        idx === 1 ? "bg-zinc-400/20 text-zinc-300" :
-                        "bg-orange-500/20 text-orange-400"
-                      }`}>{idx + 1}</span>
+                  {/* rank */}
+                  <td style={{ padding: "11px 14px" }}>
+                    {isTop3 ? (
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        width: 26, height: 26,
+                        background: rankCfg.bg,
+                        border: `2px solid ${rankCfg.color}`,
+                        fontFamily: PX.fp, fontSize: 7,
+                        color: rankCfg.color,
+                      }}>
+                        {rankCfg.label}
+                      </span>
                     ) : (
-                      <span className="pl-1.5">{idx + 1}</span>
+                      <span style={{ fontFamily: PX.fm, fontSize: 12, color: PX.mid }}>{idx + 1}</span>
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-medium text-foreground">{m.name}</span>
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-sm tabular-nums">${m.balance.toFixed(2)}</TableCell>
-                  <TableCell className={`text-right font-mono text-sm tabular-nums ${returnPct > 0 ? "text-emerald-400" : returnPct < 0 ? "text-red-400" : "text-muted-foreground"}`}>
+                  </td>
+                  {/* name */}
+                  <td style={{ padding: "11px 14px", fontFamily: PX.fb, fontSize: 14, fontWeight: 600, color: PX.white }}>
+                    {m.name}
+                  </td>
+                  {/* balance */}
+                  <td style={{ padding: "11px 14px", textAlign: "right", fontFamily: PX.fm, fontSize: 13, color: PX.white }}>
+                    ${m.balance.toFixed(2)}
+                  </td>
+                  {/* return */}
+                  <td style={{ padding: "11px 14px", textAlign: "right", fontFamily: PX.fm, fontSize: 13,
+                    color: returnPct > 0 ? PX.green : returnPct < 0 ? PX.red : PX.mid,
+                    fontWeight: 700,
+                  }}>
                     {returnPct >= 0 ? "+" : ""}{returnPct.toFixed(2)}%
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-sm tabular-nums">{m.win_rate.toFixed(1)}%</TableCell>
-                  <TableCell className="text-right font-mono text-sm tabular-nums text-muted-foreground">{m.mdd.toFixed(1)}%</TableCell>
-                  <TableCell className="text-right font-mono text-sm tabular-nums">
-                    {m.profit_factor !== null ? m.profit_factor.toFixed(2) : "-"}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-sm tabular-nums text-muted-foreground">{m.fill_rate.toFixed(0)}%</TableCell>
-                  <TableCell className="text-right font-mono text-sm tabular-nums text-muted-foreground">{m.total_orders}</TableCell>
-                </TableRow>
+                  </td>
+                  {/* win rate */}
+                  <td style={{ padding: "11px 14px", textAlign: "right", fontFamily: PX.fm, fontSize: 13, color: PX.white }}>
+                    {m.win_rate.toFixed(1)}%
+                  </td>
+                  {/* MDD */}
+                  <td style={{ padding: "11px 14px", textAlign: "right", fontFamily: PX.fm, fontSize: 13, color: PX.mid }}>
+                    {m.mdd.toFixed(1)}%
+                  </td>
+                  {/* profit factor */}
+                  <td style={{ padding: "11px 14px", textAlign: "right", fontFamily: PX.fm, fontSize: 13, color: PX.white }}>
+                    {m.profit_factor !== null ? m.profit_factor.toFixed(2) : "—"}
+                  </td>
+                  {/* fill rate */}
+                  <td style={{ padding: "11px 14px", textAlign: "right", fontFamily: PX.fm, fontSize: 13, color: PX.mid }}>
+                    {m.fill_rate.toFixed(0)}%
+                  </td>
+                  {/* orders */}
+                  <td style={{ padding: "11px 14px", textAlign: "right", fontFamily: PX.fm, fontSize: 13, color: PX.mid }}>
+                    {m.total_orders}
+                  </td>
+                </tr>
               );
             })}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { NavLinks } from "@/components/nav-links";
+import { PixelCoin } from "@/components/pixel-coin";
+import { ThemeProvider } from "@/design-system/providers/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,26 +15,71 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="ko"
-      className="dark h-full antialiased"
-    >
+    <html lang="ko" className="theme-pixel h-full antialiased">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300..700&family=Noto+Sans+KR:wght@300..700&display=swap" rel="stylesheet" />
+        {/* Pretendard — 한글 최적화 산세리프 */}
+        <link
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+          rel="stylesheet"
+        />
+        {/* JetBrains Mono — 숫자/데이터용 모노스페이스 + Press Start 2P — 픽셀 레트로 타이틀 */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Press+Start+2P&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm px-6 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <a href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight">
-              <img src="/logo.svg" alt="Profit Lab" className="w-7 h-7" />
-              <span><span className="text-[#d0d4dc]">Profit</span> <span className="text-[#7a8194]">Lab</span></span>
+      <body
+        className="min-h-full flex flex-col text-foreground"
+        style={{ background: "var(--px-black, #0a0a1a)", color: "var(--px-white, #f0f0ff)" }}
+      >
+        <ThemeProvider defaultTheme="theme-pixel">
+          {/* ── HEADER ───────────────────────────────────────────────── */}
+          <header
+            className="sticky top-0 z-50 flex items-center justify-between px-6"
+            style={{
+              height: 52,
+              background: "var(--px-panel-alt)",
+              borderBottom: "3px solid var(--px-border)",
+              boxShadow: "0 2px 0 rgba(51,85,255,0.25)",
+            }}
+          >
+            <a href="/" className="flex items-center gap-3 no-underline">
+              <PixelCoin size={24} />
+              <span
+                style={{
+                  fontFamily: "'Press Start 2P', monospace",
+                  fontSize: 13,
+                  letterSpacing: 2,
+                  color: "var(--px-yellow)",
+                  textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300",
+                  lineHeight: 1,
+                }}
+              >
+                PROFIT LAB
+              </span>
             </a>
+
             <NavLinks />
-          </div>
-        </header>
-        <main className="flex-1 p-6">{children}</main>
+
+            <div
+              style={{
+                fontFamily: "'Press Start 2P', monospace",
+                fontSize: 8,
+                color: "var(--px-pink)",
+                letterSpacing: 1,
+                lineHeight: 1,
+              }}
+            >
+              ♥ ♥ ♥
+            </div>
+          </header>
+
+          <main className="flex-1 p-6" style={{ color: "var(--px-white, #f0f0ff)" }}>
+            {children}
+          </main>
+        </ThemeProvider>
       </body>
     </html>
   );

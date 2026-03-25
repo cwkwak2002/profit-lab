@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROFIT LAB — Technical Mono Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0c0c0c;
+    --bg1:       #111111;
+    --bg2:       #181818;
+    --bg3:       #202020;
+    --fg:        #e8e8e8;
+    --fg-dim:    #888888;
+    --fg-faint:  #444444;
+    --green:     #39ff14;
+    --green-dim: #1a7a08;
+    --amber:     #ffb800;
+    --red:       #ff3b3b;
+    --blue:      #4d8cff;
+    --white:     #ffffff;
+    --border:    #2e2e2e;
+    --border2:   #3a3a3a;
+    --mono:      'IBM Plex Mono', 'Courier New', monospace;
+    --sans:      'IBM Plex Sans KR', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── SYSTEM STATUS BAR (top) ── */
+  .sys-bar {
+    background: var(--green);
+    color: #000;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 16px;
+    display: flex;
+    justify-content: space-between;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── HEADER / SHELL ── */
+  header {
+    background: var(--bg1);
+    border-bottom: 1px solid var(--border2);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    height: 48px;
+    gap: 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .shell-prompt {
+    color: var(--green);
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+    letter-spacing: 0;
+  }
+  .shell-prompt .path { color: var(--blue); }
+  .shell-prompt .dollar { color: var(--amber); }
+
+  .nav-tabs {
+    display: flex;
+    gap: 0;
+    margin-left: auto;
+    border-left: 1px solid var(--border);
+  }
+  .nav-tab {
+    padding: 0 20px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid var(--border);
+    color: var(--fg-dim);
+    text-decoration: none;
+    font-size: 11px;
+    transition: all 0.15s ease;
+    letter-spacing: 0.5px;
+    position: relative;
+  }
+  .nav-tab:hover {
+    background: var(--bg2);
+    color: var(--fg);
+  }
+  .nav-tab.active {
+    background: var(--bg2);
+    color: var(--green);
+  }
+  .nav-tab.active::bottom {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--green);
+  }
+  .tab-num {
+    color: var(--fg-faint);
+    margin-right: 8px;
+    font-size: 9px;
+  }
+
+  .header-clock {
+    color: var(--fg-dim);
+    font-size: 10px;
+    padding-left: 20px;
+    border-left: 1px solid var(--border);
+  }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 32px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 48px;
+    margin-bottom: 56px;
+    align-items: start;
+  }
+
+  /* Hero text panel */
+  .hero-text {}
+
+  .pre-title {
+    color: var(--fg-faint);
+    font-size: 10px;
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pre-title::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--fg-faint);
+  }
+
+  .hero-h1 {
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 4px;
+  }
+  .hero-h1 .line1 { color: var(--white); }
+  .hero-h1 .line2 {
+    color: var(--green);
+    text-shadow: 0 0 40px rgba(57,255,20,0.3);
+  }
+
+  .hero-tagline {
+    font-size: 10px;
+    color: var(--fg-faint);
+    letter-spacing: 4px;
+    margin-bottom: 28px;
+    font-weight: 300;
+  }
+
+  /* Command-line style description */
+  .cmd-block {
+    background: var(--bg1);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--green);
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    font-size: 11px;
+  }
+  .cmd-line {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+    color: var(--fg-dim);
+  }
+  .cmd-line:last-child { margin-bottom: 0; }
+  .cmd-line .ps { color: var(--green); flex-shrink: 0; }
+  .cmd-line .arg { color: var(--blue); }
+  .cmd-line .val { color: var(--fg); }
+  .cmd-line .comment { color: var(--fg-faint); }
+
+  /* CTA row */
+  .cta-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .mono-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border: 1px solid;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s ease;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary {
+    background: var(--green);
+    border-color: var(--green);
+    color: #000;
+  }
+  .btn-primary:hover { background: #fff; border-color: #fff; }
+  .btn-secondary {
+    background: transparent;
+    border-color: var(--border2);
+    color: var(--fg-dim);
+  }
+  .btn-secondary:hover {
+    border-color: var(--fg);
+    color: var(--fg);
+  }
+  .btn-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--blue);
+    padding-left: 0;
+  }
+  .btn-ghost:hover { color: #fff; }
+
+  /* ── HERO RIGHT: Terminal window ── */
+  .terminal {
+    background: var(--bg1);
+    border: 1px solid var(--border2);
+    border-radius: 0;
+    overflow: hidden;
+    font-size: 10px;
+  }
+  .term-title-bar {
+    background: var(--bg3);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .term-dot.red   { background: #ff5f56; }
+  .term-dot.amber { background: #ffbd2e; }
+  .term-dot.green { background: #27c93f; }
+  .term-name {
+    color: var(--fg-dim);
+    font-size: 10px;
+    margin-left: 8px;
+  }
+
+  .term-body { padding: 16px; }
+
+  .t-line {
+    margin-bottom: 3px;
+    white-space: pre;
+  }
+  .t-ps   { color: var(--green); }
+  .t-cmd  { color: var(--fg); }
+  .t-out  { color: var(--fg-dim); }
+  .t-key  { color: var(--blue); }
+  .t-val  { color: var(--amber); }
+  .t-pos  { color: var(--green); }
+  .t-neg  { color: var(--red); }
+  .t-comment { color: var(--fg-faint); }
+  .t-sep  { color: var(--fg-faint); border-top: 1px solid var(--border); margin: 8px 0; }
+  .t-cursor {
+    display: inline-block;
+    width: 7px; height: 13px;
+    background: var(--green);
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ASCII chart in terminal */
+  .ascii-chart {
+    font-size: 9px;
+    line-height: 1.3;
+    color: var(--green);
+    margin: 8px 0;
+  }
+
+  /* ── DIVIDER ── */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0 0 40px;
+    position: relative;
+  }
+  .section-divider::after {
+    content: attr(data-label);
+    position: absolute;
+    top: -8px; left: 0;
+    background: var(--bg);
+    color: var(--fg-faint);
+    font-size: 9px;
+    padding-right: 12px;
+    letter-spacing: 3px;
+  }
+
+  /* ── METRICS ROW ── */
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 56px;
+    border: 1px solid var(--border);
+  }
+  .metric-cell {
+    background: var(--bg1);
+    padding: 20px 24px;
+  }
+  .mc-label {
+    font-size: 9px;
+    color: var(--fg-faint);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .mc-val {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .mc-val.pos { color: var(--green); }
+  .mc-val.neg { color: var(--red); }
+  .mc-val.neu { color: var(--fg); }
+  .mc-sub {
+    font-size: 9px;
+    color: var(--fg-faint);
+  }
+
+  /* ── STRATEGY SECTION ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 56px;
+  }
+  .col-panel {
+    background: var(--bg1);
+    padding: 28px;
+  }
+  .panel-label {
+    font-size: 9px;
+    color: var(--fg-faint);
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Strategy list */
+  .strat-list { display: flex; flex-direction: column; gap: 2px; }
+  .strat-item {
+    display: grid;
+    grid-template-columns: 20px 1fr auto;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg2);
+    border-left: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    align-items: start;
+  }
+  .strat-item:hover { background: var(--bg3); border-left-color: var(--green); }
+  .strat-item.active { border-left-color: var(--green); background: var(--bg3); }
+  .si-num { color: var(--fg-faint); font-size: 10px; }
+  .si-name { font-size: 11px; font-weight: 600; color: var(--fg); margin-bottom: 2px; }
+  .si-desc { font-size: 9px; color: var(--fg-dim); }
+  .si-badge {
+    font-size: 8px;
+    padding: 2px 6px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .si-badge.green { border-color: var(--green-dim); color: var(--green); }
+  .si-badge.amber { border-color: #664a00; color: var(--amber); }
+  .si-badge.blue  { border-color: #1a3a88; color: var(--blue); }
+
+  /* ASCII bar chart for right panel */
+  .ascii-bars { }
+  .ab-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 60px;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: center;
+    font-size: 10px;
+  }
+  .ab-label { color: var(--fg-dim); font-size: 9px; }
+  .ab-bar-wrap { height: 4px; background: var(--bg3); }
+  .ab-bar { height: 100%; }
+  .ab-green { background: var(--green); }
+  .ab-amber { background: var(--amber); }
+  .ab-red   { background: var(--red); }
+  .ab-blue  { background: var(--blue); }
+  .ab-val { color: var(--fg); text-align: right; font-size: 10px; }
+  .ab-val.pos { color: var(--green); }
+  .ab-val.neg { color: var(--red); }
+
+  /* ── AI BENCHMARK ── */
+  .bench-section {
+    border: 1px solid var(--border2);
+    margin-bottom: 56px;
+    background: var(--bg1);
+  }
+  .bench-header {
+    background: var(--bg3);
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .bench-title {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--fg);
+    letter-spacing: 1px;
+  }
+  .bench-meta {
+    font-size: 9px;
+    color: var(--fg-faint);
+  }
+
+  .bench-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+  }
+  .bench-table th {
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--fg-faint);
+    font-weight: 400;
+    letter-spacing: 2px;
+    font-size: 9px;
+  }
+  .bench-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .bench-table tr:last-child td { border-bottom: none; }
+  .bench-table tr:hover td { background: var(--bg2); }
+  .td-rank { color: var(--fg-faint); font-size: 9px; }
+  .td-rank.r1 { color: var(--amber); }
+  .td-model { color: var(--fg); font-weight: 600; }
+  .td-model small { display: block; color: var(--fg-faint); font-size: 9px; font-weight: 400; }
+  .td-pos { color: var(--green); }
+  .td-neg { color: var(--red); }
+  .td-neu { color: var(--fg); }
+  .spark {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 20px;
+  }
+  .spark-bar { width: 4px; }
+  .sp-g { background: var(--green); }
+  .sp-r { background: var(--red); }
+  .sp-n { background: var(--fg-faint); }
+  .status-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── FOOTER SHELL ── */
+  footer {
+    border-top: 1px solid var(--border);
+    background: var(--bg1);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--fg-faint);
+  }
+  .footer-left { display: flex; align-items: center; gap: 12px; }
+  footer .logo { color: var(--fg); font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+  footer .ver { color: var(--fg-faint); }
+  .footer-right { display: flex; gap: 20px; }
+  .footer-right a { color: var(--fg-faint); text-decoration: none; }
+  .footer-right a:hover { color: var(--fg); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .terminal { display: none; }
+    .metrics-row { grid-template-columns: 1fr 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .hero-h1 { font-size: 36px; }
+  }
+
+  /* Selection style */
+  ::selection { background: var(--green); color: #000; }
+</style>
+</head>
+<body>
+
+<!-- SYSTEM STATUS BAR -->
+<div class="sys-bar">
+  <span>PROFIT_LAB — Trading Strategy Verification System — v0.1.0</span>
+  <span id="sysTime">SYS: 2024-01-01 00:00:00 UTC &nbsp;|&nbsp; STATUS: NOMINAL &nbsp;|&nbsp; MEM: 42.1MB</span>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="shell-prompt">
+    <span class="path">~/profit-lab</span><span class="dollar"> $</span>
+  </div>
+  <nav class="nav-tabs">
+    <a class="nav-tab active" href="#">
+      <span class="tab-num">01</span> BACKTEST
+    </a>
+    <a class="nav-tab" href="#">
+      <span class="tab-num">02</span> BENCHMARK
+    </a>
+    <a class="nav-tab" href="#">
+      <span class="tab-num">03</span> DOCS
+    </a>
+  </nav>
+  <div class="header-clock" id="hdrClock">--:--:--</div>
+</header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-text">
+      <div class="pre-title">QUANTITATIVE TRADING RESEARCH PLATFORM</div>
+      <h1 class="hero-h1">
+        <div class="line1">PROFIT</div>
+        <div class="line2">LAB_</div>
+      </h1>
+      <div class="hero-tagline">BACKTEST · BENCHMARK · VERIFY</div>
+
+      <div class="cmd-block">
+        <div class="cmd-line">
+          <span class="ps">$</span>
+          <span class="arg">profit-lab run</span>
+          <span class="val">--strategy rsi_divergence</span>
+        </div>
+        <div class="cmd-line">
+          <span class="ps"> </span>
+          <span class="comment"># --coin BTC --from 2024-01-01 --to 2024-12-31</span>
+        </div>
+        <div class="cmd-line">
+          <span class="ps"> </span>
+          <span class="comment"># 트레이딩 전략을 코드처럼 검증하세요</span>
+        </div>
+      </div>
+
+      <div class="cta-row">
+        <a href="#" class="mono-btn btn-primary">→ RUN BACKTEST</a>
+        <a href="#" class="mono-btn btn-secondary">↗ VIEW RANKINGS</a>
+        <a href="#" class="mono-btn btn-ghost">$ --help</a>
+      </div>
+    </div>
+
+    <!-- Terminal window -->
+    <div class="terminal">
+      <div class="term-title-bar">
+        <div class="term-dot red"></div>
+        <div class="term-dot amber"></div>
+        <div class="term-dot green"></div>
+        <span class="term-name">profit-lab — bash — 80×24</span>
+      </div>
+      <div class="term-body">
+        <div class="t-line"><span class="t-ps">$ </span><span class="t-cmd">profit-lab status</span></div>
+        <div class="t-line t-out" style="color:#555">──────────────────────────────</div>
+        <div class="t-line"><span class="t-key">system  </span> <span class="t-val">ONLINE</span></div>
+        <div class="t-line"><span class="t-key">db      </span> <span class="t-val">CONNECTED</span></div>
+        <div class="t-line"><span class="t-key">exchange</span> <span class="t-val">BINANCE FUTURES</span></div>
+        <div class="t-line t-out" style="color:#555">──────────────────────────────</div>
+        <br>
+        <div class="t-line"><span class="t-ps">$ </span><span class="t-cmd">run --strategy rsi_div --coin BTC</span></div>
+        <div class="t-line"><span class="t-out">loading candles      </span><span class="t-pos">✓</span></div>
+        <div class="t-line"><span class="t-out">finding signals      </span><span class="t-pos">✓ 142 found</span></div>
+        <div class="t-line"><span class="t-out">applying risk filters </span><span class="t-pos">✓ 12 blocked</span></div>
+        <div class="t-line"><span class="t-out">simulating exits     </span><span class="t-pos">✓ done</span></div>
+        <br>
+        <div class="ascii-chart" id="asciiChart"></div>
+        <br>
+        <div class="t-line"><span class="t-key">total_trades  </span><span class="t-pos">130</span></div>
+        <div class="t-line"><span class="t-key">win_rate      </span><span class="t-pos">68.4%</span></div>
+        <div class="t-line"><span class="t-key">return        </span><span class="t-pos">+24.7%</span></div>
+        <div class="t-line"><span class="t-key">max_drawdown  </span><span class="t-neg">-8.3%</span></div>
+        <br>
+        <div class="t-line"><span class="t-ps">$ </span><span class="t-cursor"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DIVIDER ── -->
+  <hr class="section-divider" data-label="// SYSTEM METRICS">
+
+  <!-- ── METRICS ── -->
+  <div class="metrics-row">
+    <div class="metric-cell">
+      <div class="mc-label">TOTAL RETURN</div>
+      <div class="mc-val pos">+24.7%</div>
+      <div class="mc-sub">RSI DIV · BTC 2024</div>
+    </div>
+    <div class="metric-cell">
+      <div class="mc-label">WIN RATE</div>
+      <div class="mc-val pos">68%</div>
+      <div class="mc-sub">130 trades executed</div>
+    </div>
+    <div class="metric-cell">
+      <div class="mc-label">MAX DRAWDOWN</div>
+      <div class="mc-val neg">-8.3%</div>
+      <div class="mc-sub">peak to trough</div>
+    </div>
+    <div class="metric-cell">
+      <div class="mc-label">AI #1 MODEL</div>
+      <div class="mc-val neu">GPT-4o</div>
+      <div class="mc-sub">+31.2% benchmark return</div>
+    </div>
+  </div>
+
+  <!-- ── STRATEGY + PERF ── -->
+  <hr class="section-divider" data-label="// STRATEGIES">
+
+  <div class="two-col">
+    <div class="col-panel">
+      <div class="panel-label">STRATEGY_LIST</div>
+      <div class="strat-list">
+        <div class="strat-item active">
+          <span class="si-num">01</span>
+          <div>
+            <div class="si-name">RSI_DIVERGENCE</div>
+            <div class="si-desc">RSI 다이버전스 + BB 재진입 + W패턴 4-filter</div>
+          </div>
+          <span class="si-badge green">ACTIVE</span>
+        </div>
+        <div class="strat-item">
+          <span class="si-num">02</span>
+          <div>
+            <div class="si-name">EMA_TREND</div>
+            <div class="si-desc">EMA 50/200 크로스 + ADX 모멘텀 추종</div>
+          </div>
+          <span class="si-badge amber">READY</span>
+        </div>
+        <div class="strat-item">
+          <span class="si-num">03</span>
+          <div>
+            <div class="si-name">BB_SQUEEZE</div>
+            <div class="si-desc">볼린저밴드 압축 + 거래량 브레이크아웃</div>
+          </div>
+          <span class="si-badge blue">READY</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-panel">
+      <div class="panel-label">PERFORMANCE_COMPARISON</div>
+      <div class="ascii-bars">
+        <div class="ab-row">
+          <span class="ab-label">RSI_DIV</span>
+          <div class="ab-bar-wrap"><div class="ab-bar ab-green" style="width:78%"></div></div>
+          <span class="ab-val pos">+24.7%</span>
+        </div>
+        <div class="ab-row">
+          <span class="ab-label">EMA_TREND</span>
+          <div class="ab-bar-wrap"><div class="ab-bar ab-amber" style="width:62%"></div></div>
+          <span class="ab-val pos">+19.2%</span>
+        </div>
+        <div class="ab-row">
+          <span class="ab-label">BB_SQUEEZE</span>
+          <div class="ab-bar-wrap"><div class="ab-bar ab-blue" style="width:45%"></div></div>
+          <span class="ab-val pos">+14.1%</span>
+        </div>
+        <div class="ab-row">
+          <span class="ab-label">BUY & HOLD</span>
+          <div class="ab-bar-wrap"><div class="ab-bar ab-red" style="width:28%"></div></div>
+          <span class="ab-val pos">+8.7%</span>
+        </div>
+        <div class="ab-row">
+          <span class="ab-label">GPT-4o (AI)</span>
+          <div class="ab-bar-wrap"><div class="ab-bar ab-green" style="width:100%"></div></div>
+          <span class="ab-val pos">+31.2%</span>
+        </div>
+      </div>
+
+      <div style="margin-top:24px; padding-top:16px; border-top: 1px solid var(--border); font-size:9px; color:var(--fg-faint)">
+        <div>PERIOD: 2024-01-01 → 2024-12-31 &nbsp; COIN: BTC/USDT</div>
+        <div>LEVERAGE: 10x &nbsp; SEED: $100 &nbsp; SLIPPAGE: 0.05%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AI BENCHMARK ── -->
+  <hr class="section-divider" data-label="// AI BENCHMARK">
+
+  <div class="bench-section">
+    <div class="bench-header">
+      <div class="bench-title">
+        <span class="status-dot"></span>
+        &nbsp; LIVE — AI MODEL LEADERBOARD
+      </div>
+      <div class="bench-meta">
+        UPDATED: 2024-01-01 00:00:00 &nbsp;|&nbsp; 4 MODELS &nbsp;|&nbsp; PERIOD: 30D
+      </div>
+    </div>
+    <table class="bench-table">
+      <thead>
+        <tr>
+          <th>RANK</th>
+          <th>MODEL</th>
+          <th>RETURN</th>
+          <th>WIN%</th>
+          <th>TRADES</th>
+          <th>MAX_DD</th>
+          <th>EQUITY</th>
+          <th>STATUS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-rank r1">[ 01 ]</td>
+          <td class="td-model">GPT-4o<small>openai/gpt-4o-2024</small></td>
+          <td class="td-pos">+31.2%</td>
+          <td class="td-pos">74%</td>
+          <td class="td-neu">48</td>
+          <td class="td-neg">-6.1%</td>
+          <td>
+            <div class="spark" id="spark1"></div>
+          </td>
+          <td><span style="color:var(--green);font-size:9px">● ACTIVE</span></td>
+        </tr>
+        <tr>
+          <td class="td-rank">[ 02 ]</td>
+          <td class="td-model">Claude 3.7<small>anthropic/claude-3-7-sonnet</small></td>
+          <td class="td-pos">+28.8%</td>
+          <td class="td-pos">71%</td>
+          <td class="td-neu">52</td>
+          <td class="td-neg">-7.4%</td>
+          <td><div class="spark" id="spark2"></div></td>
+          <td><span style="color:var(--green);font-size:9px">● ACTIVE</span></td>
+        </tr>
+        <tr>
+          <td class="td-rank">[ 03 ]</td>
+          <td class="td-model">Gemini 1.5 Pro<small>google/gemini-1.5-pro</small></td>
+          <td class="td-pos">+19.4%</td>
+          <td class="td-pos">65%</td>
+          <td class="td-neu">39</td>
+          <td class="td-neg">-11.2%</td>
+          <td><div class="spark" id="spark3"></div></td>
+          <td><span style="color:var(--amber);font-size:9px">◌ IDLE</span></td>
+        </tr>
+        <tr>
+          <td class="td-rank">[ 04 ]</td>
+          <td class="td-model">Llama 3.1 405B<small>meta/llama-3.1-405b</small></td>
+          <td class="td-neg">-4.1%</td>
+          <td class="td-neg">44%</td>
+          <td class="td-neu">27</td>
+          <td class="td-neg">-18.7%</td>
+          <td><div class="spark" id="spark4"></div></td>
+          <td><span style="color:var(--fg-faint);font-size:9px">○ DONE</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <span class="logo">PROFIT_LAB</span>
+    <span class="ver">v0.1.0</span>
+    <span>|</span>
+    <span>All simulated. Not financial advice.</span>
+  </div>
+  <div class="footer-right">
+    <a href="#">docs</a>
+    <a href="#">api</a>
+    <a href="#">github</a>
+    <span>© 2024</span>
+  </div>
+</footer>
+
+<script>
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const t = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())} UTC`;
+  document.getElementById('hdrClock').textContent = t;
+  document.getElementById('sysTime').textContent =
+    `SYS: ${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())} ${t} | STATUS: NOMINAL | MEM: ${(40+Math.random()*5).toFixed(1)}MB`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── ASCII Chart ──
+const prices = [100,102,101,104,103,107,105,108,110,109,112,111,115,113,116];
+const minP = Math.min(...prices), maxP = Math.max(...prices);
+const rows = 6;
+let chart = '';
+for (let r = rows-1; r >= 0; r--) {
+  const threshold = minP + (r / (rows-1)) * (maxP - minP);
+  let row = r === rows-1 ? `${maxP.toFixed(0).padStart(3)} ┤` :
+            r === 0      ? `${minP.toFixed(0).padStart(3)} ┤` : '    │';
+  prices.forEach((p, i) => {
+    const prev = prices[i-1] ?? p;
+    if (p >= threshold && prev < threshold) row += '╱';
+    else if (p < threshold && prev >= threshold) row += '╲';
+    else if (p >= threshold) row += '─';
+    else row += ' ';
+  });
+  chart += row + '\n';
+}
+chart += '    └' + '─'.repeat(prices.length);
+document.getElementById('asciiChart').textContent = chart;
+
+// ── Spark lines ──
+function makeSpark(id, data) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const maxH = 20;
+  const min = Math.min(...data), range = Math.max(...data) - min || 1;
+  data.forEach(v => {
+    const bar = document.createElement('div');
+    bar.className = `spark-bar ${v > 0 ? 'sp-g' : v < 0 ? 'sp-r' : 'sp-n'}`;
+    bar.style.height = `${Math.max(2, ((v - min) / range) * maxH)}px`;
+    el.appendChild(bar);
+  });
+}
+makeSpark('spark1', [2,3,1,4,3,5,4,6,5,7,6,8,7,9,8,10,9,11,10,12]);
+makeSpark('spark2', [1,2,3,2,4,3,5,4,6,5,7,6,7,8,7,9,8,9,10,9]);
+makeSpark('spark3', [1,2,1,3,2,4,3,3,4,3,5,4,5,4,5,4,5,6,5,6]);
+makeSpark('spark4', [-1,1,-1,0,-2,-1,-2,-1,-3,-2,-3,-2,-4,-3,-4,-3,-4,-4,-4,-5]);
+</script>
+</body>
+</html>

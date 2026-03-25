@@ -3,10 +3,56 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { runBacktestStream, type ProgressEvent } from "@/lib/api";
 
+/* ── Design tokens ──────────────────────────────────────────────────────── */
+const PX = {
+  black:   "var(--px-black,#0a0a1a)",
+  panel:   "var(--px-panel,#12122a)",
+  alt:     "var(--px-panel-alt,#1a1a4e)",
+  border:  "var(--px-border,#3355ff)",
+  blue:    "var(--px-blue,#3355ff)",
+  cyan:    "var(--px-cyan,#00eeff)",
+  pink:    "var(--px-pink,#ff2d78)",
+  yellow:  "var(--px-yellow,#ffe000)",
+  green:   "var(--px-green,#00ff7f)",
+  red:     "var(--px-red,#ff3333)",
+  white:   "var(--px-white,#f0f0ff)",
+  mid:     "var(--px-grey-mid,#8888aa)",
+  fp:      "var(--ff-pixel,'Press Start 2P',monospace)",
+  fm:      "var(--ff-mono,'JetBrains Mono',monospace)",
+  fb:      "var(--ff-body,Pretendard,sans-serif)",
+} as const;
+
+const pxPanel: React.CSSProperties = {
+  background: PX.panel,
+  border: `2px solid ${PX.border}`,
+  borderRadius: 0,
+  padding: "20px 24px",
+};
+
+const pxLabel: React.CSSProperties = {
+  fontFamily: PX.fp,
+  fontSize: 7,
+  color: PX.mid,
+  letterSpacing: "0.08em",
+  lineHeight: 2,
+  textTransform: "uppercase" as const,
+};
+
+const pxInput: React.CSSProperties = {
+  background: PX.alt,
+  border: `2px solid ${PX.border}`,
+  borderRadius: 0,
+  padding: "8px 12px",
+  fontFamily: PX.fm,
+  fontSize: 13,
+  color: PX.white,
+  outline: "none",
+  width: "100%",
+};
+
+/* ── Data ───────────────────────────────────────────────────────────────── */
 const ALL_COINS = [
   "BTC", "ETH", "SOL", "XRP", "DOGE",
   "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "CRV", "DOT", "ENA",
@@ -17,317 +63,376 @@ const ALL_COINS = [
 const DEFAULT_COINS = ALL_COINS.slice(0, 5);
 
 const STRATEGIES = [
-  { id: "rsi_divergence", name: "RSI Divergence", desc: "RSI 상승 다이버전스 + BB 회귀 + W-Pattern 확인 후 반전 매수 (Long Only)" },
-  { id: "ema_trend", name: "EMA Trend", desc: "1H EMA 정배열/역배열 추세 확인 후 15m 눌림목/반등 진입 (Long & Short)" },
-  { id: "bb_squeeze", name: "BB Squeeze", desc: "볼린저 밴드 응축 후 거래량 동반 돌파 시 브레이크아웃 진입 (Long & Short)" },
+  { id: "rsi_divergence", name: "RSI DIV", fullName: "RSI Divergence", desc: "RSI 상승 다이버전스 + BB 회귀 + W-Pattern 확인 후 반전 매수 (Long Only)" },
+  { id: "ema_trend",      name: "EMA TREND", fullName: "EMA Trend",  desc: "1H EMA 정배열/역배열 추세 확인 후 15m 눌림목/반등 진입 (Long & Short)" },
+  { id: "bb_squeeze",     name: "BB SQUEEZE", fullName: "BB Squeeze", desc: "볼린저 밴드 응축 후 거래량 동반 돌파 시 브레이크아웃 진입 (Long & Short)" },
 ] as const;
 
+/* ── Sub-components ─────────────────────────────────────────────────────── */
+function PxSection({ children, title }: { children: React.ReactNode; title: string }) {
+  return (
+    <div style={pxPanel}>
+      <div style={{ ...pxLabel, color: PX.cyan, marginBottom: 16, fontSize: 8 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+/* ── Inner page ─────────────────────────────────────────────────────────── */
 function BacktestPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialStrategy = searchParams.get("strategy") || "rsi_divergence";
 
-  const [strategy, setStrategy] = useState(initialStrategy);
-  const [startDate, setStartDate] = useState("2026-01-01");
-  const [endDate, setEndDate] = useState("2026-03-21");
+  const [strategy, setStrategy]           = useState(initialStrategy);
+  const [startDate, setStartDate]         = useState("2026-01-01");
+  const [endDate, setEndDate]             = useState("2026-03-21");
   const [selectedCoins, setSelectedCoins] = useState<string[]>(DEFAULT_COINS);
-  const [status, setStatus] = useState<string>("");
-  const [progress, setProgress] = useState<number>(0);
-  const [loading, setLoading] = useState(false);
+  const [status, setStatus]               = useState<string>("");
+  const [progress, setProgress]           = useState<number>(0);
+  const [loading, setLoading]             = useState(false);
+  const [rulesOpen, setRulesOpen]         = useState(false);
 
-  // Restore from sessionStorage on mount
   useEffect(() => {
-    const s = sessionStorage.getItem("bt_strategy");
+    const s  = sessionStorage.getItem("bt_strategy");
     const sd = sessionStorage.getItem("bt_startDate");
     const ed = sessionStorage.getItem("bt_endDate");
-    const c = sessionStorage.getItem("bt_coins");
-    if (s) setStrategy(s);
+    const c  = sessionStorage.getItem("bt_coins");
+    if (s)  setStrategy(s);
     if (sd) setStartDate(sd);
     if (ed) setEndDate(ed);
-    if (c) {
-      try { setSelectedCoins(JSON.parse(c)); } catch { /* ignore */ }
-    }
+    if (c)  { try { setSelectedCoins(JSON.parse(c)); } catch { /* ignore */ } }
   }, []);
 
-  // Persist selections to sessionStorage
   useEffect(() => {
-    sessionStorage.setItem("bt_strategy", strategy);
-    sessionStorage.setItem("bt_startDate", startDate);
-    sessionStorage.setItem("bt_endDate", endDate);
-    sessionStorage.setItem("bt_coins", JSON.stringify(selectedCoins));
+    sessionStorage.setItem("bt_strategy",   strategy);
+    sessionStorage.setItem("bt_startDate",  startDate);
+    sessionStorage.setItem("bt_endDate",    endDate);
+    sessionStorage.setItem("bt_coins",      JSON.stringify(selectedCoins));
   }, [strategy, startDate, endDate, selectedCoins]);
 
-  const toggleCoin = (coin: string) => {
-    setSelectedCoins((prev) =>
-      prev.includes(coin) ? prev.filter((c) => c !== coin) : [...prev, coin]
-    );
-  };
-
-  const selectAll = () => setSelectedCoins([...ALL_COINS]);
+  const toggleCoin  = (coin: string) => setSelectedCoins((p) => p.includes(coin) ? p.filter((c) => c !== coin) : [...p, coin]);
+  const selectAll   = () => setSelectedCoins([...ALL_COINS]);
   const deselectAll = () => setSelectedCoins([]);
 
   const handleRun = async () => {
-    if (selectedCoins.length === 0) {
-      setStatus("코인을 1개 이상 선택해주세요.");
-      return;
-    }
-
-    setLoading(true);
-    setProgress(0);
-    setStatus("시작 중...");
-
+    if (selectedCoins.length === 0) { setStatus("코인을 1개 이상 선택해주세요."); return; }
+    setLoading(true); setProgress(0); setStatus("시작 중...");
     try {
       const runId = await runBacktestStream(
         { coins: selectedCoins, start_date: startDate, end_date: endDate, strategy },
-        (event: ProgressEvent) => {
-          setProgress(event.progress);
-          setStatus(event.message);
-        },
+        (event: ProgressEvent) => { setProgress(event.progress); setStatus(event.message); },
       );
       router.push(`/backtest/${runId}`);
     } catch (err) {
       setStatus(`오류: ${err instanceof Error ? err.message : String(err)}`);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
-  const strategyName = STRATEGIES.find((s) => s.id === strategy)?.name ?? strategy;
+  const currentStrategy = STRATEGIES.find((s) => s.id === strategy)!;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <h2 className="text-2xl font-bold">{strategyName} 백테스트</h2>
+    <div style={{ maxWidth: 896, margin: "0 auto" }}>
 
-      {/* Strategy selector */}
-      <div className="flex gap-2">
-        {STRATEGIES.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setStrategy(s.id)}
-            className={`px-4 py-2 text-sm rounded-md border transition-colors ${
-              strategy === s.id
-                ? "bg-primary text-white border-primary"
-                : "bg-transparent text-muted-foreground border-border hover:text-foreground"
-            }`}
-          >
-            {s.name}
-          </button>
-        ))}
+      {/* ── Page title ── */}
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontFamily: PX.fp, fontSize: 13, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
+          textShadow: `2px 2px 0 #886600, 4px 4px 0 #443300`, marginBottom: 10 }}>
+          ▶ 전략 검증
+        </h1>
+        <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
+          {currentStrategy.desc}
+        </p>
       </div>
 
-      <p className="text-sm text-muted-foreground -mt-2">
-        {STRATEGIES.find((s) => s.id === strategy)?.desc}
-      </p>
+      {/* ── Strategy tabs ── */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 24 }}>
+        {STRATEGIES.map((s) => {
+          const active = strategy === s.id;
+          return (
+            <button
+              key={s.id}
+              onClick={() => setStrategy(s.id)}
+              style={{
+                fontFamily: PX.fp,
+                fontSize: 7,
+                letterSpacing: "0.05em",
+                padding: "8px 14px",
+                border: `2px solid ${active ? PX.cyan : PX.border}`,
+                background: active ? "rgba(0,238,255,0.12)" : PX.panel,
+                color: active ? PX.cyan : PX.mid,
+                cursor: "pointer",
+                borderRadius: 0,
+                transition: "all 0.1s steps(1)",
+                lineHeight: 1.6,
+              }}
+            >
+              {s.name}
+            </button>
+          );
+        })}
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>기간 설정</CardTitle>
-        </CardHeader>
-        <CardContent className="flex gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-muted-foreground">시작일</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm text-muted-foreground">종료일</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>코인 선택 ({selectedCoins.length}/{ALL_COINS.length})</span>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={selectAll}>전체 선택</Button>
-              <Button variant="outline" size="sm" onClick={deselectAll}>전체 해제</Button>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {ALL_COINS.map((coin) => (
+        {/* ── Period ── */}
+        <PxSection title="■ 기간 설정">
+          <div style={{ display: "flex", gap: 24 }}>
+            {[
+              { label: "시작일", value: startDate, setter: setStartDate },
+              { label: "종료일", value: endDate,   setter: setEndDate },
+            ].map(({ label, value, setter }) => (
+              <div key={label} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <label style={pxLabel}>{label}</label>
+                <input
+                  type="date"
+                  value={value}
+                  onChange={(e) => setter(e.target.value)}
+                  style={pxInput}
+                />
+              </div>
+            ))}
+          </div>
+        </PxSection>
+
+        {/* ── Coin selector ── */}
+        <PxSection title={`■ 코인 선택 [${selectedCoins.length}/${ALL_COINS.length}]`}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+            {[
+              { label: "전체 선택", action: selectAll },
+              { label: "전체 해제", action: deselectAll },
+            ].map(({ label, action }) => (
               <button
-                key={coin}
-                onClick={() => toggleCoin(coin)}
-                className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
-                  selectedCoins.includes(coin)
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background text-muted-foreground border-border hover:border-primary/50"
-                }`}
+                key={label}
+                onClick={action}
+                style={{
+                  fontFamily: PX.fp,
+                  fontSize: 7,
+                  padding: "6px 12px",
+                  border: `2px solid ${PX.border}`,
+                  background: "transparent",
+                  color: PX.mid,
+                  cursor: "pointer",
+                  borderRadius: 0,
+                  transition: "all 0.1s steps(1)",
+                }}
               >
-                {coin}
+                {label}
               </button>
             ))}
           </div>
-        </CardContent>
-      </Card>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {ALL_COINS.map((coin) => {
+              const sel = selectedCoins.includes(coin);
+              return (
+                <button
+                  key={coin}
+                  onClick={() => toggleCoin(coin)}
+                  style={{
+                    fontFamily: PX.fm,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "5px 10px",
+                    border: `2px solid ${sel ? PX.cyan : PX.border}`,
+                    background: sel ? "rgba(0,238,255,0.15)" : PX.alt,
+                    color: sel ? PX.cyan : PX.mid,
+                    cursor: "pointer",
+                    borderRadius: 0,
+                    transition: "all 0.1s steps(1)",
+                    letterSpacing: "0.04em",
+                  }}
+                >
+                  {coin}
+                </button>
+              );
+            })}
+          </div>
+        </PxSection>
 
-      <details className="group">
-        <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground transition-colors select-none">
-          전략 상세 규칙 보기
-        </summary>
-        <Card className="mt-2">
-          <CardContent className="pt-4 text-sm space-y-4">
-            {strategy === "rsi_divergence" ? (
-              <>
-                <div>
-                  <h4 className="font-semibold mb-1">진입 조건 — 4중 필터 (1H 봉)</h4>
-                  <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="font-medium">RSI 상승 다이버전스</span> — 가격 Lower Low + RSI Higher Low (최소 하나 RSI &lt; 30)</li>
-                    <li><span className="font-medium">BB 회귀</span> — BB(20, 2σ) 하단 터치/이탈 후 밴드 내부 복귀 종가</li>
-                    <li><span className="font-medium">RSI W-Pattern</span> — RSI 30 미만 → 30선 상향 재돌파 (과매도 탈출 확정)</li>
-                    <li><span className="font-medium">캔들 반전</span> — 망치형(Hammer) 또는 상승 장악형 양봉 (직전 음봉 50%+ 커버)</li>
+        {/* ── Strategy rules (collapsible) ── */}
+        <div style={{ border: `2px solid ${PX.border}`, borderRadius: 0, background: PX.panel }}>
+          <button
+            onClick={() => setRulesOpen((o) => !o)}
+            style={{
+              width: "100%",
+              padding: "14px 24px",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.cyan, letterSpacing: "0.06em" }}>
+              ■ 전략 상세 규칙
+            </span>
+            <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid }}>
+              {rulesOpen ? "▲" : "▼"}
+            </span>
+          </button>
+
+          {rulesOpen && (
+            <div style={{ padding: "0 24px 20px", fontFamily: PX.fb, fontSize: 13, color: PX.white, lineHeight: 1.8 }}>
+              {/* separator */}
+              <div style={{ height: 1, background: PX.border, opacity: 0.4, marginBottom: 20 }} />
+
+              {strategy === "rsi_divergence" ? (
+                <>
+                  <RuleBlock title="진입 조건 — 4중 필터 (1H 봉)">
+                    <li><b>RSI 상승 다이버전스</b> — 가격 Lower Low + RSI Higher Low (최소 하나 RSI &lt; 30)</li>
+                    <li><b>BB 회귀</b> — BB(20, 2σ) 하단 터치/이탈 후 밴드 내부 복귀 종가</li>
+                    <li><b>RSI W-Pattern</b> — RSI 30 미만 → 30선 상향 재돌파 (과매도 탈출 확정)</li>
+                    <li><b>캔들 반전</b> — 망치형(Hammer) 또는 상승 장악형 양봉 (직전 음봉 50%+ 커버)</li>
                     <li>조건 확정된 봉 마감 직후, 다음 봉 시가에 진입</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-1">위험 회피 필터</h4>
-                  <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
+                  </RuleBlock>
+                  <RuleBlock title="위험 회피 필터">
                     <li>5분 내 3%+ 급변 → 60분 쿨다운 (변동성 폭발)</li>
                     <li>RSI 30 이하 10봉+ 연속 → 진입 금지 (RSI 침수)</li>
                     <li>BTC 1H -5%+ 급락 시 → 알트코인 Long 금지 (BTC 가드)</li>
                     <li>가격이 1H 200 EMA 대비 -10% 이상 이격 → 진입 금지 (데드 존)</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-1">청산 규칙 (1m 봉)</h4>
-                  <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-red-400 font-medium">SL</span> — 다이버전스 최근 저가 - 0.5%</li>
-                    <li><span className="text-primary font-medium">TP1 (50%)</span> — RSI ≥ 70 또는 손익비 1.5배 도달 → 본절로스 이동</li>
-                    <li><span className="text-emerald-400 font-medium">TP2 (50%)</span> — 15m 200 EMA 터치 시 전량 청산</li>
-                  </ul>
-                </div>
-              </>
-            ) : strategy === "ema_trend" ? (
-              <>
-                <div>
-                  <h4 className="font-semibold mb-1">추세 확인 (1H 봉)</h4>
-                  <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-emerald-400 font-medium">Long</span> — 50 EMA &gt; 200 EMA 정배열 (골든크로스)</li>
-                    <li><span className="text-red-400 font-medium">Short</span> — 50 EMA &lt; 200 EMA 역배열 (데드크로스)</li>
+                  </RuleBlock>
+                  <RuleBlock title="청산 규칙 (1m 봉)">
+                    <li><span style={{ color: PX.red }}>SL</span> — 다이버전스 최근 저가 - 0.5%</li>
+                    <li><span style={{ color: PX.cyan }}>TP1 (50%)</span> — RSI ≥ 70 또는 손익비 1.5배 도달 → 본절로스 이동</li>
+                    <li><span style={{ color: PX.green }}>TP2 (50%)</span> — 15m 200 EMA 터치 시 전량 청산</li>
+                  </RuleBlock>
+                </>
+              ) : strategy === "ema_trend" ? (
+                <>
+                  <RuleBlock title="추세 확인 (1H 봉)">
+                    <li><span style={{ color: PX.green }}>Long</span> — 50 EMA &gt; 200 EMA 정배열 (골든크로스)</li>
+                    <li><span style={{ color: PX.red }}>Short</span> — 50 EMA &lt; 200 EMA 역배열 (데드크로스)</li>
                     <li>ADX(14) ≥ 25 — 추세 강도 확인</li>
                     <li>No-Trade Zone: ADX &lt; 20 또는 50/200 EMA 간격 &lt; 0.5% (Whipsaw)</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-1">진입 조건 (15m 봉)</h4>
-                  <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-emerald-400 font-medium">Long</span> — 15m 가격이 50 EMA로 눌림목 형성 후 재돌파</li>
-                    <li><span className="text-red-400 font-medium">Short</span> — 15m 가격이 50 EMA 위로 반등 후 재이탈</li>
+                  </RuleBlock>
+                  <RuleBlock title="진입 조건 (15m 봉)">
+                    <li><span style={{ color: PX.green }}>Long</span> — 15m 가격이 50 EMA로 눌림목 형성 후 재돌파</li>
+                    <li><span style={{ color: PX.red }}>Short</span> — 15m 가격이 50 EMA 위로 반등 후 재이탈</li>
                     <li>현재 거래량 &gt; 최근 20봉 평균 거래량</li>
                     <li>다음 봉 시가에 진입</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-1">청산 규칙</h4>
-                  <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-red-400 font-medium">SL</span> — 15m 200 EMA 이탈 (동적 추적)</li>
-                    <li><span className="text-primary font-medium">TP1 (Long)</span> — 손익비 1:2 지점 → 50% 청산</li>
-                    <li><span className="text-primary font-medium">TP1 (Short)</span> — 손익비 1:1.5 지점 → 50% 청산</li>
-                    <li><span className="font-medium">BE</span> — TP1 체결 즉시, 잔여 50% 손절가를 진입가로 이동</li>
-                    <li><span className="text-emerald-400 font-medium">EMA Cross</span> — 15m EMA 역크로스 시 전량 청산</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-1">위험 회피 필터</h4>
-                  <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
+                  </RuleBlock>
+                  <RuleBlock title="청산 규칙">
+                    <li><span style={{ color: PX.red }}>SL</span> — 15m 200 EMA 이탈 (동적 추적)</li>
+                    <li><span style={{ color: PX.cyan }}>TP1 (Long)</span> — 손익비 1:2 지점 → 50% 청산</li>
+                    <li><span style={{ color: PX.cyan }}>TP1 (Short)</span> — 손익비 1:1.5 지점 → 50% 청산</li>
+                    <li><b>BE</b> — TP1 체결 즉시, 잔여 50% 손절가를 진입가로 이동</li>
+                    <li><span style={{ color: PX.green }}>EMA Cross</span> — 15m EMA 역크로스 시 전량 청산</li>
+                  </RuleBlock>
+                  <RuleBlock title="위험 회피 필터">
                     <li>1H 50/200 EMA 간격 &lt; 0.5% → 진입 금지</li>
                     <li>15m 캔들 종가가 50 EMA와 200 EMA 사이에 갇힌 경우 → 진입 금지</li>
                     <li>1H ADX(14) &lt; 20 → 진입 금지</li>
                     <li>5분 내 3%+ 급등/급락 발생 → 해당 심볼 60분 쿨다운</li>
                     <li>BTC 1H 수익률 -5% 이하 → 알트코인 Long 진입 금지</li>
-                  </ul>
-                </div>
-              </>
-            ) : (
-              <>
-                <div>
-                  <h4 className="font-semibold mb-1">스퀘즈 확인 (15m 봉)</h4>
-                  <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
+                  </RuleBlock>
+                </>
+              ) : (
+                <>
+                  <RuleBlock title="스퀘즈 확인 (15m 봉)">
                     <li>BB Width(20, 2σ)가 최근 100봉 중 하위 20% = 응축 구간</li>
                     <li>스퀘즈 상태가 최소 15봉 이상 지속된 후의 돌파만 유효</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-1">진입 조건 (15m 봉)</h4>
-                  <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-emerald-400 font-medium">Long</span> — 종가 &gt; BB 상단 + 거래량 ≥ 평균의 200% + 하단 밴드 하락 확인</li>
-                    <li><span className="text-red-400 font-medium">Short</span> — 종가 &lt; BB 하단 + 거래량 ≥ 평균의 250%</li>
+                  </RuleBlock>
+                  <RuleBlock title="진입 조건 (15m 봉)">
+                    <li><span style={{ color: PX.green }}>Long</span> — 종가 &gt; BB 상단 + 거래량 ≥ 평균의 200% + 하단 밴드 하락 확인</li>
+                    <li><span style={{ color: PX.red }}>Short</span> — 종가 &lt; BB 하단 + 거래량 ≥ 평균의 250%</li>
                     <li>다음 봉 시가에 진입</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-1">청산 규칙 (1m 봉)</h4>
-                  <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
-                    <li><span className="text-red-400 font-medium">SL</span> — BB 중심선 (20 SMA) 터치 시 전량 청산</li>
-                    <li><span className="text-purple-400 font-medium">Long TRAIL</span> — 수익 발생 후 밴드 안쪽 복귀 시 트레일링 스탑 (고점 -1% 또는 중심선)</li>
-                    <li><span className="text-emerald-400 font-medium">Short TP</span> — 고정 수익률 +3.5% 도달 시 즉시 청산</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-1">위험 회피 필터</h4>
-                  <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
+                  </RuleBlock>
+                  <RuleBlock title="청산 규칙 (1m 봉)">
+                    <li><span style={{ color: PX.red }}>SL</span> — BB 중심선 (20 SMA) 터치 시 전량 청산</li>
+                    <li><span style={{ color: "#c084fc" }}>Long TRAIL</span> — 수익 발생 후 밴드 안쪽 복귀 시 트레일링 스탑 (고점 -1% 또는 중심선)</li>
+                    <li><span style={{ color: PX.green }}>Short TP</span> — 고정 수익률 +3.5% 도달 시 즉시 청산</li>
+                  </RuleBlock>
+                  <RuleBlock title="위험 회피 필터">
                     <li>1H 50/200 EMA 간격 &lt; 0.5% → 진입 금지</li>
                     <li>15m 캔들 종가가 50 EMA와 200 EMA 사이에 갇힌 경우 → 진입 금지</li>
                     <li>1H ADX(14) &lt; 20 → 진입 금지</li>
                     <li>BB 상단 돌파 시 하단 밴드 기울기가 양수 → Long 진입 금지</li>
                     <li>5분 내 3%+ 급등/급락 발생 → 해당 심볼 60분 쿨다운</li>
                     <li>BTC 1H 수익률 -5% 이하 → 알트코인 Long 진입 금지</li>
-                  </ul>
-                </div>
-              </>
-            )}
-            <div>
-              <h4 className="font-semibold mb-1">실행 조건</h4>
-              <ul className="list-disc pl-5 space-y-0.5 text-muted-foreground">
+                  </RuleBlock>
+                </>
+              )}
+              <RuleBlock title="실행 조건">
                 <li>코인별 초기 시드 $100 · 레버리지 10x · 전액 투입 · 복리</li>
                 <li>수수료 Taker 0.04% (진입/청산 각각) · 슬리피지 0.05%</li>
-              </ul>
+              </RuleBlock>
             </div>
-          </CardContent>
-        </Card>
-      </details>
+          )}
+        </div>
 
-      <div className="space-y-3">
-        <Button onClick={handleRun} disabled={loading} size="lg">
-          {loading ? "실행 중..." : "백테스트 실행"}
-        </Button>
+        {/* ── Run button + progress ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <button
+            onClick={handleRun}
+            disabled={loading}
+            style={{
+              fontFamily: PX.fp,
+              fontSize: 9,
+              letterSpacing: "0.1em",
+              padding: "14px 32px",
+              border: `3px solid ${loading ? PX.mid : PX.cyan}`,
+              background: loading ? PX.alt : "rgba(0,238,255,0.12)",
+              color: loading ? PX.mid : PX.cyan,
+              cursor: loading ? "not-allowed" : "pointer",
+              borderRadius: 0,
+              alignSelf: "flex-start",
+              transition: "all 0.1s steps(1)",
+              textShadow: loading ? "none" : `0 0 10px ${PX.cyan}`,
+              boxShadow: loading ? "none" : `0 0 12px rgba(0,238,255,0.2)`,
+            }}
+          >
+            {loading ? "▶▶ 실행 중..." : "▶ 백테스트 실행"}
+          </button>
 
-        {loading && (
-          <div className="space-y-2">
-            <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              />
+          {loading && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {/* HP bar */}
+              <div style={{ width: "100%", height: 12, background: PX.alt, border: `2px solid ${PX.border}`, position: "relative", overflow: "hidden" }}>
+                <div style={{
+                  height: "100%",
+                  width: `${progress}%`,
+                  background: progress < 30 ? PX.red : progress < 70 ? PX.yellow : PX.green,
+                  transition: "width 0.3s ease-out",
+                }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ fontFamily: PX.fb, fontSize: 12, color: PX.mid }}>{status}</span>
+                <span style={{ fontFamily: PX.fm, fontSize: 12, color: PX.cyan }}>{progress}%</span>
+              </div>
             </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>{status}</span>
-              <span>{progress}%</span>
-            </div>
-          </div>
-        )}
+          )}
 
-        {!loading && status && (
-          <span className="text-sm text-muted-foreground">{status}</span>
-        )}
+          {!loading && status && (
+            <span style={{ fontFamily: PX.fb, fontSize: 13, color: PX.mid }}>{status}</span>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
+/* ── Rule block helper ───────────────────────────────────────────────────── */
+function RuleBlock({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{
+        fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
+        fontSize: 7,
+        color: "var(--px-cyan,#00eeff)",
+        marginBottom: 10,
+        letterSpacing: "0.06em",
+      }}>
+        › {title}
+      </div>
+      <ul style={{ paddingLeft: 20, margin: 0, listStyle: "disc", color: "var(--px-grey-mid,#8888aa)" }}>
+        {children}
+      </ul>
+    </div>
+  );
+}
+
+/* ── Export ─────────────────────────────────────────────────────────────── */
 export default function BacktestPage() {
   return (
     <Suspense>
