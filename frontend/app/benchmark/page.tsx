@@ -450,7 +450,7 @@ function OrderCard({
     width: "100%",
     boxSizing: "border-box" as const,
   };
-  const pxSel: React.CSSProperties = { ...pxInput, cursor: "pointer" };
+  const pxSel: React.CSSProperties = { ...pxInput, cursor: "pointer", fontSize: 11 };
   const lbl: React.CSSProperties = {
     fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
     fontSize: 9,
@@ -528,7 +528,7 @@ function OrderCard({
               onClick={() => onUpdate(order.key, "side", "long")}
               style={{
                 flex: 1, border: "none", cursor: "pointer", borderRadius: 0,
-                fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 9,
+                fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 8,
                 background: order.side === "long" ? "var(--tertiary-container,#00767f)" : "var(--px-black,#0a0a1a)",
                 color: order.side === "long" ? "#fff" : "var(--px-grey-mid,#8888aa)",
                 transition: "all 0.1s steps(1)",
