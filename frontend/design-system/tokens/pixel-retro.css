@@ -1,0 +1,139 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Pixel Retro — Semantic Theme Layer
+   Applied via `.theme-pixel` on <html>.  Overrides shadcn/ui CSS vars so every
+   existing component picks up the pixel aesthetic automatically, then adds
+   pixel-exclusive tokens for design-system primitives.
+───────────────────────────────────────────────────────────────────────────── */
+
+@import "./base.css";
+
+/* ── Keyframe animations ─────────────────────────────────────────────────── */
+
+@keyframes px-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes px-glow-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes px-scanline {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 4px; }
+}
+
+@keyframes px-ticker {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* ── Theme override ──────────────────────────────────────────────────────── */
+
+.theme-pixel {
+  /* shadcn semantic vars — pixel palette */
+  --background:          var(--px-black);
+  --foreground:          var(--px-white);
+  --card:                var(--px-panel);
+  --card-foreground:     var(--px-white);
+  --popover:             var(--px-panel);
+  --popover-foreground:  var(--px-white);
+  --primary:             var(--px-blue);
+  --primary-foreground:  var(--px-white);
+  --secondary:           var(--px-panel-alt);
+  --secondary-foreground:var(--px-grey-hi);
+  --muted:               var(--px-panel-alt);
+  --muted-foreground:    var(--px-grey-mid);
+  --accent:              var(--px-pink);
+  --accent-foreground:   var(--px-white);
+  --destructive:         var(--px-red);
+  --border:              var(--px-border);
+  --input:               var(--px-panel-alt);
+  --ring:                var(--px-cyan);
+
+  /* Chart colours */
+  --chart-1:             var(--px-cyan);
+  --chart-2:             var(--px-green);
+  --chart-3:             var(--px-pink);
+  --chart-4:             var(--px-yellow);
+  --chart-5:             var(--px-purple);
+
+  /* Profit/Loss semantic colours (pixel-exclusive) */
+  --pixel-profit:        var(--px-green);
+  --pixel-loss:          var(--px-red);
+  --pixel-neutral:       var(--px-grey-mid);
+
+  /* Sidebar */
+  --sidebar:                   var(--px-dark);
+  --sidebar-foreground:        var(--px-grey-hi);
+  --sidebar-primary:           var(--px-cyan);
+  --sidebar-primary-foreground:var(--px-black);
+  --sidebar-accent:            var(--px-panel-alt);
+  --sidebar-accent-foreground: var(--px-white);
+  --sidebar-border:            var(--px-border);
+  --sidebar-ring:              var(--px-cyan);
+
+  /* Zero border-radius → sharp pixel edges on ALL shadcn components */
+  --radius: 0px;
+
+  /* ── Pixel-exclusive tokens ─────────────────────────────────────────────── */
+
+  /* Glows per accent colour */
+  --pixel-glow-cyan:    var(--px-glow-md) var(--px-cyan);
+  --pixel-glow-pink:    var(--px-glow-md) var(--px-pink);
+  --pixel-glow-yellow:  var(--px-glow-md) var(--px-yellow);
+  --pixel-glow-green:   var(--px-glow-md) var(--px-green);
+  --pixel-glow-purple:  var(--px-glow-md) var(--px-purple);
+
+  /* Text glow helpers */
+  --pixel-text-glow-cyan:   0 0 8px var(--px-cyan), 0 0 20px var(--px-cyan-dim);
+  --pixel-text-glow-pink:   0 0 8px var(--px-pink), 0 0 20px var(--px-pink-dim);
+  --pixel-text-glow-yellow: 0 0 8px var(--px-yellow), 0 0 20px var(--px-yellow-dim);
+  --pixel-text-glow-green:  0 0 8px var(--px-green), 0 0 20px var(--px-green-dim);
+
+  /* Border widths */
+  --pixel-border-width:       var(--px-border-base);
+  --pixel-border-width-thick: var(--px-border-thick);
+
+  /* HP bar */
+  --pixel-hp-track:    var(--px-panel-alt);
+  --pixel-hp-fill:     var(--px-green);
+  --pixel-hp-fill-mid: var(--px-yellow);
+  --pixel-hp-fill-low: var(--px-pink);
+  --pixel-hp-height:   12px;
+
+  /* Font */
+  --font-pixel:        'Press Start 2P';
+  --pixel-font:        var(--font-pixel, 'Press Start 2P'), monospace;
+
+  /* Scanline overlay */
+  --pixel-scanline-color: rgba(0, 0, 0, 0.15);
+  --pixel-scanline-size:  4px;
+}
+
+/* CRT scanline: removed from global scope.
+   Home page manages its own scanline via StarField component. */
+
+/* ── Utility classes exposed to the app ──────────────────────────────────── */
+
+.px-glow-cyan   { box-shadow: var(--pixel-glow-cyan); }
+.px-glow-pink   { box-shadow: var(--pixel-glow-pink); }
+.px-glow-yellow { box-shadow: var(--pixel-glow-yellow); }
+.px-glow-green  { box-shadow: var(--pixel-glow-green); }
+.px-glow-purple { box-shadow: var(--pixel-glow-purple); }
+
+.px-text-glow-cyan   { text-shadow: var(--pixel-text-glow-cyan); }
+.px-text-glow-pink   { text-shadow: var(--pixel-text-glow-pink); }
+.px-text-glow-yellow { text-shadow: var(--pixel-text-glow-yellow); }
+.px-text-glow-green  { text-shadow: var(--pixel-text-glow-green); }
+
+.px-blink       { animation: px-blink 1s step-start infinite; }
+.px-glow-pulse  { animation: px-glow-pulse 2s ease-in-out infinite; }
+.px-ticker      { animation: px-ticker 20s linear infinite; }
+
+.px-border-pixel {
+  border-width: var(--pixel-border-width);
+  border-style: solid;
+  border-color: var(--px-border);
+}

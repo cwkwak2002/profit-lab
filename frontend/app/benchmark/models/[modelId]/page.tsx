@@ -2,16 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { PxFooter } from "@/components/px-footer";
+import { PxPageShell } from "@/components/px-page-shell";
+import { PxPixelDeco } from "@/components/px-pixel-deco";
+import { PX } from "@/design-system/tokens/px";
+import { TableCell, TableRow } from "@/components/ui/table";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { BenchmarkChart, type BenchmarkChartHandle } from "@/components/benchmark-chart";
@@ -31,6 +26,7 @@ import {
   type BenchmarkBatch,
 } from "@/lib/api";
 
+
 const TOP_COINS = [
   "BTC", "ETH", "SOL", "XRP", "DOGE",
   "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "CRV", "DOT", "ENA",
@@ -38,19 +34,26 @@ const TOP_COINS = [
   "SUI", "TAO", "TRX", "UNI", "WIF",
 ];
 
-
 // --- Helpers ---
 
 function statusBadge(status: string) {
-  const styles: Record<string, string> = {
-    PENDING: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    FILLED: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    CLOSED: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
-    CANCELLED: "bg-red-500/10 text-red-400 border-red-500/20",
-    INVALID: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  const cfg: Record<string, { color: string; bg: string }> = {
+    PENDING:   { color: PX.yellow, bg: "rgba(255,224,0,0.1)" },
+    FILLED:    { color: PX.cyan,   bg: "rgba(0,238,255,0.1)" },
+    CLOSED:    { color: PX.mid,    bg: "rgba(136,136,170,0.1)" },
+    CANCELLED: { color: PX.red,    bg: "rgba(255,51,51,0.1)" },
+    INVALID:   { color: PX.pink,   bg: "rgba(255,45,120,0.1)" },
   };
+  const c = cfg[status] || cfg.CLOSED;
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border ${styles[status] || "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"}`}>
+    <span style={{
+      display: "inline-flex", alignItems: "center",
+      padding: "2px 6px",
+      border: `1px solid ${c.color}`,
+      background: c.bg,
+      fontFamily: PX.fm, fontSize: 9, color: c.color,
+      letterSpacing: "0.04em",
+    }}>
       {status}
     </span>
   );
@@ -59,24 +62,31 @@ function statusBadge(status: string) {
 function reasonBadge(reason: string | null) {
   if (!reason) return null;
   const colors: Record<string, string> = {
-    TP: "text-emerald-400", TP2: "text-emerald-400", SL: "text-red-400",
-    SL_BE: "text-amber-400", TIMEOUT_6H: "text-amber-400",
-    CANCEL_30M: "text-muted-foreground", MANUAL: "text-muted-foreground",
+    TP: PX.green, TP2: PX.green, SL: PX.red,
+    SL_BE: PX.yellow, TIMEOUT_6H: PX.yellow,
+    CANCEL_30M: PX.mid, MANUAL: PX.mid,
   };
   const labels: Record<string, string> = {
     TP: "TP", TP2: "TP2", SL: "SL", SL_BE: "SL(BE)",
-    TIMEOUT_6H: "6H", CANCEL_30M: "30m 취소", MANUAL: "삭제",
+    TIMEOUT_6H: "6H", CANCEL_30M: "30m", MANUAL: "삭제",
   };
-  return <span className={`text-[10px] font-mono font-medium ${colors[reason] || ""}`}>{labels[reason] || reason}</span>;
+  return (
+    <span style={{ fontFamily: PX.fm, fontSize: 9, color: colors[reason] || PX.mid }}>
+      {labels[reason] || reason}
+    </span>
+  );
 }
 
 function confidenceDots(level: number) {
   return (
-    <div className="flex gap-0.5">
+    <div style={{ display: "flex", gap: 2 }}>
       {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${
-          i <= level ? (level <= 2 ? "bg-red-400" : level <= 3 ? "bg-amber-400" : "bg-emerald-400") : "bg-muted-foreground/20"
-        }`} />
+        <div key={i} style={{
+          width: 6, height: 6,
+          background: i <= level
+            ? (level <= 2 ? PX.red : level <= 3 ? PX.yellow : PX.green)
+            : "rgba(136,136,170,0.2)",
+        }} />
       ))}
     </div>
   );
@@ -88,10 +98,21 @@ function formatTime(iso: string) {
 
 function StatItem({ label, value, color, sub }: { label: string; value: string; color?: string; sub?: string }) {
   return (
-    <div className="flex flex-col gap-0.5 py-3">
-      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</span>
-      <span className={`text-lg font-semibold font-mono tabular-nums leading-tight ${color || "text-foreground"}`}>{value}</span>
-      {sub && <span className="text-[10px] text-muted-foreground">{sub}</span>}
+    <div style={{
+      padding: "10px 12px",
+      borderLeft: `3px solid ${color || PX.border}`,
+      background: "rgba(51,85,255,0.05)",
+      marginBottom: 4,
+    }}>
+      <div style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.06em", marginBottom: 6, textTransform: "uppercase" as const }}>
+        {label}
+      </div>
+      <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: color || PX.white, lineHeight: 1 }}>
+        {value}
+      </div>
+      {sub && (
+        <div style={{ fontFamily: PX.fb, fontSize: 10, color: PX.mid, marginTop: 3 }}>{sub}</div>
+      )}
     </div>
   );
 }
@@ -113,34 +134,69 @@ function EditableAnalysis({ batch, onSave }: { batch: BenchmarkBatch; onSave: ()
   if (!editing) {
     return (
       <div
-        className="rounded-lg bg-accent/30 border border-border/40 px-4 py-3 text-sm cursor-pointer hover:border-border/60 group relative transition-colors"
         onClick={() => { setEditing(true); setText(batch.market_analysis); }}
         title="클릭하여 수정"
+        style={{
+          background: "rgba(51,85,255,0.06)",
+          border: `1px solid rgba(51,85,255,0.3)`,
+          padding: "12px 14px",
+          cursor: "pointer",
+          position: "relative",
+        }}
       >
         {batch.market_analysis ? (
-          <div className="markdown-body max-w-none text-sm">
+          <div className="markdown-body" style={{ fontSize: 13, color: PX.white, fontFamily: PX.fb, lineHeight: 1.7 }}>
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{batch.market_analysis}</ReactMarkdown>
           </div>
         ) : (
-          <span className="text-muted-foreground italic">시장 분석 없음</span>
+          <span style={{ fontFamily: PX.fb, fontSize: 13, color: PX.dim, fontStyle: "italic" }}>시장 분석 없음</span>
         )}
-        <span className="absolute top-2 right-3 text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">수정</span>
+        <span style={{
+          position: "absolute", top: 6, right: 10,
+          fontFamily: PX.fp, fontSize: 8, color: PX.mid,
+          opacity: 0,
+        }}
+          className="edit-hint"
+        >수정</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <textarea
-        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm resize-y focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+        style={{
+          width: "100%", padding: "10px 12px",
+          background: PX.panel, border: `1px solid ${PX.border}`,
+          color: PX.white, fontFamily: PX.fb, fontSize: 12,
+          resize: "vertical", outline: "none",
+        }}
         rows={10}
         value={text}
         onChange={(e) => setText(e.target.value)}
         autoFocus
       />
-      <div className="flex gap-2">
-        <Button size="sm" onClick={handleSave} disabled={saving}>{saving ? "저장 중..." : "저장"}</Button>
-        <Button size="sm" variant="outline" onClick={() => setEditing(false)}>취소</Button>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button
+          onClick={handleSave} disabled={saving}
+          style={{
+            padding: "6px 14px", fontFamily: PX.fp, fontSize: 9,
+            background: saving ? PX.dim : PX.cyan, color: "#000",
+            border: "none", cursor: saving ? "default" : "pointer",
+          }}
+        >
+          {saving ? "저장 중..." : "저장"}
+        </button>
+        <button
+          onClick={() => setEditing(false)}
+          style={{
+            padding: "6px 14px", fontFamily: PX.fp, fontSize: 9,
+            background: "transparent", color: PX.mid,
+            border: `1px solid ${PX.mid}`, cursor: "pointer",
+          }}
+        >
+          취소
+        </button>
       </div>
     </div>
   );
@@ -196,62 +252,87 @@ function EditableOrderRow({
     finally { setSaving(false); }
   }
 
+  const td: React.CSSProperties = {
+    padding: "9px 10px",
+    fontFamily: PX.fm, fontSize: 13,
+    borderBottom: "1px solid rgba(51,85,255,0.15)",
+    color: PX.white,
+  };
+  const tdMid: React.CSSProperties = { ...td, color: PX.mid };
+
   if (!editing) {
     return (
-      <TableRow className="group text-xs border-border/30 hover:bg-accent/30 transition-colors">
-        <TableCell className="py-2 text-muted-foreground whitespace-nowrap">
-          <div className="text-[10px] font-mono" title={`주문: ${order.created_at}`}>{formatTime(order.created_at)}</div>
-          {order.fill_time && <div className="text-[10px] font-mono text-blue-400/70" title={`체결: ${order.fill_time}`}>{formatTime(order.fill_time)}</div>}
-          {order.close_time && <div className="text-[10px] font-mono text-zinc-400/70" title={`청산: ${order.close_time}`}>{formatTime(order.close_time)}</div>}
+      <TableRow
+        className="group"
+        style={{ cursor: "pointer", transition: "background 0.1s steps(1)" }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(51,85,255,0.1)")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+      >
+        <TableCell style={tdMid}>
+          <div style={{ fontFamily: PX.fm, fontSize: 10 }} title={`주문: ${order.created_at}`}>{formatTime(order.created_at)}</div>
+          {order.fill_time && <div style={{ fontFamily: PX.fm, fontSize: 10, color: PX.cyan }} title={`체결: ${order.fill_time}`}>{formatTime(order.fill_time)}</div>}
+          {order.close_time && <div style={{ fontFamily: PX.fm, fontSize: 10, color: PX.dim }} title={`청산: ${order.close_time}`}>{formatTime(order.close_time)}</div>}
         </TableCell>
-        <TableCell className="py-2">{statusBadge(order.status)}</TableCell>
-        <TableCell className="py-2">
-          <span className={`font-mono text-[10px] ${order.order_type === "market" ? "text-amber-400" : "text-muted-foreground"}`}>
+        <TableCell style={td}>{statusBadge(order.status)}</TableCell>
+        <TableCell style={td}>
+          <span style={{ fontFamily: PX.fm, fontSize: 10, color: order.order_type === "market" ? PX.yellow : PX.mid }}>
             {order.order_type.toUpperCase()}
           </span>
         </TableCell>
-        <TableCell className="py-2">
-          <button className="font-mono text-primary hover:underline" onClick={() => onClickSymbol(order)} title="차트에서 보기">
+        <TableCell style={td}>
+          <button style={{ fontFamily: PX.fm, fontSize: 11, color: PX.cyan, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
+            onClick={() => onClickSymbol(order)} title="차트에서 보기">
             {order.symbol}
           </button>
         </TableCell>
-        <TableCell className="py-2">
-          <span className={`font-medium ${order.side === "long" ? "text-emerald-400" : "text-red-400"}`}>{order.side.toUpperCase()}</span>
+        <TableCell style={td}>
+          <span style={{ fontFamily: PX.fm, fontSize: 11, fontWeight: 700, color: order.side === "long" ? PX.green : PX.red }}>
+            {order.side.toUpperCase()}
+          </span>
         </TableCell>
-        <TableCell className="py-2 text-center">{confidenceDots(order.confidence)}</TableCell>
-        <TableCell className="py-2 text-right font-mono tabular-nums">
+        <TableCell style={{ ...td, textAlign: "center" }}>{confidenceDots(order.confidence)}</TableCell>
+        <TableCell style={{ ...td, textAlign: "right" }}>
           <div>{order.entry_price.toLocaleString()}</div>
-          {order.fill_time && <div className="text-[10px] text-muted-foreground/60" title={`체결: ${formatTime(order.fill_time)}`}>@ {order.entry_price.toLocaleString()}</div>}
+          {order.fill_time && <div style={{ fontSize: 9, color: PX.dim }}>@ {order.entry_price.toLocaleString()}</div>}
         </TableCell>
-        <TableCell className="py-2 text-right font-mono tabular-nums">
-          <div>{order.tp_price.toLocaleString()}{order.tp1_hit ? <span className="ml-1 text-emerald-400">&#10003;</span> : null}</div>
-          {order.close_price !== null && (order.close_reason === "TP" || order.close_reason === "TP2") && <div className="text-[10px] text-emerald-400/60">@ {order.close_price.toLocaleString()}</div>}
+        <TableCell style={{ ...td, textAlign: "right" }}>
+          <div>{order.tp_price.toLocaleString()}{order.tp1_hit ? <span style={{ color: PX.green }}>✓</span> : null}</div>
+          {order.close_price !== null && (order.close_reason === "TP" || order.close_reason === "TP2") && <div style={{ fontSize: 9, color: PX.green }}>@ {order.close_price.toLocaleString()}</div>}
         </TableCell>
-        <TableCell className="py-2 text-right font-mono tabular-nums">
+        <TableCell style={{ ...td, textAlign: "right" }}>
           <div>{order.tp2_price ? order.tp2_price.toLocaleString() : "-"}</div>
-          {order.close_price !== null && order.close_reason === "TP2" && order.tp2_price && <div className="text-[10px] text-emerald-400/60">@ {order.close_price.toLocaleString()}</div>}
+          {order.close_price !== null && order.close_reason === "TP2" && order.tp2_price && <div style={{ fontSize: 9, color: PX.green }}>@ {order.close_price.toLocaleString()}</div>}
         </TableCell>
-        <TableCell className="py-2 text-right font-mono tabular-nums">
+        <TableCell style={{ ...td, textAlign: "right" }}>
           <div>{order.sl_price.toLocaleString()}</div>
-          {order.close_price !== null && (order.close_reason === "SL" || order.close_reason === "SL_BE") && <div className="text-[10px] text-red-400/60">@ {order.close_price.toLocaleString()}</div>}
-          {order.close_price !== null && order.close_reason === "TIMEOUT_6H" && <div className="text-[10px] text-amber-400/60">@ {order.close_price.toLocaleString()}</div>}
+          {order.close_price !== null && (order.close_reason === "SL" || order.close_reason === "SL_BE") && <div style={{ fontSize: 9, color: PX.red }}>@ {order.close_price.toLocaleString()}</div>}
+          {order.close_price !== null && order.close_reason === "TIMEOUT_6H" && <div style={{ fontSize: 9, color: PX.yellow }}>@ {order.close_price.toLocaleString()}</div>}
         </TableCell>
-        <TableCell className="py-2 text-right font-mono tabular-nums text-muted-foreground">${order.margin.toFixed(2)}</TableCell>
-        <TableCell className={`py-2 text-right font-mono tabular-nums ${order.pnl !== null ? (order.pnl > 0 ? "text-emerald-400" : order.pnl < 0 ? "text-red-400" : "") : "text-muted-foreground"}`}>
-          {order.pnl !== null ? `${order.pnl > 0 ? "+" : ""}${order.pnl.toFixed(2)}` : order.tp1_pnl !== null ? <span className="text-amber-400">+{order.tp1_pnl.toFixed(2)}</span> : "-"}
+        <TableCell style={{ ...tdMid, textAlign: "right" }}>${order.margin.toFixed(2)}</TableCell>
+        <TableCell style={{
+          ...td, textAlign: "right", fontWeight: 700,
+          color: order.pnl !== null ? (order.pnl > 0 ? PX.green : order.pnl < 0 ? PX.red : PX.mid) : PX.mid,
+        }}>
+          {order.pnl !== null ? `${order.pnl > 0 ? "+" : ""}${order.pnl.toFixed(2)}` : order.tp1_pnl !== null ? <span style={{ color: PX.yellow }}>+{order.tp1_pnl.toFixed(2)}</span> : "-"}
         </TableCell>
-        <TableCell className="py-2">{reasonBadge(order.close_reason)}</TableCell>
-        <TableCell className="py-2 text-right font-mono tabular-nums text-muted-foreground">
+        <TableCell style={td}>{reasonBadge(order.close_reason)}</TableCell>
+        <TableCell style={{ ...tdMid, textAlign: "right" }}>
           {order.balance_after !== null ? `$${order.balance_after.toFixed(2)}` : "-"}
         </TableCell>
-        <TableCell className="py-2">
-          <button className="text-primary hover:underline font-mono text-[10px]" onClick={() => onClickAnalysis(order.batch_id)} title="시장 분석 보기">분석</button>
+        <TableCell style={td}>
+          <button style={{ fontFamily: PX.fm, fontSize: 10, color: PX.cyan, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
+            onClick={() => onClickAnalysis(order.batch_id)}>분석</button>
         </TableCell>
-        <TableCell className="py-2 max-w-[160px] text-muted-foreground">
-          <div className="whitespace-pre-wrap line-clamp-2">{order.description || "-"}</div>
+        <TableCell style={{ ...tdMid, maxWidth: 160 }}>
+          <div style={{ whiteSpace: "pre-wrap", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{order.description || "-"}</div>
         </TableCell>
-        <TableCell className="py-2">
-          <button className="text-muted-foreground/40 opacity-0 group-hover:opacity-100 hover:text-primary transition-all text-[10px]" onClick={startEdit} title={isPending ? "주문 수정" : "근거 수정"}>수정</button>
+        <TableCell style={td}>
+          <button
+            style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer", opacity: 0 }}
+            className="group-hover:opacity-100-btn"
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = PX.cyan; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = "0"; e.currentTarget.style.color = PX.dim; }}
+            onClick={startEdit} title={isPending ? "주문 수정" : "근거 수정"}>수정</button>
         </TableCell>
       </TableRow>
     );
@@ -260,61 +341,66 @@ function EditableOrderRow({
   // Editing mode
   return (
     <>
-      <TableRow className="bg-accent/20 text-xs border-border/30">
-        <TableCell className="py-2 text-muted-foreground whitespace-nowrap">
-          <div className="text-[10px] font-mono">{formatTime(order.created_at)}</div>
+      <TableRow style={{ background: "rgba(51,85,255,0.08)" }}>
+        <TableCell style={{ ...td, color: PX.mid, whiteSpace: "nowrap" }}>
+          <div style={{ fontFamily: PX.fm, fontSize: 10 }}>{formatTime(order.created_at)}</div>
         </TableCell>
-        <TableCell className="py-2">{statusBadge(order.status)}</TableCell>
-        <TableCell className="py-2">
+        <TableCell style={td}>{statusBadge(order.status)}</TableCell>
+        <TableCell style={td}>
           {isPending ? (
-            <select className="w-full rounded-md border border-border bg-background px-1 py-1 text-xs" value={draft.order_type || "limit"} onChange={(e) => setDraft({ ...draft, order_type: e.target.value as "limit" | "market" })}>
+            <select style={{ background: PX.panel, border: `1px solid ${PX.border}`, color: PX.white, padding: "2px 4px", fontSize: 11, fontFamily: PX.fm }}
+              value={draft.order_type || "limit"} onChange={(e) => setDraft({ ...draft, order_type: e.target.value as "limit" | "market" })}>
               <option value="limit">LIMIT</option><option value="market">MARKET</option>
             </select>
-          ) : <span className="font-mono">{order.order_type.toUpperCase()}</span>}
+          ) : <span style={{ fontFamily: PX.fm }}>{order.order_type.toUpperCase()}</span>}
         </TableCell>
-        <TableCell className="py-2">
+        <TableCell style={td}>
           {isPending ? (
-            <select className="w-full rounded-md border border-border bg-background px-1 py-1 text-xs" value={draft.symbol || order.symbol} onChange={(e) => setDraft({ ...draft, symbol: e.target.value })}>
+            <select style={{ background: PX.panel, border: `1px solid ${PX.border}`, color: PX.white, padding: "2px 4px", fontSize: 11, fontFamily: PX.fm }}
+              value={draft.symbol || order.symbol} onChange={(e) => setDraft({ ...draft, symbol: e.target.value })}>
               {TOP_COINS.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
-          ) : <span className="font-mono">{order.symbol}</span>}
+          ) : <span style={{ fontFamily: PX.fm }}>{order.symbol}</span>}
         </TableCell>
-        <TableCell className="py-2">
+        <TableCell style={td}>
           {isPending ? (
-            <select className="w-full rounded-md border border-border bg-background px-1 py-1 text-xs" value={draft.side || order.side} onChange={(e) => setDraft({ ...draft, side: e.target.value as "long" | "short" })}>
+            <select style={{ background: PX.panel, border: `1px solid ${PX.border}`, color: PX.white, padding: "2px 4px", fontSize: 11, fontFamily: PX.fm }}
+              value={draft.side || order.side} onChange={(e) => setDraft({ ...draft, side: e.target.value as "long" | "short" })}>
               <option value="long">Long</option><option value="short">Short</option>
             </select>
-          ) : <span className={order.side === "long" ? "text-emerald-400" : "text-red-400"}>{order.side.toUpperCase()}</span>}
+          ) : <span style={{ color: order.side === "long" ? PX.green : PX.red, fontFamily: PX.fm }}>{order.side.toUpperCase()}</span>}
         </TableCell>
-        <TableCell className="py-2">
+        <TableCell style={td}>
           {isPending ? (
-            <div className="flex gap-0.5">{[1,2,3,4,5].map((l) => (
-              <button key={l} className={`w-4 h-4 rounded text-[10px] ${l <= (draft.confidence || 3) ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`} onClick={() => setDraft({ ...draft, confidence: l })}>{l}</button>
+            <div style={{ display: "flex", gap: 2 }}>{[1,2,3,4,5].map((l) => (
+              <button key={l}
+                style={{ width: 18, height: 18, fontFamily: PX.fm, fontSize: 10, cursor: "pointer", border: `1px solid ${l <= (draft.confidence || 3) ? PX.cyan : PX.dim}`, background: l <= (draft.confidence || 3) ? "rgba(0,238,255,0.15)" : "transparent", color: l <= (draft.confidence || 3) ? PX.cyan : PX.mid }}
+                onClick={() => setDraft({ ...draft, confidence: l })}>{l}</button>
             ))}</div>
           ) : confidenceDots(order.confidence)}
         </TableCell>
-        <TableCell className="py-2">{isPending ? <input type="number" step="any" className="w-full rounded-md border border-border bg-background px-1 py-1 text-xs text-right font-mono" value={draft.entry_price || ""} onChange={(e) => setDraft({ ...draft, entry_price: parseFloat(e.target.value) || 0 })} /> : <span className="font-mono">{order.entry_price.toLocaleString()}</span>}</TableCell>
-        <TableCell className="py-2">{isPending ? <input type="number" step="any" className="w-full rounded-md border border-border bg-background px-1 py-1 text-xs text-right font-mono" value={draft.tp_price || ""} onChange={(e) => setDraft({ ...draft, tp_price: parseFloat(e.target.value) || 0 })} /> : <span className="font-mono">{order.tp_price.toLocaleString()}</span>}</TableCell>
-        <TableCell className="py-2">{isPending ? <input type="number" step="any" className="w-full rounded-md border border-border bg-background px-1 py-1 text-xs text-right font-mono" placeholder="-" value={draft.tp2_price ?? ""} onChange={(e) => setDraft({ ...draft, tp2_price: e.target.value ? parseFloat(e.target.value) || null : null })} /> : <span className="font-mono">{order.tp2_price ? order.tp2_price.toLocaleString() : "-"}</span>}</TableCell>
-        <TableCell className="py-2">{isPending ? <input type="number" step="any" className="w-full rounded-md border border-border bg-background px-1 py-1 text-xs text-right font-mono" value={draft.sl_price || ""} onChange={(e) => setDraft({ ...draft, sl_price: parseFloat(e.target.value) || 0 })} /> : <span className="font-mono">{order.sl_price.toLocaleString()}</span>}</TableCell>
-        <TableCell className="py-2 text-right font-mono tabular-nums text-muted-foreground">${order.margin.toFixed(2)}</TableCell>
-        <TableCell className="py-2 text-right font-mono tabular-nums text-muted-foreground">-</TableCell>
-        <TableCell className="py-2">{reasonBadge(order.close_reason)}</TableCell>
-        <TableCell className="py-2 text-right font-mono tabular-nums text-muted-foreground">
+        <TableCell style={td}>{isPending ? <input type="number" step="any" style={{ width: "100%", background: PX.panel, border: `1px solid ${PX.border}`, color: PX.white, padding: "2px 4px", fontSize: 11, fontFamily: PX.fm, textAlign: "right" }} value={draft.entry_price || ""} onChange={(e) => setDraft({ ...draft, entry_price: parseFloat(e.target.value) || 0 })} /> : <span style={{ fontFamily: PX.fm }}>{order.entry_price.toLocaleString()}</span>}</TableCell>
+        <TableCell style={td}>{isPending ? <input type="number" step="any" style={{ width: "100%", background: PX.panel, border: `1px solid ${PX.border}`, color: PX.white, padding: "2px 4px", fontSize: 11, fontFamily: PX.fm, textAlign: "right" }} value={draft.tp_price || ""} onChange={(e) => setDraft({ ...draft, tp_price: parseFloat(e.target.value) || 0 })} /> : <span style={{ fontFamily: PX.fm }}>{order.tp_price.toLocaleString()}</span>}</TableCell>
+        <TableCell style={td}>{isPending ? <input type="number" step="any" style={{ width: "100%", background: PX.panel, border: `1px solid ${PX.border}`, color: PX.white, padding: "2px 4px", fontSize: 11, fontFamily: PX.fm, textAlign: "right" }} placeholder="-" value={draft.tp2_price ?? ""} onChange={(e) => setDraft({ ...draft, tp2_price: e.target.value ? parseFloat(e.target.value) || null : null })} /> : <span style={{ fontFamily: PX.fm }}>{order.tp2_price ? order.tp2_price.toLocaleString() : "-"}</span>}</TableCell>
+        <TableCell style={td}>{isPending ? <input type="number" step="any" style={{ width: "100%", background: PX.panel, border: `1px solid ${PX.border}`, color: PX.white, padding: "2px 4px", fontSize: 11, fontFamily: PX.fm, textAlign: "right" }} value={draft.sl_price || ""} onChange={(e) => setDraft({ ...draft, sl_price: parseFloat(e.target.value) || 0 })} /> : <span style={{ fontFamily: PX.fm }}>{order.sl_price.toLocaleString()}</span>}</TableCell>
+        <TableCell style={{ ...tdMid, textAlign: "right" }}>${order.margin.toFixed(2)}</TableCell>
+        <TableCell style={{ ...tdMid, textAlign: "right" }}>-</TableCell>
+        <TableCell style={td}>{reasonBadge(order.close_reason)}</TableCell>
+        <TableCell style={{ ...tdMid, textAlign: "right" }}>
           {order.balance_after !== null ? `$${order.balance_after.toFixed(2)}` : "-"}
         </TableCell>
-        <TableCell className="py-2"></TableCell>
-        <TableCell className="py-2">
-          <textarea className="w-full rounded-md border border-border bg-background px-1 py-1 text-xs resize-y" rows={3} value={draft.description ?? ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
+        <TableCell style={td}></TableCell>
+        <TableCell style={td}>
+          <textarea style={{ width: "100%", background: PX.panel, border: `1px solid ${PX.border}`, color: PX.white, padding: "4px 6px", fontSize: 11, fontFamily: PX.fb, resize: "vertical" }} rows={3} value={draft.description ?? ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
         </TableCell>
-        <TableCell className="py-2">
-          <div className="flex gap-1">
-            <button className="text-primary hover:underline text-[10px]" onClick={handleSave} disabled={saving}>{saving ? "..." : "저장"}</button>
-            <button className="text-muted-foreground hover:underline text-[10px]" onClick={() => setEditing(false)}>취소</button>
+        <TableCell style={td}>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button style={{ fontFamily: PX.fp, fontSize: 9, color: PX.cyan, background: "none", border: "none", cursor: "pointer" }} onClick={handleSave} disabled={saving}>{saving ? "..." : "저장"}</button>
+            <button style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid, background: "none", border: "none", cursor: "pointer" }} onClick={() => setEditing(false)}>취소</button>
           </div>
         </TableCell>
       </TableRow>
-      {error && <TableRow><TableCell colSpan={16} className="text-xs text-destructive py-1">{error}</TableCell></TableRow>}
+      {error && <TableRow><TableCell colSpan={16} style={{ fontFamily: PX.fb, fontSize: 11, color: PX.red, padding: "6px 10px" }}>{error}</TableCell></TableRow>}
     </>
   );
 }
@@ -371,12 +457,10 @@ export default function ModelDetailPage() {
 
   const orderCoins = [...new Set(orders.map((o) => o.symbol))];
 
-  // Auto-select most recent order's coin on initial load
   useEffect(() => {
     if (initialCoinSet.current || orders.length === 0) return;
     const sorted = [...orders].sort((a, b) => b.created_at.localeCompare(a.created_at));
-    const latest = sorted[0];
-    setChartCoin(latest.symbol);
+    setChartCoin(sorted[0].symbol);
     initialCoinSet.current = true;
   }, [orders]);
 
@@ -385,12 +469,10 @@ export default function ModelDetailPage() {
   function handleClickSymbol(order: BenchmarkOrder) {
     const targetTime = order.fill_time || order.created_at;
     const timeSeconds = new Date(targetTime).getTime() / 1000;
-
     if (order.symbol !== chartCoin) {
       setChartCoin(order.symbol);
       setChartTab("chart");
     }
-    // scrollToTime queues internally if chart isn't ready yet
     chartRef.current?.scrollToTime(timeSeconds);
   }
 
@@ -420,8 +502,16 @@ export default function ModelDetailPage() {
     try { await deleteBenchmarkBatch(batchId); loadData(); } catch { /* ignore */ }
   }
 
-  if (loading) return <div className="text-center py-20 text-muted-foreground text-sm">불러오는 중...</div>;
-  if (!model) return <div className="text-center py-20 text-muted-foreground text-sm">모델을 찾을 수 없습니다.</div>;
+  if (loading) return (
+    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+      LOADING...
+    </div>
+  );
+  if (!model) return (
+    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+      MODEL NOT FOUND
+    </div>
+  );
 
   const returnPct = ((model.balance - model.seed) / model.seed) * 100;
   const sortedOrders = [...orders].sort((a, b) => b.created_at.localeCompare(a.created_at));
@@ -433,70 +523,167 @@ export default function ModelDetailPage() {
     ordersByBatch.set(o.batch_id, list);
   }
 
+  /* ── Table header cell ── */
+  function TH({ children, align = "left" }: { children?: React.ReactNode; align?: "left" | "right" }) {
+    return (
+      <th style={{
+        fontFamily: PX.fp, fontSize: 10, color: PX.mid, letterSpacing: "0.06em",
+        padding: "10px 10px", textAlign: align, fontWeight: "normal",
+        borderBottom: `2px solid ${PX.border}`, whiteSpace: "nowrap" as const,
+        background: PX.alt,
+      }}>
+        {children}
+      </th>
+    );
+  }
+
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex flex-col">
-      {/* Header */}
-      <div className="flex-shrink-0 px-5 py-3 border-b border-border/60 bg-card/50 backdrop-blur-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button className="text-sm text-muted-foreground hover:text-foreground transition-colors" onClick={() => router.push("/benchmark/models")}>
-              <span className="mr-1">&#8592;</span> 리더보드
-            </button>
-            <div className="w-px h-5 bg-border/60" />
-            {renaming ? (
-              <div className="flex items-center gap-2">
-                <input type="text" className="rounded-lg border border-border bg-background px-3 py-1 text-lg font-semibold focus:border-primary/50 focus:outline-none" value={newName} onChange={(e) => setNewName(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") handleRename(); if (e.key === "Escape") setRenaming(false); }} autoFocus />
-                <Button size="sm" onClick={handleRename}>저장</Button>
-                <Button size="sm" variant="outline" onClick={() => setRenaming(false)}>취소</Button>
-                {renameError && <span className="text-xs text-destructive">{renameError}</span>}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 group">
-                <h1 className="text-lg font-semibold tracking-tight">{model.name}</h1>
-                <button className="text-[10px] text-muted-foreground/40 opacity-0 group-hover:opacity-100 hover:text-foreground transition-all"
-                  onClick={() => { setNewName(model.name); setRenaming(true); setRenameError(""); }}>이름 변경</button>
-              </div>
-            )}
-          </div>
-          <div className="flex gap-3 items-center text-sm">
-            <button className="px-3 py-1.5 rounded-md text-primary-foreground bg-primary hover:bg-primary/90 text-xs transition-colors" onClick={() => router.push(`/benchmark?model=${encodeURIComponent(model?.name || "")}`)}>주문 입력</button>
-            <button className="text-xs text-muted-foreground hover:text-destructive transition-colors" onClick={handleDeleteModel}>삭제</button>
-          </div>
+    <PxPageShell>
+    <div className="px-page" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <style>{`
+        .px-page *::-webkit-scrollbar { width: 4px; height: 4px; }
+        .px-page *::-webkit-scrollbar-track { background: #0c0c1e; }
+        .px-page *::-webkit-scrollbar-thumb { background: #2a3560; border-radius: 0; }
+        .px-page *::-webkit-scrollbar-thumb:hover { background: #3a4880; }
+        .px-page *::-webkit-scrollbar-corner { background: #0c0c1e; }
+        .px-page * { scrollbar-width: thin; scrollbar-color: #2a3560 #0c0c1e; }
+      `}</style>
+
+      {/* ── Header bar ── */}
+      <div style={{
+        flexShrink: 0, padding: "10px 20px",
+        borderBottom: `2px solid ${PX.border}`,
+        background: PX.alt,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        boxShadow: `0 2px 0 rgba(51,85,255,0.3)`,
+      }}>
+        {/* Left: back + title */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <PxPixelDeco variant="brain" size={36} />
+          <button
+            onClick={() => router.push("/benchmark/models")}
+            style={{
+              fontFamily: PX.fp, fontSize: 9, color: PX.cyan,
+              background: "transparent", border: "none",
+              padding: "4px 0", cursor: "pointer",
+              letterSpacing: "0.06em",
+              transition: "color 0.1s steps(1)",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = PX.white; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = PX.cyan; }}
+          >
+            ← 리더보드
+          </button>
+
+          <div style={{ width: 1, height: 20, background: PX.border }} />
+
+          {renaming ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <input
+                type="text"
+                style={{ background: PX.panel, border: `1px solid ${PX.border}`, color: PX.white, padding: "5px 10px", fontFamily: PX.fb, fontSize: 14, outline: "none" }}
+                value={newName} onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleRename(); if (e.key === "Escape") setRenaming(false); }}
+                autoFocus
+              />
+              <button onClick={handleRename} style={{ fontFamily: PX.fp, fontSize: 9, padding: "5px 12px", background: PX.cyan, color: "#000", border: "none", cursor: "pointer" }}>저장</button>
+              <button onClick={() => setRenaming(false)} style={{ fontFamily: PX.fp, fontSize: 9, padding: "5px 12px", background: "transparent", color: PX.mid, border: `1px solid ${PX.mid}`, cursor: "pointer" }}>취소</button>
+              {renameError && <span style={{ fontFamily: PX.fb, fontSize: 11, color: PX.red }}>{renameError}</span>}
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <h1 style={{ fontFamily: PX.fp, fontSize: 10, color: PX.yellow, letterSpacing: 1, margin: 0, textShadow: "1px 1px 0 #886600" }}>
+                {model.name}
+              </h1>
+              <button
+                onClick={() => { setNewName(model.name); setRenaming(true); setRenameError(""); }}
+                style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = PX.mid; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}
+              >
+                이름 변경
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Right: actions */}
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <button
+            onClick={() => router.push(`/benchmark?model=${encodeURIComponent(model?.name || "")}`)}
+            style={{
+              fontFamily: PX.fb, fontSize: 13,
+              padding: "7px 16px",
+              border: `2px solid ${PX.cyan}`,
+              background: "rgba(0,238,255,0.1)", color: PX.cyan,
+              cursor: "pointer",
+              transition: "all 0.1s steps(1)",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = PX.cyan; e.currentTarget.style.color = "#000"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,238,255,0.1)"; e.currentTarget.style.color = PX.cyan; }}
+          >
+            + 주문 입력
+          </button>
+          <button
+            onClick={handleDeleteModel}
+            style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = PX.red; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}
+          >
+            삭제
+          </button>
         </div>
       </div>
 
-      {/* Main layout */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* ── Main layout ── */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+
         {/* Left sidebar */}
-        <aside className="w-52 flex-shrink-0 border-r border-border/40 bg-card/30 overflow-y-auto px-4 py-4 space-y-1">
-          <StatItem label="잔액" value={`$${model.balance.toFixed(2)}`} />
-          <StatItem label="수익률" value={`${returnPct >= 0 ? "+" : ""}${returnPct.toFixed(2)}%`}
-            color={returnPct >= 0 ? "text-emerald-400" : "text-red-400"} sub={`P&L: $${model.cumulative_pnl.toFixed(2)}`} />
-          <StatItem label="승률" value={`${model.win_rate.toFixed(1)}%`} sub={`${model.closed_orders} 청산`} />
-          <StatItem label="MDD" value={`${model.mdd.toFixed(1)}%`} color="text-amber-400" />
+        <aside style={{
+          width: 180, flexShrink: 0,
+          borderRight: `2px solid ${PX.border}`,
+          background: "#0e0e22",
+          overflowY: "auto",
+          padding: "12px 10px",
+        }}>
+          <StatItem label="잔액" value={`$${model.balance.toFixed(2)}`} color={PX.cyan} />
+          <StatItem label="수익률"
+            value={`${returnPct >= 0 ? "+" : ""}${returnPct.toFixed(2)}%`}
+            color={returnPct >= 0 ? PX.green : PX.red}
+            sub={`P&L: $${model.cumulative_pnl.toFixed(2)}`} />
+          <StatItem label="승률" value={`${model.win_rate.toFixed(1)}%`} sub={`${model.closed_orders}건 청산`} />
+          <StatItem label="MDD" value={`${model.mdd.toFixed(1)}%`} color={PX.yellow} />
           <StatItem label="Profit Factor" value={model.profit_factor !== null ? model.profit_factor.toFixed(2) : "-"} />
-          <StatItem label="가용 잔액" value={`$${model.available_balance.toFixed(2)}`} sub={`마진: $${model.active_margin.toFixed(2)}`} />
+          <StatItem label="가용 잔액" value={`$${model.available_balance.toFixed(2)}`} sub={`마진: $${model.active_margin.toFixed(2)}`} color={PX.mid} />
 
           {/* Coin navigation */}
           {orderCoins.length > 0 && (
-            <div className="pt-3 mt-2 border-t border-border/40">
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-2">코인 목록</div>
-              <div className="space-y-0.5">
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${PX.border}` }}>
+              <div style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.06em", marginBottom: 8, textTransform: "uppercase" as const }}>
+                코인 목록
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {orderCoins.map((coin) => {
                   const count = orders.filter((o) => o.symbol === coin).length;
+                  const active = chartCoin === coin;
                   return (
                     <button key={coin}
-                      className={`block w-full text-left px-3 py-2 rounded-lg text-xs transition-all ${
-                        chartCoin === coin
-                          ? "bg-primary/15 text-primary border border-primary/20"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent/40 border border-transparent"
-                      }`}
                       onClick={() => { setChartCoin(coin); setChartTab("chart"); }}
+                      style={{
+                        display: "block", width: "100%", textAlign: "left",
+                        padding: "7px 10px", cursor: "pointer",
+                        background: active ? "rgba(0,238,255,0.1)" : "transparent",
+                        border: active ? `1px solid ${PX.cyan}` : "1px solid transparent",
+                        color: active ? PX.cyan : PX.mid,
+                        fontFamily: PX.fm, fontSize: 11,
+                        transition: "all 0.1s steps(1)",
+                      }}
+                      onMouseEnter={(e) => { if (!active) { e.currentTarget.style.color = PX.white; e.currentTarget.style.borderColor = PX.dim; } }}
+                      onMouseLeave={(e) => { if (!active) { e.currentTarget.style.color = PX.mid; e.currentTarget.style.borderColor = "transparent"; } }}
                     >
-                      <div className="flex justify-between items-center">
-                        <span className="font-mono font-medium">{coin}</span>
-                        <span className="text-[10px] opacity-60">{count}</span>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontWeight: 600 }}>{coin}</span>
+                        <span style={{ fontSize: 10, color: PX.dim }}>{count}</span>
                       </div>
                     </button>
                   );
@@ -507,39 +694,58 @@ export default function ModelDetailPage() {
         </aside>
 
         {/* Right content */}
-        <main className="flex-1 overflow-hidden">
+        <main style={{ flex: 1, overflow: "hidden" }}>
           <ResizableSplit
             top={
-              <div className="h-full flex flex-col">
-                {/* Chart tabs */}
-                <div className="flex-shrink-0 flex items-center gap-1 px-4 py-2 border-b border-border/40 bg-card/30">
-                  <button onClick={() => setChartTab("equity")}
-                    className={`px-3 py-1.5 text-xs rounded-md transition-all ${chartTab === "equity" ? "bg-primary/15 text-primary font-medium" : "text-muted-foreground hover:text-foreground hover:bg-accent/30"}`}>
-                    수익 곡선
-                  </button>
-                  <button onClick={() => setChartTab("chart")}
-                    className={`px-3 py-1.5 text-xs rounded-md transition-all ${chartTab === "chart" ? "bg-primary/15 text-primary font-medium" : "text-muted-foreground hover:text-foreground hover:bg-accent/30"}`}>
-                    차트
-                  </button>
-
+              <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+                {/* Chart tab bar */}
+                <div style={{
+                  flexShrink: 0, display: "flex", alignItems: "center", gap: 4,
+                  padding: "8px 14px",
+                  borderBottom: `2px solid ${PX.border}`,
+                  background: PX.alt,
+                }}>
+                  {(["chart", "equity"] as const).map((tab) => {
+                    const label = tab === "chart" ? "차트" : "수익 곡선";
+                    const active = chartTab === tab;
+                    return (
+                      <button key={tab}
+                        onClick={() => setChartTab(tab)}
+                        style={{
+                          padding: "5px 14px", cursor: "pointer",
+                          fontFamily: PX.fp, fontSize: 9, letterSpacing: "0.04em",
+                          background: active ? PX.border : "transparent",
+                          color: active ? PX.white : PX.mid,
+                          border: active ? "none" : `1px solid transparent`,
+                          transition: "all 0.1s steps(1)",
+                        }}
+                        onMouseEnter={(e) => { if (!active) { e.currentTarget.style.color = PX.white; e.currentTarget.style.borderColor = PX.dim; } }}
+                        onMouseLeave={(e) => { if (!active) { e.currentTarget.style.color = PX.mid; e.currentTarget.style.borderColor = "transparent"; } }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Chart content */}
-                <div className="flex-1 overflow-hidden relative">
+                <div style={{ flex: 1, overflow: "hidden", position: "relative", background: "#0a0a18" }}>
                   {chartTab === "equity" ? (
                     orders.filter((o) => o.status === "CLOSED").length > 0 ? (
-                      <div className="h-full flex items-center justify-center p-4">
+                      <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
                         <EquityCurve seed={model.seed} closedOrders={orders.filter((o) => o.status === "CLOSED")} />
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center h-full text-muted-foreground text-sm">청산된 주문이 없습니다.</div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+                        청산된 주문 없음
+                      </div>
                     )
                   ) : (
                     chartCoin ? (
                       <BenchmarkChart ref={chartRef} symbol={chartCoin} orders={chartCoinOrders} />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                        좌측에서 코인을 선택하세요.
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+                        좌측에서 코인 선택
                       </div>
                     )
                   )}
@@ -547,53 +753,73 @@ export default function ModelDetailPage() {
               </div>
             }
             bottom={
-              <div className="h-full flex flex-col">
-                {/* Bottom tabs */}
-                <div className="flex-shrink-0 flex items-center gap-6 px-4 py-2.5 border-b border-border/40 bg-card/30">
-                  <button onClick={() => setBottomTab("orders")}
-                    className={`text-xs font-medium pb-0.5 transition-all ${bottomTab === "orders" ? "text-foreground border-b border-primary" : "text-muted-foreground hover:text-foreground"}`}>
-                    주문 내역 <span className="text-muted-foreground ml-1">{orders.length}</span>
-                  </button>
-                  <button onClick={() => setBottomTab("analyses")}
-                    className={`text-xs font-medium pb-0.5 transition-all ${bottomTab === "analyses" ? "text-foreground border-b border-primary" : "text-muted-foreground hover:text-foreground"}`}>
-                    시장 분석 <span className="text-muted-foreground ml-1">{batches.length}</span>
-                  </button>
+              <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+                {/* Bottom tab bar */}
+                <div style={{
+                  flexShrink: 0, display: "flex", alignItems: "center", gap: 0,
+                  borderBottom: `2px solid ${PX.border}`,
+                  background: PX.alt,
+                }}>
+                  {([
+                    { key: "orders", label: `주문 내역`, count: orders.length },
+                    { key: "analyses", label: `시장 분석`, count: batches.length },
+                  ] as const).map(({ key, label, count }) => {
+                    const active = bottomTab === key;
+                    return (
+                      <button key={key}
+                        onClick={() => setBottomTab(key)}
+                        style={{
+                          padding: "10px 20px", cursor: "pointer",
+                          fontFamily: PX.fp, fontSize: 9, letterSpacing: "0.04em",
+                          background: active ? PX.border : "transparent",
+                          color: active ? PX.white : PX.mid,
+                          border: "none",
+                          borderRight: `1px solid ${PX.border}`,
+                          transition: "all 0.1s steps(1)",
+                        }}
+                        onMouseEnter={(e) => { if (!active) e.currentTarget.style.color = PX.white; }}
+                        onMouseLeave={(e) => { if (!active) e.currentTarget.style.color = PX.mid; }}
+                      >
+                        {label} <span style={{ color: active ? "rgba(255,255,255,0.6)" : PX.dim, marginLeft: 6 }}>{count}</span>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Tab content */}
-                <div className="flex-1 overflow-auto">
+                <div style={{ flex: 1, overflowY: "auto" }}>
                   {bottomTab === "orders" ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-border/30 hover:bg-transparent">
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium">시간</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium">상태</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium">유형</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium">코인</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium">방향</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium text-center">확신</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium text-right">진입가</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium text-right">TP1</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium text-right">TP2</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium text-right">SL</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium text-right">마진</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium text-right">P&L</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium">사유</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium text-right">잔액</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium">분석</TableHead>
-                          <TableHead className="text-[10px] uppercase tracking-wider font-medium">근거</TableHead>
-                          <TableHead className="w-8"></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                      <thead>
+                        <tr>
+                          <TH>시간</TH>
+                          <TH>상태</TH>
+                          <TH>유형</TH>
+                          <TH>코인</TH>
+                          <TH>방향</TH>
+                          <TH align="right">확신</TH>
+                          <TH align="right">진입가</TH>
+                          <TH align="right">TP1</TH>
+                          <TH align="right">TP2</TH>
+                          <TH align="right">SL</TH>
+                          <TH align="right">마진</TH>
+                          <TH align="right">P&amp;L</TH>
+                          <TH>사유</TH>
+                          <TH align="right">잔액</TH>
+                          <TH>분석</TH>
+                          <TH>근거</TH>
+                          <TH></TH>
+                        </tr>
+                      </thead>
+                      <tbody>
                         {sortedOrders.map((o) => (
                           <EditableOrderRow key={o.id} order={o} onSave={loadData}
                             onClickSymbol={handleClickSymbol} onClickAnalysis={handleClickAnalysis} />
                         ))}
-                      </TableBody>
-                    </Table>
+                      </tbody>
+                    </table>
                   ) : (
-                    <div className="divide-y divide-border/30">
+                    <div>
                       {sortedBatches.map((batch) => {
                         const isExpanded = expandedBatch === batch.id;
                         const batchOrders = ordersByBatch.get(batch.id) || [];
@@ -606,39 +832,52 @@ export default function ModelDetailPage() {
                           : "(분석 없음)";
 
                         return (
-                          <div key={batch.id} ref={(el) => { if (el) batchRefs.current.set(batch.id, el); }}>
+                          <div key={batch.id} ref={(el) => { if (el) batchRefs.current.set(batch.id, el); }}
+                            style={{ borderBottom: `1px solid rgba(51,85,255,0.2)` }}>
                             {/* Collapsed header */}
-                            <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-accent/20 group transition-colors"
-                              onClick={() => setExpandedBatch(isExpanded ? null : batch.id)}>
-                              <span className={`text-[10px] text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`}>&#9654;</span>
-                              <span className="text-[10px] font-mono text-muted-foreground/50">#{batch.id}</span>
-                              <span className="text-xs text-muted-foreground">{formatTime(batch.created_at)}</span>
+                            <div
+                              onClick={() => setExpandedBatch(isExpanded ? null : batch.id)}
+                              style={{
+                                display: "flex", alignItems: "center", gap: 12,
+                                padding: "10px 16px", cursor: "pointer",
+                                transition: "background 0.1s steps(1)",
+                              }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(51,85,255,0.08)"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                            >
+                              <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.cyan, display: "inline-block", transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.1s" }}>▶</span>
+                              <span style={{ fontFamily: PX.fm, fontSize: 11, color: PX.dim }}>#{batch.id.slice(0, 8)}</span>
+                              <span style={{ fontFamily: PX.fm, fontSize: 12, color: PX.mid }}>{formatTime(batch.created_at)}</span>
                               {isAnalysisOnly ? (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-accent text-muted-foreground border border-border/40">분석만</span>
+                                <span style={{ fontFamily: PX.fp, fontSize: 8, padding: "2px 8px", border: `1px solid ${PX.dim}`, color: PX.mid }}>분석만</span>
                               ) : (
-                                <span className="text-[10px] text-muted-foreground/50">{orderCount}건</span>
+                                <span style={{ fontFamily: PX.fm, fontSize: 12, color: PX.dim }}>{orderCount}건</span>
                               )}
-                              <span className="text-xs text-muted-foreground/40 truncate flex-1">{firstLine}</span>
+                              <span style={{ fontFamily: PX.fb, fontSize: 13, color: PX.white, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{firstLine}</span>
 
                               {(isAnalysisOnly || hasPending || allTerminal) && (
-                                <button className="text-[10px] text-muted-foreground/30 opacity-0 group-hover:opacity-100 hover:text-destructive flex-shrink-0 transition-all"
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteBatch(batch.id); }} title="배치 삭제">삭제</button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteBatch(batch.id); }}
+                                  style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
+                                  onMouseEnter={(e) => { e.currentTarget.style.color = PX.red; }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}
+                                >삭제</button>
                               )}
                             </div>
 
                             {/* Expanded */}
                             {isExpanded && (
-                              <div className="px-4 pb-4 pt-1">
+                              <div style={{ padding: "8px 16px 16px" }}>
                                 <EditableAnalysis batch={batch} onSave={loadData} />
                                 {orderCount > 0 && (
-                                  <div className="mt-3 text-xs text-muted-foreground">
-                                    <span className="text-[10px] uppercase tracking-wider font-medium mr-2">주문:</span>
+                                  <div style={{ marginTop: 10, fontFamily: PX.fb, fontSize: 13, color: PX.mid, display: "flex", flexWrap: "wrap" as const, gap: 6, alignItems: "center" }}>
+                                    <span style={{ fontFamily: PX.fp, fontSize: 8, marginRight: 8, color: PX.mid, textTransform: "uppercase" as const }}>주문:</span>
                                     {batchOrders.map((o) => (
-                                      <span key={o.id} className="inline-flex items-center gap-1 mr-3">
-                                        <span className={o.side === "long" ? "text-emerald-400" : "text-red-400"}>{o.side.toUpperCase()}</span>
-                                        <span className="font-mono">{o.symbol}</span>
-                                        <span className="text-muted-foreground/60">@ {o.entry_price.toLocaleString()}</span>
-                                        {o.pnl !== null && <span className={o.pnl > 0 ? "text-emerald-400" : "text-red-400"}>({o.pnl > 0 ? "+" : ""}{o.pnl.toFixed(2)})</span>}
+                                      <span key={o.id} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                        <span style={{ color: o.side === "long" ? PX.green : PX.red, fontFamily: PX.fm, fontSize: 12, fontWeight: 700 }}>{o.side.toUpperCase()}</span>
+                                        <span style={{ fontFamily: PX.fm, fontSize: 12, color: PX.white }}>{o.symbol}</span>
+                                        <span style={{ color: PX.mid, fontFamily: PX.fm, fontSize: 11 }}>@{o.entry_price.toLocaleString()}</span>
+                                        {o.pnl !== null && <span style={{ color: o.pnl > 0 ? PX.green : PX.red, fontFamily: PX.fm, fontSize: 11 }}>({o.pnl > 0 ? "+" : ""}{o.pnl.toFixed(2)})</span>}
                                       </span>
                                     ))}
                                   </div>
@@ -649,7 +888,9 @@ export default function ModelDetailPage() {
                         );
                       })}
                       {sortedBatches.length === 0 && (
-                        <div className="text-center py-10 text-muted-foreground text-sm">아직 분석이 없습니다.</div>
+                        <div style={{ textAlign: "center", padding: "40px 0", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+                          분석 없음
+                        </div>
                       )}
                     </div>
                   )}
@@ -660,6 +901,9 @@ export default function ModelDetailPage() {
         </main>
       </div>
     </div>
+      <div style={{ flex: 1 }} />
+      <PxFooter />
+    </PxPageShell>
   );
 }
 
@@ -684,23 +928,22 @@ function EquityCurve({ seed, closedOrders }: { seed: number; closedOrders: Bench
   });
   const seedY = pad + ((max - seed) / (max - min)) * (h - 2 * pad);
   const lastPt = points[points.length - 1].split(",");
-
-  // Gradient fill
   const areaPoints = [...points, `${parseFloat(lastPt[0])},${h - pad}`, `${pad},${h - pad}`].join(" ");
+  const lastBalance = balances[balances.length - 1];
+  const lineColor = lastBalance >= seed ? "#00ff7f" : "#ff3333";
 
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ maxHeight: 200 }}>
+    <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", maxHeight: 200 }}>
       <defs>
         <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+          <stop offset="0%" stopColor={lineColor} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={lineColor} stopOpacity="0.02" />
         </linearGradient>
       </defs>
       <polygon points={areaPoints} fill="url(#equityGrad)" />
-      <line x1={pad} y1={seedY} x2={w - pad} y2={seedY} stroke="#71717a" strokeDasharray="4" strokeWidth="0.5" />
-      <text x={w - pad + 4} y={seedY + 4} fill="#71717a" fontSize="9">${seed}</text>
-      <polyline points={points.join(" ")} fill="none" stroke="#3b82f6" strokeWidth="1.5" />
-      <circle cx={parseFloat(lastPt[0])} cy={parseFloat(lastPt[1])} r="2.5" fill="#3b82f6" />
+      <line x1={pad} y1={seedY} x2={w - pad} y2={seedY} stroke="rgba(136,136,170,0.4)" strokeWidth="1" strokeDasharray="4,4" />
+      <polyline points={points.join(" ")} fill="none" stroke={lineColor} strokeWidth="1.5" />
+      <circle cx={parseFloat(lastPt[0])} cy={parseFloat(lastPt[1])} r="3" fill={lineColor} />
     </svg>
   );
 }

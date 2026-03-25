@@ -1,0 +1,77 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Pixel Retro — Raw Palette Primitives
+   These are the hard-coded colour values. Never use them directly in components;
+   always go through the semantic tokens in pixel-retro.css.
+
+   Source of truth: frontend/previews/mockup-1-pixel-retro.html
+   Update here first, then adjust semantic mappings in pixel-retro.css as needed.
+───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Backgrounds — from mockup --px-bg / --px-bg2 / --px-navy */
+  --px-black:       #0a0a1a;   /* body bg */
+  --px-dark:        #0f0f2a;   /* sidebar bg (between bg and panel) */
+  --px-panel:       #12122a;   /* card/panel bg  (mockup: --px-bg2) */
+  --px-panel-alt:   #1a1a4e;   /* elevated panel (mockup: --px-navy) */
+
+  /* Border — mockup uses blue as border colour */
+  --px-border:      #3355ff;   /* (mockup: --px-border / --px-blue) */
+
+  /* Accent colours */
+  --px-blue:        #3355ff;   /* primary interactive blue */
+  --px-cyan:        #00eeff;
+  --px-cyan-dim:    #00aabb;
+  --px-pink:        #ff2d78;
+  --px-pink-dim:    #cc2060;
+  --px-yellow:      #ffe000;
+  --px-yellow-dim:  #ccb400;
+  --px-green:       #00ff7f;
+  --px-green-dim:   #00cc60;
+  --px-red:         #ff3333;   /* destructive / loss */
+  --px-purple:      #9966ff;
+  --px-purple-dim:  #7744cc;
+  --px-orange:      #ff8800;
+  --px-orange-dim:  #cc6600;
+
+  /* Neutrals — from mockup --px-white / --px-gray */
+  --px-white:       #f0f0ff;   /* (mockup: --px-white) */
+  --px-grey-hi:     #b0b0d0;
+  --px-grey-mid:    #8888aa;   /* (mockup: --px-gray) */
+  --px-grey-lo:     #404060;
+
+  /* Typography scale */
+  --px-text-xs:     0.5rem;   /* 8px  — labels, fine print */
+  --px-text-sm:     0.625rem; /* 10px — body small */
+  --px-text-base:   0.75rem;  /* 12px — body */
+  --px-text-md:     0.875rem; /* 14px — medium heading */
+  --px-text-lg:     1rem;     /* 16px — heading */
+  --px-text-xl:     1.25rem;  /* 20px — section title */
+  --px-text-2xl:    1.5rem;   /* 24px — hero title */
+
+  /* Spacing */
+  --px-space-1:     4px;
+  --px-space-2:     8px;
+  --px-space-3:     12px;
+  --px-space-4:     16px;
+  --px-space-5:     20px;
+  --px-space-6:     24px;
+  --px-space-8:     32px;
+
+  /* Border */
+  --px-border-thin: 1px;
+  --px-border-base: 2px;
+  --px-border-thick: 4px;
+
+  /* Animation */
+  --px-duration-fast:   150ms;
+  --px-duration-base:   300ms;
+  --px-duration-slow:   600ms;
+  --px-easing-pixel:    steps(4, end);
+  --px-easing-smooth:   cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Glow intensities */
+  --px-glow-sm:  0 0 4px;
+  --px-glow-md:  0 0 8px;
+  --px-glow-lg:  0 0 16px;
+  --px-glow-xl:  0 0 32px;
+}

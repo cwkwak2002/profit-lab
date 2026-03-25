@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useParams, useRouter } from "next/navigation";
 import { CoinSummaryTable } from "@/components/coin-summary-table";
 import {
   getBacktestSummary,
@@ -10,9 +9,41 @@ import {
   type BacktestSummary,
   type CoinSummary,
 } from "@/lib/api";
+import { PxFooter } from "@/components/px-footer";
+import { PxPageShell } from "@/components/px-page-shell";
+import { PxPixelDeco } from "@/components/px-pixel-deco";
+import { PX } from "@/design-system/tokens/px";
+
+const STRATEGY_LABELS: Record<string, string> = {
+  rsi_divergence: "RSI DIV",
+  ema_trend:      "EMA TREND",
+  bb_squeeze:     "BB SQUEEZE",
+};
+
+function MetricCard({ label, value, color, accent, sub }: {
+  label: string; value: string; color?: string; accent?: string; sub?: string;
+}) {
+  return (
+    <div style={{
+      background: "#1e1e2f",
+      borderLeft: `4px solid ${accent ?? PX.border}`,
+      padding: "14px 18px",
+      display: "flex", flexDirection: "column", gap: 6,
+    }}>
+      <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
+        {label}
+      </span>
+      <span style={{ fontFamily: PX.fm, fontSize: 22, fontWeight: 700, color: color ?? PX.cyan, lineHeight: 1 }}>
+        {value}
+      </span>
+      {sub && <span style={{ fontFamily: PX.fb, fontSize: 11, color: PX.mid }}>{sub}</span>}
+    </div>
+  );
+}
 
 export default function BacktestResultPage() {
   const params = useParams();
+  const router = useRouter();
   const runId = params.id as string;
 
   const [summary, setSummary] = useState<BacktestSummary | null>(null);
@@ -22,7 +53,6 @@ export default function BacktestResultPage() {
 
   useEffect(() => {
     if (!runId) return;
-
     async function load() {
       try {
         const [summaryData, coinsData] = await Promise.all([
@@ -40,72 +70,108 @@ export default function BacktestResultPage() {
     load();
   }, [runId]);
 
-  if (loading) return <div className="text-center py-12 text-muted-foreground">로딩 중...</div>;
-  if (error) return <div className="text-center py-12 text-red-500">오류: {error}</div>;
+  if (loading) return (
+    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+      LOADING...
+    </div>
+  );
+  if (error) return (
+    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fp, fontSize: 8, color: PX.red, letterSpacing: "0.08em" }}>
+      ERROR: {error}
+    </div>
+  );
   if (!summary) return null;
 
   const { aggregate, run } = summary;
-  const strategyLabels: Record<string, string> = {
-    rsi_divergence: "RSI Divergence",
-    ema_trend: "EMA Trend",
-    bb_squeeze: "BB Squeeze",
-  };
-  const strategyLabel = strategyLabels[run.params?.strategy as string] || "RSI Divergence";
+  const strategyLabel = STRATEGY_LABELS[run.params?.strategy as string] || "BACKTEST";
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">백테스트 결과</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {strategyLabel} | {run.start_date} ~ {run.end_date} | {run.coins.length}개 코인 | Run ID: {run.id}
-        </p>
+    <PxPageShell>
+    <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%", padding: "32px 24px 0" }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <PxPixelDeco variant="chart" size={52} />
+          <div>
+          <h1 style={{
+            fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
+            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 14,
+          }}>
+            ◀ 백테스트 결과
+          </h1>
+          <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
+            {strategyLabel} &nbsp;·&nbsp; {run.start_date} ~ {run.end_date} &nbsp;·&nbsp; {run.coins.length}개 코인
+          </p>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button
+            onClick={() => router.push("/backtest")}
+            style={{
+              fontFamily: PX.fp, fontSize: 8, color: PX.cyan,
+              background: "transparent", border: "none",
+              cursor: "pointer", letterSpacing: "0.06em",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = PX.white; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = PX.cyan; }}
+          >
+            ← 전략 검증
+          </button>
+          <span style={{ fontFamily: PX.fm, fontSize: 10, color: PX.dim, background: PX.alt, padding: "4px 10px", border: `1px solid ${PX.border}`, alignSelf: "center" }}>
+            RUN {run.id.slice(0, 8)}
+          </span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">총 거래수</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{aggregate.total_trades}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">평균 승률</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{aggregate.avg_win_rate}%</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">평균 수익률</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${aggregate.avg_return >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-              {aggregate.avg_return >= 0 ? "+" : ""}{aggregate.avg_return}%
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">평균 MDD</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-400">{aggregate.avg_mdd}%</div>
-          </CardContent>
-        </Card>
+      {/* ── Summary metric cards ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 24 }}>
+        <MetricCard
+          label="총 거래수"
+          value={`${aggregate.total_trades}`}
+          accent={PX.border}
+        />
+        <MetricCard
+          label="평균 승률"
+          value={`${aggregate.avg_win_rate}%`}
+          color={aggregate.avg_win_rate >= 50 ? PX.green : PX.red}
+          accent={aggregate.avg_win_rate >= 50 ? PX.green : PX.red}
+        />
+        <MetricCard
+          label="평균 수익률"
+          value={`${aggregate.avg_return >= 0 ? "+" : ""}${aggregate.avg_return}%`}
+          color={aggregate.avg_return >= 0 ? PX.green : PX.red}
+          accent={aggregate.avg_return >= 0 ? PX.green : PX.red}
+        />
+        <MetricCard
+          label="평균 MDD"
+          value={`${aggregate.avg_mdd}%`}
+          color={PX.yellow}
+          accent={PX.yellow}
+        />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>코인별 결과</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CoinSummaryTable data={coins} runId={runId} />
-        </CardContent>
-      </Card>
+      {/* ── Coin results table ── */}
+      <div style={{ border: `2px solid ${PX.border}`, background: "#1a1a2b" }}>
+        {/* Table header */}
+        <div style={{
+          padding: "12px 20px",
+          borderBottom: `2px solid ${PX.border}`,
+          background: PX.alt,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.cyan, letterSpacing: "0.06em" }}>
+            ■ 코인별 결과
+          </span>
+          <span style={{ fontFamily: PX.fm, fontSize: 11, color: PX.mid }}>
+            {coins.length}개 코인 &nbsp;·&nbsp; 클릭하면 상세 차트로 이동
+          </span>
+        </div>
+        <CoinSummaryTable data={coins} runId={runId} />
+      </div>
     </div>
+      <div style={{ flex: 1 }} />
+      <PxFooter />
+    </PxPageShell>
   );
 }

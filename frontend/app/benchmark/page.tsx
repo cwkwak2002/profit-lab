@@ -2,13 +2,47 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import {
   getBenchmarkModelNames,
   submitBenchmarkOrders,
   type OrderInput,
 } from "@/lib/api";
+import { PxFooter } from "@/components/px-footer";
+import { PX } from "@/design-system/tokens/px";
 
+const pxPanel: React.CSSProperties = {
+  background: PX.panel,
+  border: `2px solid ${PX.border}`,
+  borderRadius: 0,
+  padding: "20px 24px",
+};
+
+const pxLabel: React.CSSProperties = {
+  display: "block",
+  fontFamily: PX.fp,
+  fontSize: 9,
+  color: PX.mid,
+  letterSpacing: "0.08em",
+  marginBottom: 8,
+  lineHeight: 1.8,
+  textTransform: "uppercase" as const,
+};
+
+const pxInput: React.CSSProperties = {
+  background: PX.alt,
+  border: `2px solid ${PX.border}`,
+  borderRadius: 0,
+  padding: "8px 12px",
+  fontFamily: PX.fm,
+  fontSize: 13,
+  color: PX.white,
+  outline: "none",
+  width: "100%",
+  boxSizing: "border-box" as const,
+};
+
+
+/* ── Data ───────────────────────────────────────────────────────────────── */
 const TOP_COINS = [
   "BTC", "ETH", "SOL", "XRP", "DOGE",
   "AAVE", "ADA", "APT", "ARB", "AVAX", "BCH", "BNB", "CRV", "DOT", "ENA",
@@ -16,9 +50,7 @@ const TOP_COINS = [
   "SUI", "TAO", "TRX", "UNI", "WIF",
 ];
 
-interface OrderRow extends OrderInput {
-  key: string;
-}
+interface OrderRow extends OrderInput { key: string; }
 
 function newOrderRow(): OrderRow {
   return {
@@ -37,29 +69,25 @@ function newOrderRow(): OrderRow {
 
 const CONFIDENCE_LABELS = ["", "Very Low", "Low", "Medium", "High", "Very High"];
 
-function InputLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[11px] uppercase tracking-wider text-muted-foreground mb-1.5 font-medium">{children}</label>;
-}
-
+/* ── Entry/export ────────────────────────────────────────────────────────── */
 export default function BenchmarkPage() {
-  return (
-    <Suspense>
-      <BenchmarkPageInner />
-    </Suspense>
-  );
+  return <Suspense><BenchmarkPageInner /></Suspense>;
 }
 
+/* ── Inner ───────────────────────────────────────────────────────────────── */
 function BenchmarkPageInner() {
-  const router = useRouter();
+  const router       = useRouter();
   const searchParams = useSearchParams();
-  const [modelName, setModelName] = useState(searchParams.get("model") || "");
-  const [marketAnalysis, setMarketAnalysis] = useState("");
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  const [modelName,       setModelName]       = useState(searchParams.get("model") || "");
+  const [marketAnalysis,  setMarketAnalysis]  = useState("");
+  const [suggestions,     setSuggestions]     = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [orders, setOrders] = useState<OrderRow[]>([newOrderRow()]);
-  const [availableBalance, setAvailableBalance] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [orders,          setOrders]          = useState<OrderRow[]>([newOrderRow()]);
+  const [availableBalance,setAvailableBalance]= useState<number | null>(null);
+  const [loading,         setLoading]         = useState(false);
+  const [error,           setError]           = useState("");
+
   const suggestRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,9 +96,8 @@ function BenchmarkPageInner() {
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (suggestRef.current && !suggestRef.current.contains(e.target as Node)) {
+      if (suggestRef.current && !suggestRef.current.contains(e.target as Node))
         setShowSuggestions(false);
-      }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -98,9 +125,9 @@ function BenchmarkPageInner() {
     setOrders((prev) => prev.map((o) => (o.key === key ? { ...o, [field]: value } : o)));
   }
 
-  function addOrder() { setOrders((prev) => [...prev, newOrderRow()]); }
-  function removeOrder(key: string) { setOrders((prev) => (prev.length > 1 ? prev.filter((o) => o.key !== key) : prev)); }
-  function clearAllOrders() { setOrders([]); }
+  function addOrder()           { setOrders((p) => [...p, newOrderRow()]); }
+  function removeOrder(key: string) { setOrders((p) => p.length > 1 ? p.filter((o) => o.key !== key) : p); }
+  function clearAllOrders()     { setOrders([]); }
 
   function validateOrder(o: OrderRow, idx: number): string | null {
     if (o.entry_price <= 0 || o.tp_price <= 0 || o.sl_price <= 0)
@@ -136,12 +163,8 @@ function BenchmarkPageInner() {
       });
       if (result.invalid_count > 0) {
         const msg = `${result.invalid_count}건 무효 (현재가 기준 TP/SL 즉시 도달):\n${result.invalid_orders.join("\n")}`;
-        if (result.valid_count > 0) {
-          alert(`${result.valid_count}건 접수 완료.\n\n${msg}`);
-        } else {
-          setError(msg);
-          return;
-        }
+        if (result.valid_count > 0) { alert(`${result.valid_count}건 접수 완료.\n\n${msg}`); }
+        else { setError(msg); return; }
       }
       router.push(`/benchmark/models/${result.model_id}`);
     } catch (e: unknown) { setError(e instanceof Error ? e.message : "제출 실패"); }
@@ -151,187 +174,470 @@ function BenchmarkPageInner() {
   const isAnalysisOnly = orders.length === 0 && marketAnalysis.trim().length > 0;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
-      {/* Page header */}
-      <div className="flex items-end justify-between">
+    <div style={{
+      background: "linear-gradient(135deg, #05051e 0%, #1a0b2e 50%, #0c0c1d 100%)",
+      backgroundAttachment: "fixed",
+      flex: 1,
+      margin: "0 -24px -24px",
+      position: "relative",
+      color: PX.white,
+      display: "flex",
+      flexDirection: "column",
+    }}>
+      {/* Scanline overlay */}
+      <div style={{
+        position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+        background: "linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.18) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03))",
+        backgroundSize: "100% 4px, 3px 100%",
+        zIndex: 9998, pointerEvents: "none",
+      }} />
+
+    <div style={{ maxWidth: 960, width: "100%", margin: "0 auto", padding: "32px 24px 80px", position: "relative", zIndex: 1, flex: 1 }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 0, paddingBottom: 16, borderBottom: `2px solid #333345` }}>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">주문 입력</h1>
-          <p className="text-sm text-muted-foreground mt-1">AI 모델의 트레이딩 주문을 기록합니다</p>
+          <h1 style={{ fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
+            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 14 }}>
+            ★ 주문 입력
+          </h1>
+          <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
+            AI 모델의 트레이딩 주문을 기록합니다
+          </p>
         </div>
-        <button className="text-sm text-muted-foreground hover:text-foreground transition-colors" onClick={() => router.push("/benchmark/models")}>
-          리더보드 보기
+        <button
+          onClick={() => router.push("/benchmark/models")}
+          style={{
+            fontFamily: PX.fp, fontSize: 9, letterSpacing: "0.06em",
+            padding: "10px 20px",
+            border: `2px solid ${PX.border}`,
+            background: "#1e1e2f",
+            color: PX.white,
+            cursor: "pointer",
+            borderRadius: 0,
+            transition: "all 0.1s steps(1)",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = PX.border; e.currentTarget.style.color = PX.white; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "#1e1e2f"; e.currentTarget.style.color = PX.white; }}
+        >
+          리더보드
         </button>
       </div>
 
-      {/* Model & Market Analysis section */}
-      <section className="rounded-xl border border-border bg-card p-6 space-y-5">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">모델 & 시장 분석</h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 24 }}>
 
-        <div className="flex items-start gap-6">
-          <div className="relative flex-1 max-w-sm" ref={suggestRef}>
-            <InputLabel>모델 이름</InputLabel>
-            <input
-              type="text"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
-              placeholder="예: GPT-4o-trader"
-              value={modelName}
-              onChange={(e) => { setModelName(e.target.value); setShowSuggestions(true); }}
-              onFocus={() => setShowSuggestions(true)}
-            />
-            {showSuggestions && filteredSuggestions.length > 0 && (
-              <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-lg max-h-40 overflow-y-auto">
-                {filteredSuggestions.map((name) => (
-                  <button key={name} className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg"
-                    onClick={() => { setModelName(name); setShowSuggestions(false); }}>
-                    {name}
-                  </button>
-                ))}
-              </div>
-            )}
+        {/* ── Model & Analysis ── */}
+        <section style={pxPanel}>
+          <div style={{ fontFamily: PX.fp, fontSize: 8, color: PX.cyan, marginBottom: 20, letterSpacing: "0.06em" }}>
+            ■ 모델 & 시장 분석
           </div>
-          {availableBalance !== null && (
-            <div className="pt-6">
-              <span className="text-xs text-muted-foreground uppercase tracking-wider">가용 잔액</span>
-              <div className="text-xl font-semibold font-mono tabular-nums text-primary mt-0.5">
-                ${availableBalance.toFixed(2)}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            {/* Left: Model name + balance */}
+            <div>
+              <div style={{ position: "relative" }} ref={suggestRef}>
+                <label style={pxLabel}>AI 모델명</label>
+                <input
+                  type="text"
+                  placeholder="모델 이름을 입력하세요"
+                  value={modelName}
+                  onChange={(e) => { setModelName(e.target.value); setShowSuggestions(true); }}
+                  onFocus={() => setShowSuggestions(true)}
+                  style={pxInput}
+                />
+                {showSuggestions && filteredSuggestions.length > 0 && (
+                  <div style={{
+                    position: "absolute",
+                    zIndex: 50,
+                    top: "100%",
+                    left: 0,
+                    right: 0,
+                    background: PX.panel,
+                    border: `2px solid ${PX.border}`,
+                    maxHeight: 160,
+                    overflowY: "auto",
+                  }}>
+                    {filteredSuggestions.map((name) => (
+                      <button
+                        key={name}
+                        onClick={() => { setModelName(name); setShowSuggestions(false); }}
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          textAlign: "left",
+                          background: "transparent",
+                          border: "none",
+                          fontFamily: PX.fb,
+                          fontSize: 13,
+                          color: PX.white,
+                          cursor: "pointer",
+                          transition: "background 0.1s steps(1)",
+                          borderBottom: `1px solid rgba(51,85,255,0.3)`,
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = PX.alt)}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, padding: "12px 0", borderTop: `1px solid rgba(51,85,255,0.2)` }}>
+                <span style={{ fontFamily: PX.fm, fontSize: 11, color: PX.mid }}>AVAILABLE_BALANCE</span>
+                <span style={{ fontFamily: PX.fp, fontSize: 14, color: PX.cyan, filter: "drop-shadow(0 0 8px #00eeff)" }}>
+                  {availableBalance !== null ? `$${availableBalance.toFixed(2)}` : "$--"}
+                </span>
               </div>
             </div>
-          )}
-        </div>
 
-        <div>
-          <InputLabel>시장 분석 (전체 주문에 적용)</InputLabel>
-          <textarea
-            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm resize-y placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
-            rows={10}
-            placeholder="현재 시장 상황, 매매 근거, 전반적인 관점 등을 기록하세요..."
-            value={marketAnalysis}
-            onChange={(e) => setMarketAnalysis(e.target.value)}
-          />
-        </div>
-      </section>
+            {/* Right: Market analysis */}
+            <div>
+              <label style={pxLabel}>시장 분석</label>
+              <textarea
+                rows={6}
+                placeholder="현재 시장 상황과 진입 근거를 작성하세요"
+                value={marketAnalysis}
+                onChange={(e) => setMarketAnalysis(e.target.value)}
+                style={{
+                  ...pxInput,
+                  resize: "vertical",
+                  fontFamily: PX.fb,
+                  lineHeight: 1.7,
+                  height: "100%",
+                  minHeight: 120,
+                }}
+              />
+            </div>
+          </div>
+        </section>
 
-      {/* Orders section */}
-      <section className="rounded-xl border border-border bg-card p-6 space-y-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            주문 목록 <span className="text-foreground ml-1">{orders.length}</span>
-          </h2>
-          <div className="flex gap-2">
+        {/* ── Orders header row ── */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: "#333345", padding: "14px 20px",
+          borderBottom: `4px solid ${PX.pink}`,
+        }}>
+          <div style={{ fontFamily: PX.fp, fontSize: 8, letterSpacing: "0.06em" }}>
+            <span style={{ color: PX.pink }}>■</span>{" "}
+            <span style={{ color: PX.white }}>주문 목록 [{orders.length}]</span>
+          </div>
+          <div style={{ display: "flex", gap: 12 }}>
             {orders.length > 0 && (
-              <button className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md border border-border hover:border-border/80 transition-colors" onClick={clearAllOrders}>
-                전체 삭제
+              <button
+                onClick={clearAllOrders}
+                style={{
+                  fontFamily: PX.fp, fontSize: 8, padding: "4px 0",
+                  background: "transparent", border: "none",
+                  color: PX.red, cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                전체삭제
               </button>
             )}
-            <button className="text-xs text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-1.5 rounded-md transition-colors" onClick={addOrder}>
-              + 주문 추가
+            <button
+              onClick={addOrder}
+              style={{
+                fontFamily: PX.fp, fontSize: 8,
+                padding: "6px 14px",
+                border: "none",
+                background: "#e00363",
+                color: PX.white,
+                cursor: "pointer",
+                borderRadius: 0,
+              }}
+            >
+              +추가
             </button>
           </div>
         </div>
 
-        {orders.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            주문 없이 시장 분석만 제출할 수 있습니다.
-            <button className="ml-2 text-primary hover:underline" onClick={addOrder}>주문 추가</button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {orders.map((order, idx) => (
-              <div key={order.key} className="rounded-lg border border-border/60 bg-background/50 p-4 space-y-3 group/card hover:border-border transition-colors">
-                {/* Row 1: core fields */}
-                <div className="grid grid-cols-[90px_80px_80px_1fr_1fr_1fr_1fr_32px] gap-3 items-end">
-                  <div>
-                    <InputLabel>코인</InputLabel>
-                    <select className="w-full rounded-lg border border-border bg-background px-2 py-2 text-sm focus:border-primary/50 focus:outline-none transition-colors" value={order.symbol} onChange={(e) => updateOrder(order.key, "symbol", e.target.value)}>
-                      {TOP_COINS.map((c) => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <InputLabel>방향</InputLabel>
-                    <select className="w-full rounded-lg border border-border bg-background px-2 py-2 text-sm focus:border-primary/50 focus:outline-none transition-colors" value={order.side} onChange={(e) => updateOrder(order.key, "side", e.target.value)}>
-                      <option value="long">Long</option>
-                      <option value="short">Short</option>
-                    </select>
-                  </div>
-                  <div>
-                    <InputLabel>유형</InputLabel>
-                    <select className="w-full rounded-lg border border-border bg-background px-2 py-2 text-sm focus:border-primary/50 focus:outline-none transition-colors" value={order.order_type} onChange={(e) => updateOrder(order.key, "order_type", e.target.value)}>
-                      <option value="limit">Limit</option>
-                      <option value="market">Market</option>
-                    </select>
-                  </div>
-                  <div>
-                    <InputLabel>{order.order_type === "market" ? "현재가" : "진입가"}</InputLabel>
-                    <input type="number" step="any" className="w-full rounded-lg border border-border bg-background px-2 py-2 text-sm text-right font-mono focus:border-primary/50 focus:outline-none transition-colors" value={order.entry_price || ""} onChange={(e) => updateOrder(order.key, "entry_price", parseFloat(e.target.value) || 0)} />
-                  </div>
-                  <div>
-                    <InputLabel>TP1</InputLabel>
-                    <input type="number" step="any" className="w-full rounded-lg border border-border bg-background px-2 py-2 text-sm text-right font-mono focus:border-primary/50 focus:outline-none transition-colors" value={order.tp_price || ""} onChange={(e) => updateOrder(order.key, "tp_price", parseFloat(e.target.value) || 0)} />
-                  </div>
-                  <div>
-                    <InputLabel>TP2 (선택)</InputLabel>
-                    <input type="number" step="any" className="w-full rounded-lg border border-border bg-background px-2 py-2 text-sm text-right font-mono placeholder:text-muted-foreground/30 focus:border-primary/50 focus:outline-none transition-colors" placeholder="-" value={order.tp2_price ?? ""} onChange={(e) => { const v = e.target.value; updateOrder(order.key, "tp2_price", v ? parseFloat(v) || null : null); }} />
-                  </div>
-                  <div>
-                    <InputLabel>SL</InputLabel>
-                    <input type="number" step="any" className="w-full rounded-lg border border-border bg-background px-2 py-2 text-sm text-right font-mono focus:border-primary/50 focus:outline-none transition-colors" value={order.sl_price || ""} onChange={(e) => updateOrder(order.key, "sl_price", parseFloat(e.target.value) || 0)} />
-                  </div>
-                  <button className="text-muted-foreground hover:text-destructive pb-2 text-lg opacity-0 group-hover/card:opacity-100 transition-opacity" onClick={() => removeOrder(order.key)} title="삭제">&times;</button>
-                </div>
+        {/* ── Orders ── */}
+        <section style={{ background: PX.panel, border: `2px solid ${PX.border}`, borderTop: "none", padding: "20px 24px" }}>
 
-                {/* Row 2: confidence + description */}
-                <div className="grid grid-cols-[180px_1fr] gap-3 items-end">
-                  <div>
-                    <InputLabel>Confidence ({order.confidence}/5)</InputLabel>
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map((level) => (
-                        <button key={level}
-                          className={`w-8 h-8 rounded-md text-xs font-mono border transition-all ${
-                            level <= order.confidence
-                              ? level <= 2 ? "bg-red-500/15 border-red-500/40 text-red-400"
-                              : level <= 3 ? "bg-amber-500/15 border-amber-500/40 text-amber-400"
-                              : "bg-emerald-500/15 border-emerald-500/40 text-emerald-400"
-                            : "bg-background border-border text-muted-foreground hover:border-border/80"
-                          }`}
-                          onClick={() => updateOrder(order.key, "confidence", level)} title={CONFIDENCE_LABELS[level]}>
-                          {level}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <InputLabel>근거</InputLabel>
-                    <textarea className="w-full rounded-lg border border-border bg-background px-2 py-2 text-sm resize-y placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors" rows={3} placeholder="이 주문의 근거..." value={order.description} onChange={(e) => updateOrder(order.key, "description", e.target.value)} />
-                  </div>
-                </div>
+          {orders.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "32px 0", fontFamily: PX.fb, fontSize: 13, color: PX.mid }}>
+              주문 없이 시장 분석만 제출할 수 있습니다.{" "}
+              <button
+                onClick={addOrder}
+                style={{ background: "none", border: "none", fontFamily: PX.fb, fontSize: 13, color: PX.cyan, cursor: "pointer", textDecoration: "underline" }}
+              >
+                주문 추가
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+              {orders.map((order, idx) => (
+                <OrderCard
+                  key={order.key}
+                  order={order}
+                  idx={idx}
+                  onUpdate={updateOrder}
+                  onRemove={removeOrder}
+                />
+              ))}
+            </div>
+          )}
+        </section>
 
-                {order.tp2_price !== null && order.tp2_price > 0 && (
-                  <div className="text-xs text-muted-foreground/70 pl-1">
-                    TP1 도달 시 50% 청산, SL 본절 이동 → TP2 또는 본절 SL까지 나머지 50% 유지
-                  </div>
-                )}
-              </div>
-            ))}
+        {/* ── Error ── */}
+        {error && (
+          <div style={{
+            background: "rgba(255,51,51,0.08)",
+            border: `2px solid ${PX.red}`,
+            padding: "12px 16px",
+            fontFamily: PX.fb,
+            fontSize: 13,
+            color: PX.red,
+            whiteSpace: "pre-wrap",
+          }}>
+            {error}
           </div>
         )}
-      </section>
 
-      {/* Error */}
-      {error && (
-        <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
-          {error}
+        {/* ── Submit ── */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, paddingTop: 24, paddingBottom: 32 }}>
+          <div style={{ height: 1, width: "100%", background: "linear-gradient(to right, transparent, rgba(51,85,255,0.5), transparent)", marginBottom: 8 }} />
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            style={{
+              fontFamily: PX.fp, fontSize: 14, letterSpacing: "0.08em",
+              padding: "18px 48px",
+              border: `3px solid ${loading ? PX.mid : PX.cyan}`,
+              background: loading ? PX.alt : "#1e1e2f",
+              color: loading ? PX.mid : PX.cyan,
+              cursor: loading ? "not-allowed" : "pointer",
+              borderRadius: 0,
+              boxShadow: loading ? "none" : `0 0 20px rgba(0,219,235,0.3)`,
+              transition: "all 0.1s steps(1)",
+            }}
+            onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.background = PX.cyan; e.currentTarget.style.color = "#0a0a1a"; } }}
+            onMouseLeave={(e) => { if (!loading) { e.currentTarget.style.background = "#1e1e2f"; e.currentTarget.style.color = PX.cyan; } }}
+          >
+            {loading ? "제출 중..." : isAnalysisOnly ? "▶ 분석 제출" : "▶ 주문 제출"}
+          </button>
+          <p style={{ fontFamily: PX.fm, fontSize: 10, color: "rgba(0,238,255,0.6)", letterSpacing: "0.08em", margin: 0, animation: "pulse 2s infinite" }}>
+            AWAITING USER EXECUTION COMMAND...
+          </p>
+        </div>
+      </div>
+    </div>
+      <PxFooter />
+    </div>
+  );
+}
+
+/* ── Order card ──────────────────────────────────────────────────────────── */
+function OrderCard({
+  order, idx, onUpdate, onRemove,
+}: {
+  order: OrderRow;
+  idx: number;
+  onUpdate: (key: string, field: keyof OrderInput | "key", value: string | number | null) => void;
+  onRemove: (key: string) => void;
+}) {
+  const pxInput: React.CSSProperties = {
+    background: "var(--px-black,#0a0a1a)",
+    border: "2px solid var(--px-border,#3355ff)",
+    borderRadius: 0,
+    padding: "7px 10px",
+    fontFamily: "var(--ff-mono,'JetBrains Mono',monospace)",
+    fontSize: 13,
+    color: "var(--px-white,#f0f0ff)",
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box" as const,
+  };
+  const pxSel: React.CSSProperties = { ...pxInput, cursor: "pointer", fontSize: 11 };
+  const lbl: React.CSSProperties = {
+    fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
+    fontSize: 9,
+    color: "var(--px-grey-mid,#8888aa)",
+    display: "block",
+    marginBottom: 6,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase" as const,
+  };
+
+  const confColors = [
+    { on: "rgba(255,51,51,0.15)", border: "var(--px-red,#ff3333)", text: "var(--px-red,#ff3333)" },
+    { on: "rgba(255,51,51,0.15)", border: "var(--px-red,#ff3333)", text: "var(--px-red,#ff3333)" },
+    { on: "rgba(255,224,0,0.15)", border: "var(--px-yellow,#ffe000)", text: "var(--px-yellow,#ffe000)" },
+    { on: "rgba(0,255,127,0.15)", border: "var(--px-green,#00ff7f)", text: "var(--px-green,#00ff7f)" },
+    { on: "rgba(0,255,127,0.15)", border: "var(--px-green,#00ff7f)", text: "var(--px-green,#00ff7f)" },
+  ];
+
+  return (
+    <div style={{
+      background: "#1e1e2f",
+      border: "2px solid var(--px-border,#3355ff)",
+      padding: "20px 18px 16px",
+      position: "relative",
+    }}>
+      {/* Absolute "ORDER 0N" badge */}
+      <div style={{
+        position: "absolute",
+        top: -11,
+        left: 20,
+        background: "var(--px-black,#0a0a1a)",
+        padding: "0 10px",
+        fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
+        fontSize: 9,
+        color: "var(--px-cyan,#00eeff)",
+        lineHeight: 1,
+      }}>
+        ORDER {String(idx + 1).padStart(2, "0")}
+      </div>
+      {/* Remove button */}
+      <button
+        onClick={() => onRemove(order.key)}
+        style={{
+          position: "absolute",
+          top: -11,
+          right: 16,
+          background: "var(--px-black,#0a0a1a)",
+          border: "1px solid var(--px-red,#ff3333)",
+          fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)",
+          fontSize: 9,
+          color: "var(--px-red,#ff3333)",
+          cursor: "pointer",
+          padding: "2px 8px",
+          lineHeight: 1,
+        }}
+        title="삭제"
+      >
+        × 삭제
+      </button>
+
+      {/* Row 1: core fields */}
+      <div style={{ display: "grid", gridTemplateColumns: "90px 80px 80px 1fr 1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
+        <div>
+          <label style={lbl}>코인</label>
+          <select style={pxSel} value={order.symbol} onChange={(e) => onUpdate(order.key, "symbol", e.target.value)}>
+            {["BTC","ETH","SOL","XRP","DOGE","AAVE","ADA","APT","ARB","AVAX","BCH","BNB","CRV","DOT","ENA","FET","HBAR","HYPE","INJ","LINK","LTC","NEAR","OP","PEPE","RENDER","SUI","TAO","TRX","UNI","WIF"].map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label style={lbl}>SIDE</label>
+          <div style={{ display: "flex", height: 36, border: "2px solid var(--px-border,#3355ff)" }}>
+            <button
+              onClick={() => onUpdate(order.key, "side", "long")}
+              style={{
+                flex: 1, border: "none", cursor: "pointer", borderRadius: 0,
+                fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 8,
+                background: order.side === "long" ? "var(--tertiary-container,#00767f)" : "var(--px-black,#0a0a1a)",
+                color: order.side === "long" ? "#fff" : "var(--px-grey-mid,#8888aa)",
+                transition: "all 0.1s steps(1)",
+              }}
+            >LONG</button>
+            <button
+              onClick={() => onUpdate(order.key, "side", "short")}
+              style={{
+                flex: 1, border: "none", cursor: "pointer", borderRadius: 0,
+                fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 9,
+                background: order.side === "short" ? "var(--px-red,#ff3333)" : "var(--px-black,#0a0a1a)",
+                color: order.side === "short" ? "#fff" : "var(--px-grey-mid,#8888aa)",
+                transition: "all 0.1s steps(1)",
+              }}
+            >SHORT</button>
+          </div>
+        </div>
+        <div>
+          <label style={lbl}>유형</label>
+          <select style={pxSel} value={order.order_type} onChange={(e) => onUpdate(order.key, "order_type", e.target.value)}>
+            <option value="limit">LIMIT</option>
+            <option value="market">MARKET</option>
+          </select>
+        </div>
+        <div>
+          <label style={lbl}>{order.order_type === "market" ? "현재가" : "진입가"}</label>
+          <input type="number" step="any" style={{ ...pxInput, textAlign: "right" }}
+            value={order.entry_price || ""} onChange={(e) => onUpdate(order.key, "entry_price", parseFloat(e.target.value) || 0)} />
+        </div>
+        <div>
+          <label style={lbl}>TP1</label>
+          <input type="number" step="any" style={{ ...pxInput, textAlign: "right", color: "var(--px-green,#00ff7f)" }}
+            value={order.tp_price || ""} onChange={(e) => onUpdate(order.key, "tp_price", parseFloat(e.target.value) || 0)} />
+        </div>
+        <div>
+          <label style={lbl}>TP2</label>
+          <input type="number" step="any" style={{ ...pxInput, textAlign: "right", color: "var(--px-green,#00ff7f)" }}
+            placeholder="—" value={order.tp2_price ?? ""}
+            onChange={(e) => { const v = e.target.value; onUpdate(order.key, "tp2_price", v ? parseFloat(v) || null : null); }} />
+        </div>
+        <div>
+          <label style={lbl}>SL</label>
+          <input type="number" step="any" style={{ ...pxInput, textAlign: "right", color: "var(--px-red,#ff3333)" }}
+            value={order.sl_price || ""} onChange={(e) => onUpdate(order.key, "sl_price", parseFloat(e.target.value) || 0)} />
+        </div>
+      </div>
+
+      {/* Row 2: confidence + description */}
+      <div style={{ display: "grid", gridTemplateColumns: "180px 1fr", gap: 10 }}>
+        <div>
+          <label style={lbl}>Confidence ({order.confidence}/5)</label>
+          <div style={{ display: "flex", gap: 4 }}>
+            {[1, 2, 3, 4, 5].map((level) => {
+              const cfg = confColors[level - 1];
+              const active = level <= order.confidence;
+              return (
+                <button
+                  key={level}
+                  onClick={() => onUpdate(order.key, "confidence", level)}
+                  title={CONFIDENCE_LABELS[level]}
+                  style={{
+                    width: 32, height: 32,
+                    border: `2px solid ${active ? cfg.border : "var(--px-border,#3355ff)"}`,
+                    background: active ? cfg.on : "transparent",
+                    color: active ? cfg.text : "var(--px-mid,#8888aa)",
+                    cursor: "pointer",
+                    fontFamily: "var(--ff-mono,'JetBrains Mono',monospace)",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    borderRadius: 0,
+                    transition: "all 0.1s steps(1)",
+                  }}
+                >
+                  {level}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div>
+          <label style={lbl}>근거</label>
+          <textarea
+            rows={3}
+            placeholder="이 주문의 근거..."
+            value={order.description}
+            onChange={(e) => onUpdate(order.key, "description", e.target.value)}
+            style={{
+              background: "var(--px-black,#0a0a1a)",
+              border: "2px solid var(--px-border,#3355ff)",
+              borderRadius: 0,
+              padding: "7px 10px",
+              fontFamily: "var(--ff-body,Pretendard,sans-serif)",
+              fontSize: 13,
+              color: "var(--px-white,#f0f0ff)",
+              outline: "none",
+              width: "100%",
+              resize: "vertical",
+              lineHeight: 1.6,
+              boxSizing: "border-box" as const,
+            }}
+          />
+        </div>
+      </div>
+
+      {order.tp2_price !== null && order.tp2_price > 0 && (
+        <div style={{ marginTop: 10, fontFamily: "var(--ff-body,Pretendard,sans-serif)", fontSize: 11, color: "var(--px-mid,#8888aa)" }}>
+          TP1 도달 시 50% 청산, SL 본절 이동 → TP2 또는 본절 SL까지 나머지 50% 유지
         </div>
       )}
-
-      {/* Actions */}
-      <div className="flex gap-3 pb-8">
-        <Button className="px-6" onClick={handleSubmit} disabled={loading}>
-          {loading ? "제출 중..." : isAnalysisOnly ? "분석 제출" : "주문 제출"}
-        </Button>
-        <Button variant="outline" onClick={() => router.push("/benchmark/models")}>
-          리더보드 보기
-        </Button>
-      </div>
     </div>
   );
 }

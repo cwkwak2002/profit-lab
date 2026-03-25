@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <rect width="32" height="32" fill="#0a0a1a"/>
+  <!-- Row 1: 0,0,1,1,1,1,0,0 -->
+  <rect x="8"  y="0"  width="4" height="4" fill="#ffe000"/>
+  <rect x="12" y="0"  width="4" height="4" fill="#ffe000"/>
+  <rect x="16" y="0"  width="4" height="4" fill="#ffe000"/>
+  <rect x="20" y="0"  width="4" height="4" fill="#ffe000"/>
+  <!-- Row 2: 0,1,1,1,1,1,1,0 -->
+  <rect x="4"  y="4"  width="4" height="4" fill="#ffe000"/>
+  <rect x="8"  y="4"  width="4" height="4" fill="#ffe000"/>
+  <rect x="12" y="4"  width="4" height="4" fill="#ffe000"/>
+  <rect x="16" y="4"  width="4" height="4" fill="#ffe000"/>
+  <rect x="20" y="4"  width="4" height="4" fill="#ffe000"/>
+  <rect x="24" y="4"  width="4" height="4" fill="#ffe000"/>
+  <!-- Row 3: 1,1,0,1,1,0,1,1 -->
+  <rect x="0"  y="8"  width="4" height="4" fill="#ffe000"/>
+  <rect x="4"  y="8"  width="4" height="4" fill="#ffe000"/>
+  <rect x="12" y="8"  width="4" height="4" fill="#ffe000"/>
+  <rect x="16" y="8"  width="4" height="4" fill="#ffe000"/>
+  <rect x="24" y="8"  width="4" height="4" fill="#ffe000"/>
+  <rect x="28" y="8"  width="4" height="4" fill="#ffe000"/>
+  <!-- Row 4: 1,1,1,1,1,1,1,1 -->
+  <rect x="0"  y="12" width="4" height="4" fill="#ffe000"/>
+  <rect x="4"  y="12" width="4" height="4" fill="#ffe000"/>
+  <rect x="8"  y="12" width="4" height="4" fill="#ffe000"/>
+  <rect x="12" y="12" width="4" height="4" fill="#ffe000"/>
+  <rect x="16" y="12" width="4" height="4" fill="#ffe000"/>
+  <rect x="20" y="12" width="4" height="4" fill="#ffe000"/>
+  <rect x="24" y="12" width="4" height="4" fill="#ffe000"/>
+  <rect x="28" y="12" width="4" height="4" fill="#ffe000"/>
+  <!-- Row 5: 1,1,0,1,1,0,1,1 -->
+  <rect x="0"  y="16" width="4" height="4" fill="#ffe000"/>
+  <rect x="4"  y="16" width="4" height="4" fill="#ffe000"/>
+  <rect x="12" y="16" width="4" height="4" fill="#ffe000"/>
+  <rect x="16" y="16" width="4" height="4" fill="#ffe000"/>
+  <rect x="24" y="16" width="4" height="4" fill="#ffe000"/>
+  <rect x="28" y="16" width="4" height="4" fill="#ffe000"/>
+  <!-- Row 6: 1,1,1,0,0,1,1,1 -->
+  <rect x="0"  y="20" width="4" height="4" fill="#ffe000"/>
+  <rect x="4"  y="20" width="4" height="4" fill="#ffe000"/>
+  <rect x="8"  y="20" width="4" height="4" fill="#ffe000"/>
+  <rect x="20" y="20" width="4" height="4" fill="#ffe000"/>
+  <rect x="24" y="20" width="4" height="4" fill="#ffe000"/>
+  <rect x="28" y="20" width="4" height="4" fill="#ffe000"/>
+  <!-- Row 7: 0,1,1,1,1,1,1,0 -->
+  <rect x="4"  y="24" width="4" height="4" fill="#ffe000"/>
+  <rect x="8"  y="24" width="4" height="4" fill="#ffe000"/>
+  <rect x="12" y="24" width="4" height="4" fill="#ffe000"/>
+  <rect x="16" y="24" width="4" height="4" fill="#ffe000"/>
+  <rect x="20" y="24" width="4" height="4" fill="#ffe000"/>
+  <rect x="24" y="24" width="4" height="4" fill="#ffe000"/>
+  <!-- Row 8: 0,0,1,1,1,1,0,0 -->
+  <rect x="8"  y="28" width="4" height="4" fill="#ffe000"/>
+  <rect x="12" y="28" width="4" height="4" fill="#ffe000"/>
+  <rect x="16" y="28" width="4" height="4" fill="#ffe000"/>
+  <rect x="20" y="28" width="4" height="4" fill="#ffe000"/>
+</svg>
