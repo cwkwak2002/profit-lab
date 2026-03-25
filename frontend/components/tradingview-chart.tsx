@@ -1,15 +1,112 @@
 "use client";
 
-import { useEffect, useRef, memo } from "react";
-import { getCandles, type Timeframe } from "@/lib/api";
+import { useEffect, useRef, memo, forwardRef, useImperativeHandle, useCallback } from "react";
+import { getCandles, type Timeframe, type Trade } from "@/lib/api";
 
 interface Props {
   symbol: string;
   interval?: string;
   showRsi?: boolean;
+  trades?: Trade[];
+}
+
+export interface TradingViewChartHandle {
+  scrollToTime: (unixSeconds: number) => void;
+}
+
+const EXIT_LABELS: Record<string, string> = {
+  SL: "SL", TP2: "TP2", FIXED_TP: "TP+3.5%",
+  BE: "BE", EMA_CROSS: "EMA Cross", TRAIL: "Trail", TIMEOUT: "Timeout",
+};
+
+function applyTradeMarkers(widget: any, trades: Trade[], shapesRef: React.MutableRefObject<any[]>) {
+  try {
+    const chart = widget.activeChart();
+    if (!chart) return;
+    for (const s of shapesRef.current) { try { s.remove(); } catch { /* */ } }
+    shapesRef.current = [];
+
+    for (const trade of trades) {
+      if (trade.exit_reason.startsWith("RISK_")) continue;
+      const isLong = trade.side !== "short";
+      const entryTs = new Date(trade.entry_time + "Z").getTime() / 1000;
+
+      // Entry
+      const entryShape = chart.createExecutionShape();
+      if (entryShape) {
+        entryShape
+          .setDirection(isLong ? "buy" : "sell")
+          .setTime(entryTs)
+          .setText(isLong ? "▲ Long" : "▼ Short")
+          .setTooltip(`진입 @ $${trade.entry_price.toLocaleString()}`)
+          .setTextColor(isLong ? "#22c55e" : "#ef4444")
+          .setArrowColor(isLong ? "#22c55e" : "#ef4444")
+          .setFont("bold 11px sans-serif");
+        shapesRef.current.push(entryShape);
+      }
+
+      // TP1
+      if (trade.tp1_time) {
+        const tp1Ts = new Date(trade.tp1_time + "Z").getTime() / 1000;
+        const tp1Shape = chart.createExecutionShape();
+        if (tp1Shape) {
+          tp1Shape
+            .setDirection(isLong ? "sell" : "buy")
+            .setTime(tp1Ts)
+            .setText("TP1")
+            .setTooltip("1차 익절 (50%)")
+            .setTextColor("#3b82f6")
+            .setArrowColor("#3b82f6")
+            .setFont("11px sans-serif");
+          shapesRef.current.push(tp1Shape);
+        }
+      }
+
+      // Exit
+      if (trade.exit_time) {
+        const exitTs = new Date(trade.exit_time + "Z").getTime() / 1000;
+        const reason = trade.exit_reason;
+        const label = EXIT_LABELS[reason] || reason;
+        const isProfit = ["TP2", "FIXED_TP", "TRAIL"].includes(reason);
+        const isSl = reason === "SL";
+        const exitColor = isProfit ? "#22c55e" : isSl ? "#ef4444" : "#f59e0b";
+        const pnlStr = trade.pnl != null ? ` (${trade.pnl > 0 ? "+" : ""}${trade.pnl.toFixed(2)})` : "";
+        const exitShape = chart.createExecutionShape();
+        if (exitShape) {
+          exitShape
+            .setDirection(isLong ? "sell" : "buy")
+            .setTime(exitTs)
+            .setText(`${label}${pnlStr}`)
+            .setTooltip(`${label} @ $${trade.exit_price?.toLocaleString() || "?"}${pnlStr}`)
+            .setTextColor(exitColor)
+            .setArrowColor(exitColor)
+            .setFont("bold 11px sans-serif");
+          shapesRef.current.push(exitShape);
+        }
+      }
+    }
+  } catch { /* chart not ready */ }
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+const CHART_SETTINGS_KEY = "profit-lab-chart-settings";
+
+function loadSavedChartState(): any {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const s = localStorage.getItem(CHART_SETTINGS_KEY);
+    return s ? JSON.parse(s) : undefined;
+  } catch { return undefined; }
+}
+
+function saveChartState(widget: any) {
+  try {
+    widget.save((state: any) => {
+      try { localStorage.setItem(CHART_SETTINGS_KEY, JSON.stringify(state)); } catch { /* */ }
+    });
+  } catch { /* */ }
+}
 
 const RESOLUTION_TO_TF: Record<string, Timeframe> = {
   "1": "1m", "5": "5m", "15": "15m", "30": "30m",
@@ -107,9 +204,35 @@ function loadChartingLibrary(): Promise<void> {
   });
 }
 
-function TradingViewChartInner({ symbol, interval = "15m", showRsi = true }: Props) {
+const TradingViewChartInner = forwardRef<TradingViewChartHandle, Props>(
+function TradingViewChartInner({ symbol, interval = "15m", showRsi = true, trades }: Props, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<any>(null);
+  const shapesRef = useRef<any[]>([]);
+  const tradesRef = useRef<Trade[]>(trades ?? []);
+
+  const scrollToTime = useCallback((unixSeconds: number) => {
+    const widget = widgetRef.current;
+    if (!widget) return;
+    const halfRange = 6 * 3600;
+    try {
+      widget.onChartReady(() => {
+        widget.activeChart().setVisibleRange({ from: unixSeconds - halfRange, to: unixSeconds + halfRange });
+      });
+    } catch { /* ignore */ }
+  }, []);
+
+  useImperativeHandle(ref, () => ({ scrollToTime }), [scrollToTime]);
+
+  // Sync tradesRef and re-apply markers when trades prop changes
+  useEffect(() => {
+    tradesRef.current = trades ?? [];
+    const widget = widgetRef.current;
+    if (!widget) return;
+    try {
+      widget.onChartReady(() => applyTradeMarkers(widget, tradesRef.current, shapesRef));
+    } catch { /* */ }
+  }, [trades]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -124,6 +247,7 @@ function TradingViewChartInner({ symbol, interval = "15m", showRsi = true }: Pro
 
       const tvInterval = INTERVAL_MAP[interval] || "15";
       const studies = showRsi ? ["RSI@tv-basicstudies"] : [];
+      const savedState = loadSavedChartState();
 
       const widget = new TV.widget({
         container: el,
@@ -131,6 +255,7 @@ function TradingViewChartInner({ symbol, interval = "15m", showRsi = true }: Pro
         datafeed: createDatafeed(symbol),
         symbol: symbol,
         interval: tvInterval,
+        ...(savedState ? { saved_data: savedState } : {}),
         locale: "ko",
         timezone: "Asia/Seoul",
         theme: "dark",
@@ -164,19 +289,26 @@ function TradingViewChartInner({ symbol, interval = "15m", showRsi = true }: Pro
 
       widgetRef.current = widget;
 
-      // Add RSI study after chart ready if requested
-      if (studies.length > 0) {
-        widget.onChartReady(() => {
+      widget.onChartReady(() => {
+        // Auto-save chart state when indicators change
+        try {
+          widget.subscribe("onAutoSaveNeeded", () => saveChartState(widget));
+        } catch { /* */ }
+        // RSI study (only if no saved state — saved state restores studies automatically)
+        if (!savedState) {
           for (const study of studies) {
             try { widget.activeChart().createStudy(study.split("@")[0]); } catch { /* */ }
           }
-        });
-      }
+        }
+        // Trade markers
+        applyTradeMarkers(widget, tradesRef.current, shapesRef);
+      });
     });
 
     return () => {
       destroyed = true;
       if (widgetRef.current) {
+        saveChartState(widgetRef.current);
         try { widgetRef.current.remove(); } catch { /* */ }
         widgetRef.current = null;
       }
@@ -184,7 +316,7 @@ function TradingViewChartInner({ symbol, interval = "15m", showRsi = true }: Pro
   }, [symbol, interval, showRsi]);
 
   return <div ref={containerRef} className="w-full h-full" />;
-}
+});
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
 

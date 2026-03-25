@@ -132,7 +132,7 @@ function BacktestPageInner() {
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
           textShadow: `2px 2px 0 #886600, 4px 4px 0 #443300`, marginBottom: 14 }}>
-          ▶ 전략 검증
+          ▶ 전략 백테스트
         </h1>
         <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
           {currentStrategy.desc}

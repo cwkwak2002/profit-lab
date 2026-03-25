@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { EquityCurve } from "@/components/equity-curve";
 import { TradeTable } from "@/components/trade-table";
-import { TradingViewChart } from "@/components/tradingview-chart";
+import { TradingViewChart, type TradingViewChartHandle } from "@/components/tradingview-chart";
 import { ResizableSplit } from "@/components/resizable-split";
 import {
   getCoinTrades,
@@ -55,6 +55,7 @@ export default function CoinDetailPage() {
   const [loading,       setLoading]       = useState(true);
   const [error,         setError]         = useState("");
   const [activeTab,     setActiveTab]     = useState<"equity" | "chart">("chart");
+  const chartRef = useRef<TradingViewChartHandle>(null);
 
   useEffect(() => {
     if (!runId || !symbol) return;
@@ -83,7 +84,12 @@ export default function CoinDetailPage() {
     load();
   }, [runId, symbol]);
 
-  const handleTradeClick = useCallback((_trade: Trade) => {}, []);
+  const handleTradeClick = useCallback((trade: Trade) => {
+    setActiveTab("chart");
+    const unixSeconds = new Date(trade.entry_time + "Z").getTime() / 1000;
+    // slight delay to ensure chart tab is mounted before scrolling
+    setTimeout(() => chartRef.current?.scrollToTime(unixSeconds), 50);
+  }, []);
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh",
@@ -304,7 +310,7 @@ export default function CoinDetailPage() {
                       </div>
                     )
                   ) : (
-                    <TradingViewChart symbol={symbol} showRsi={false} />
+                    <TradingViewChart ref={chartRef} symbol={symbol} showRsi={false} trades={trades} />
                   )}
                 </div>
               </div>

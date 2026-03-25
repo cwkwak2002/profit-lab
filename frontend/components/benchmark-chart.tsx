@@ -285,36 +285,22 @@ function addOrderLines(widget: any, orders: BenchmarkOrder[]) {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-const STUDIES_KEY = "benchmark-chart-studies";
+const CHART_SETTINGS_KEY = "profit-lab-chart-settings";
 
-// Studies that TradingView adds by default — skip when saving/restoring
-const DEFAULT_STUDIES = new Set(["Volume"]);
-
-function saveStudies(widget: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+function loadSavedChartState(): any { // eslint-disable-line @typescript-eslint/no-explicit-any
+  if (typeof window === "undefined") return undefined;
   try {
-    const chart = widget.activeChart();
-    const studies = chart.getAllStudies();
-    const list = studies
-      .filter((s: any) => !DEFAULT_STUDIES.has(s.name)) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .map((s: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
-        name: s.name,
-        inputs: chart.getStudyById(s.id)?.getInputValues?.() || {},
-      }));
-    localStorage.setItem(STUDIES_KEY, JSON.stringify(list));
-  } catch { /* ignore */ }
+    const s = localStorage.getItem(CHART_SETTINGS_KEY);
+    return s ? JSON.parse(s) : undefined;
+  } catch { return undefined; }
 }
 
-function restoreStudies(widget: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+function saveChartState(widget: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
   try {
-    const raw = localStorage.getItem(STUDIES_KEY);
-    if (!raw) return;
-    const list = JSON.parse(raw);
-    const chart = widget.activeChart();
-    for (const s of list) {
-      if (DEFAULT_STUDIES.has(s.name)) continue;
-      chart.createStudy(s.name, false, false, s.inputs || {});
-    }
-  } catch { /* ignore */ }
+    widget.save((state: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+      try { localStorage.setItem(CHART_SETTINGS_KEY, JSON.stringify(state)); } catch { /* */ }
+    });
+  } catch { /* */ }
 }
 
 export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
@@ -358,6 +344,8 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
         const TV = (window as any).TradingView; // eslint-disable-line @typescript-eslint/no-explicit-any
         if (!TV?.widget) return;
 
+        const savedState = loadSavedChartState();
+
         const widget = new TV.widget({
           container: el,
           library_path: "/tradingview/",
@@ -366,6 +354,7 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
           ),
           symbol: symbol,
           interval: "5",
+          ...(savedState ? { saved_data: savedState } : {}),
           locale: "ko",
           timezone: "Asia/Seoul",
           theme: "dark",
@@ -405,8 +394,10 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
         widget.onChartReady(() => {
           chartReadyRef.current = true;
 
-          // Restore saved studies (indicators)
-          restoreStudies(widget);
+          // Auto-save on indicator changes
+          try {
+            widget.subscribe("onAutoSaveNeeded", () => saveChartState(widget));
+          } catch { /* */ }
 
           // Delay to ensure chart series is fully initialized before adding shapes
           setTimeout(() => {
@@ -425,9 +416,6 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
               }
             }
           }, 300);
-
-          // Periodically save studies list
-          saveTimerRef.current = setInterval(() => saveStudies(widget), 3000);
         });
       }
 
@@ -452,8 +440,8 @@ export const BenchmarkChart = forwardRef<BenchmarkChartHandle, Props>(
           clearInterval(saveTimerRef.current);
           saveTimerRef.current = null;
         }
-        if (widgetRef.current && chartReadyRef.current) {
-          saveStudies(widgetRef.current);
+        if (widgetRef.current) {
+          saveChartState(widgetRef.current);
         }
         chartReadyRef.current = false;
         pendingScrollRef.current = null;
