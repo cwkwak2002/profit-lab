@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { PxFooter } from "@/components/px-footer";
-import { PxPageShell } from "@/components/px-page-shell";
 import { PxPixelDeco } from "@/components/px-pixel-deco";
 import { PX } from "@/design-system/tokens/px";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -538,8 +536,16 @@ export default function ModelDetailPage() {
   }
 
   return (
-    <PxPageShell>
-    <div className="px-page" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+    <div className="px-page" style={{
+      margin: "0 -24px -24px",
+      height: "calc(100vh - 110px)",
+      display: "flex",
+      flexDirection: "column",
+      background: "linear-gradient(135deg, #05051e 0%, #1a0b2e 50%, #0c0c1d 100%)",
+      color: "var(--px-white, #f0f0ff)",
+      overflow: "hidden",
+      position: "relative",
+    }}>
       <style>{`
         .px-page *::-webkit-scrollbar { width: 4px; height: 4px; }
         .px-page *::-webkit-scrollbar-track { background: #0c0c1e; }
@@ -694,7 +700,7 @@ export default function ModelDetailPage() {
         </aside>
 
         {/* Right content */}
-        <main style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
+        <main style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <ResizableSplit
             top={
               <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -901,9 +907,6 @@ export default function ModelDetailPage() {
         </main>
       </div>
     </div>
-      <div style={{ flex: 1 }} />
-      <PxFooter />
-    </PxPageShell>
   );
 }
 
