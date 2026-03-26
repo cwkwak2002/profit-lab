@@ -1,0 +1,1 @@
+../../backend/tests/test_strategy_ema.py

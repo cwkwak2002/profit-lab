@@ -1,0 +1,1 @@
+../../backend/tests/test_ai_trader.py

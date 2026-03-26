@@ -1,0 +1,373 @@
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[QA] Profit-Lab 테스트 결과 — 2026-03-26 15:25:48</title>
+    <style>
+      body { font-family: 'Segoe UI', sans-serif; background:#f8fafc; color:#1e293b; margin:0; padding:24px; }
+      h1   { font-size:1.6rem; border-bottom:3px solid #7c3aed; padding-bottom:8px; }
+      h2   { font-size:1.1rem; margin-top:2rem; color:#334155; }
+      .qa-tag { display:inline-block; padding:3px 10px; border-radius:4px; font-size:.75rem;
+                 font-weight:700; color:#fff; background:#7c3aed; margin-left:12px;
+                 vertical-align:middle; }
+      .badge { display:inline-block; padding:6px 16px; border-radius:6px; font-weight:700;
+                font-size:1rem; color:#fff; background:#22c55e; margin-bottom:16px; }
+      .meta  { display:flex; gap:32px; flex-wrap:wrap; margin-bottom:24px; }
+      .meta span { font-size:.9rem; color:#64748b; }
+      .meta strong { color:#1e293b; }
+      .summary-grid { display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+      .stat-card { background:#fff; border:1px solid #e2e8f0; border-radius:8px;
+                    padding:16px 24px; min-width:110px; text-align:center;
+                    box-shadow:0 1px 3px rgba(0,0,0,.06); }
+      .stat-card .num { font-size:2rem; font-weight:700; line-height:1; }
+      .stat-card .lbl { font-size:.75rem; color:#94a3b8; margin-top:4px; }
+      .pass .num { color:#22c55e; }
+      .fail .num { color:#ef4444; }
+      .skip .num { color:#f59e0b; }
+      table  { width:100%; border-collapse:collapse; font-size:.85rem; background:#fff;
+                border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+      th     { background:#1e293b; color:#f1f5f9; padding:10px 12px; text-align:left; font-weight:600; }
+      td     { padding:8px 12px; border-bottom:1px solid #f1f5f9; }
+      tr.pass td:nth-child(5) { color:#22c55e; font-weight:600; }
+      tr.fail { background:#fff5f5; }
+      tr.fail td:nth-child(5) { color:#ef4444; font-weight:600; }
+      tr.skip { background:#fffbeb; }
+      tr.skip td:nth-child(5) { color:#f59e0b; font-weight:600; }
+      tr:hover { background:#f8fafc; }
+      .msg   { font-size:.78rem; color:#64748b; max-width:320px; word-break:break-all; }
+      code   { background:#f1f5f9; padding:1px 5px; border-radius:3px; font-size:.82rem; }
+      .fail-block { background:#fff5f5; border-left:4px solid #ef4444;
+                     padding:12px 16px; margin:8px 0; border-radius:0 6px 6px 0; }
+      .fail-block pre { margin:8px 0 0; font-size:.82rem; color:#7f1d1d; white-space:pre-wrap; }
+      .export-note { margin-top:32px; padding:16px; background:#f5f3ff; border-radius:8px;
+                      border:1px solid #ddd6fe; font-size:.85rem; color:#4c1d95; }
+      @media print { body { padding:8px; } }
+    </style>
+    </head>
+    <body>
+    <h1>Profit-Lab 테스트 결과 보고서 <span class="qa-tag">QA</span></h1>
+    <div class="badge">✅ PASSED</div>
+    <div class="meta">
+      <span><strong>실행 일시</strong>: 2026-03-26 15:25:48</span>
+      <span><strong>소요 시간</strong>: 8.30s</span>
+      <span><strong>총 TC</strong>: 274</span>
+      <span><strong>실행 주체</strong>: QA 팀</span>
+    </div>
+
+    <div class="summary-grid">
+      <div class="stat-card pass"><div class="num">273</div><div class="lbl">PASSED</div></div>
+      <div class="stat-card fail"><div class="num">0</div><div class="lbl">FAILED</div></div>
+      <div class="stat-card skip"><div class="num">1</div><div class="lbl">SKIPPED</div></div>
+    </div>
+
+    <h2>파일별 결과</h2>
+    <table>
+      <thead><tr><th>파일</th><th>✅ Pass</th><th>❌ Fail</th><th>⏭️ Skip</th></tr></thead>
+      <tbody><tr><td><code>test_ai_trader.py</code></td><td class='pass'>17</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_api.py</code></td><td class='pass'>13</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_backtester.py</code></td><td class='pass'>11</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_benchmark_api.py</code></td><td class='pass'>33</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_benchmark_monitor.py</code></td><td class='pass'>30</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_benchmark_new.py</code></td><td class='pass'>24</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_data_api_new.py</code></td><td class='pass'>14</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_db.py</code></td><td class='pass'>12</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_e2e_backtest.py</code></td><td class='pass'>9</td><td class='fail'>0</td><td class='skip'>1</td></tr>
+<tr><td><code>test_e2e_benchmark.py</code></td><td class='pass'>10</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_integration_backtest.py</code></td><td class='pass'>9</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_risk_filters.py</code></td><td class='pass'>16</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_strategy.py</code></td><td class='pass'>17</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_strategy_bb.py</code></td><td class='pass'>15</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_strategy_ema.py</code></td><td class='pass'>16</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_telegram_listener.py</code></td><td class='pass'>27</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+</tbody>
+    </table>
+
+    <h2>전체 TC 목록</h2>
+    <table>
+      <thead><tr><th>#</th><th>파일</th><th>클래스</th><th>테스트명</th><th>결과</th><th>비고</th></tr></thead>
+      <tbody><tr class='pass'><td>1</td><td><code>test_ai_trader.py</code></td><td><code>TestBuildUserPrompt</code></td><td><code>test_prompt_contains_coin_names</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>2</td><td><code>test_ai_trader.py</code></td><td><code>TestBuildUserPrompt</code></td><td><code>test_prompt_contains_timestamp</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>3</td><td><code>test_ai_trader.py</code></td><td><code>TestBuildUserPrompt</code></td><td><code>test_prompt_contains_price_and_volume</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>4</td><td><code>test_ai_trader.py</code></td><td><code>TestBuildUserPrompt</code></td><td><code>test_prompt_json_format_hint</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>5</td><td><code>test_ai_trader.py</code></td><td><code>TestBuildUserPrompt</code></td><td><code>test_prompt_coin_list_constraint</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>6</td><td><code>test_ai_trader.py</code></td><td><code>TestCallClaude</code></td><td><code>test_parses_plain_json</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>7</td><td><code>test_ai_trader.py</code></td><td><code>TestCallClaude</code></td><td><code>test_strips_markdown_code_fence</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>8</td><td><code>test_ai_trader.py</code></td><td><code>TestCallClaude</code></td><td><code>test_raises_on_non_array_response</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>9</td><td><code>test_ai_trader.py</code></td><td><code>TestCallClaude</code></td><td><code>test_raises_on_invalid_json</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>10</td><td><code>test_ai_trader.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_valid_long_order_inserted</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>11</td><td><code>test_ai_trader.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_valid_short_order_inserted</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>12</td><td><code>test_ai_trader.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_invalid_long_skipped_tp_below_entry</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>13</td><td><code>test_ai_trader.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_invalid_short_skipped_tp_above_entry</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>14</td><td><code>test_ai_trader.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_unknown_coin_skipped</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>15</td><td><code>test_ai_trader.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_multiple_orders_split_margin_equally</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>16</td><td><code>test_ai_trader.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_confidence_mapping</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>17</td><td><code>test_ai_trader.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_empty_recommendations_no_insert</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>18</td><td><code>test_api.py</code></td><td><code>TestHealthEndpoint</code></td><td><code>test_health</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>19</td><td><code>test_api.py</code></td><td><code>TestCandlesEndpoint</code></td><td><code>test_get_candles_empty</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>20</td><td><code>test_api.py</code></td><td><code>TestCandlesEndpoint</code></td><td><code>test_get_candles_invalid_timeframe</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>21</td><td><code>test_api.py</code></td><td><code>TestCandlesEndpoint</code></td><td><code>test_get_candles_with_data</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>22</td><td><code>test_api.py</code></td><td><code>TestCandlesEndpoint</code></td><td><code>test_get_candles_1m_no_resample</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>23</td><td><code>test_api.py</code></td><td><code>TestBacktestEndpoints</code></td><td><code>test_run_backtest</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>24</td><td><code>test_api.py</code></td><td><code>TestBacktestEndpoints</code></td><td><code>test_get_summary</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>25</td><td><code>test_api.py</code></td><td><code>TestBacktestEndpoints</code></td><td><code>test_get_summary_404</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>26</td><td><code>test_api.py</code></td><td><code>TestBacktestEndpoints</code></td><td><code>test_get_coins</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>27</td><td><code>test_api.py</code></td><td><code>TestBacktestEndpoints</code></td><td><code>test_get_coin_trades</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>28</td><td><code>test_api.py</code></td><td><code>TestBacktestEndpoints</code></td><td><code>test_get_coin_trades_404</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>29</td><td><code>test_api.py</code></td><td><code>TestBacktestEndpoints</code></td><td><code>test_full_pipeline_consistency</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>30</td><td><code>test_api.py</code></td><td><code>TestBacktestEndpoints</code></td><td><code>test_empty_coin_data</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>31</td><td><code>test_backtester.py</code></td><td><code>TestMsToIso</code></td><td><code>test_known_timestamp</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>32</td><td><code>test_backtester.py</code></td><td><code>TestMsToIso</code></td><td><code>test_zero</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>33</td><td><code>test_backtester.py</code></td><td><code>TestRunBacktestForCoin</code></td><td><code>test_no_signals_returns_empty</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>34</td><td><code>test_backtester.py</code></td><td><code>TestRunBacktestForCoin</code></td><td><code>test_summary_fields_present</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>35</td><td><code>test_backtester.py</code></td><td><code>TestRunBacktestForCoin</code></td><td><code>test_trade_record_fields</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>36</td><td><code>test_backtester.py</code></td><td><code>TestRunBacktestForCoin</code></td><td><code>test_balance_compounding</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>37</td><td><code>test_backtester.py</code></td><td><code>TestRunBacktestForCoin</code></td><td><code>test_custom_seed_and_leverage</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>38</td><td><code>test_backtester.py</code></td><td><code>TestRunBacktestForCoin</code></td><td><code>test_exit_reason_is_valid</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>39</td><td><code>test_backtester.py</code></td><td><code>TestRunBacktestForCoin</code></td><td><code>test_win_rate_calculation</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>40</td><td><code>test_backtester.py</code></td><td><code>TestRunBacktestForCoin</code></td><td><code>test_max_drawdown_non_negative</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>41</td><td><code>test_backtester.py</code></td><td><code>TestRunBacktestForCoin</code></td><td><code>test_no_overlapping_positions</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>42</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_submit_long_limit_order</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>43</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_submit_short_limit_order</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>44</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_market_order_is_immediately_filled</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>45</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_limit_order_is_pending</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>46</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_long_tp_below_entry_rejected</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>47</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_long_sl_above_entry_rejected</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>48</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_short_tp_above_entry_rejected</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>49</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_short_sl_below_entry_rejected</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>50</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_unknown_symbol_rejected</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>51</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_zero_price_rejected</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>52</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_analysis_only_no_orders</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>53</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_empty_request_rejected</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>54</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_dual_tp_long_validation</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>55</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_dual_tp_short_validation</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>56</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_confidence_out_of_range</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>57</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_margin_split_equally</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>58</td><td><code>test_benchmark_api.py</code></td><td><code>TestSubmitOrders</code></td><td><code>test_same_model_reused</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>59</td><td><code>test_benchmark_api.py</code></td><td><code>TestModelEndpoints</code></td><td><code>test_list_models_empty</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>60</td><td><code>test_benchmark_api.py</code></td><td><code>TestModelEndpoints</code></td><td><code>test_list_models_after_submit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>61</td><td><code>test_benchmark_api.py</code></td><td><code>TestModelEndpoints</code></td><td><code>test_get_model_detail_404</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>62</td><td><code>test_benchmark_api.py</code></td><td><code>TestModelEndpoints</code></td><td><code>test_get_model_computes_metrics</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>63</td><td><code>test_benchmark_api.py</code></td><td><code>TestModelEndpoints</code></td><td><code>test_rename_model</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>64</td><td><code>test_benchmark_api.py</code></td><td><code>TestModelEndpoints</code></td><td><code>test_rename_duplicate_rejected</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>65</td><td><code>test_benchmark_api.py</code></td><td><code>TestModelEndpoints</code></td><td><code>test_delete_model</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>66</td><td><code>test_benchmark_api.py</code></td><td><code>TestModelEndpoints</code></td><td><code>test_model_names_autocomplete</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>67</td><td><code>test_benchmark_api.py</code></td><td><code>TestOrderEndpoints</code></td><td><code>test_patch_pending_order_prices</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>68</td><td><code>test_benchmark_api.py</code></td><td><code>TestOrderEndpoints</code></td><td><code>test_patch_filled_order_description_only</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>69</td><td><code>test_benchmark_api.py</code></td><td><code>TestOrderEndpoints</code></td><td><code>test_patch_filled_order_price_rejected</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>70</td><td><code>test_benchmark_api.py</code></td><td><code>TestOrderEndpoints</code></td><td><code>test_patch_order_invalid_price_relation</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>71</td><td><code>test_benchmark_api.py</code></td><td><code>TestBatchEndpoints</code></td><td><code>test_get_model_batches</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>72</td><td><code>test_benchmark_api.py</code></td><td><code>TestBatchEndpoints</code></td><td><code>test_delete_batch_cancels_pending</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>73</td><td><code>test_benchmark_api.py</code></td><td><code>TestBatchEndpoints</code></td><td><code>test_delete_batch_keeps_closed</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>74</td><td><code>test_benchmark_api.py</code></td><td><code>TestBatchEndpoints</code></td><td><code>test_update_batch_analysis</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>75</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestCalcPnl</code></td><td><code>test_long_profit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>76</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestCalcPnl</code></td><td><code>test_long_loss</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>77</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestCalcPnl</code></td><td><code>test_short_profit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>78</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestCalcPnl</code></td><td><code>test_short_loss</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>79</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestCalcPnl</code></td><td><code>test_fees_reduce_pnl</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>80</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestCalcPnl</code></td><td><code>test_loss_capped_at_margin</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>81</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestCalcPnl</code></td><td><code>test_leverage_multiplies_position</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>82</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessPending</code></td><td><code>test_long_fills_at_entry</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>83</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessPending</code></td><td><code>test_short_fills_at_entry</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>84</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessPending</code></td><td><code>test_long_not_filled_above_entry</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>85</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessPending</code></td><td><code>test_cancelled_after_30_min</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>86</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessPending</code></td><td><code>test_not_cancelled_before_30_min</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>87</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessPending</code></td><td><code>test_broadcast_on_fill</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>88</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessPending</code></td><td><code>test_broadcast_on_cancel</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>89</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessFilled</code></td><td><code>test_long_tp_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>90</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessFilled</code></td><td><code>test_long_sl_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>91</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessFilled</code></td><td><code>test_short_tp_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>92</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessFilled</code></td><td><code>test_short_sl_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>93</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessFilled</code></td><td><code>test_timeout_after_6h</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>94</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessFilled</code></td><td><code>test_skip_check_within_60s</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>95</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessFilled</code></td><td><code>test_dual_tp1_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>96</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessFilled</code></td><td><code>test_dual_tp2_hit_after_tp1</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>97</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessFilled</code></td><td><code>test_dual_sl_be_after_tp1</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>98</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessFilled</code></td><td><code>test_balance_updated_on_close</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>99</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestProcessFilled</code></td><td><code>test_broadcast_on_close</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>100</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestRecoverSingleOrder</code></td><td><code>test_recover_pending_fill</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>101</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestRecoverSingleOrder</code></td><td><code>test_recover_pending_cancel</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>102</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestRecoverSingleOrder</code></td><td><code>test_recover_filled_tp</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>103</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestRecoverSingleOrder</code></td><td><code>test_recover_filled_sl</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>104</td><td><code>test_benchmark_monitor.py</code></td><td><code>TestRecoverSingleOrder</code></td><td><code>test_recover_sl_priority_over_tp</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>105</td><td><code>test_benchmark_new.py</code></td><td><code>TestRenameModel</code></td><td><code>test_rename_success</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>106</td><td><code>test_benchmark_new.py</code></td><td><code>TestRenameModel</code></td><td><code>test_rename_duplicate_name_returns_400</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>107</td><td><code>test_benchmark_new.py</code></td><td><code>TestRenameModel</code></td><td><code>test_rename_empty_name_returns_400</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>108</td><td><code>test_benchmark_new.py</code></td><td><code>TestRenameModel</code></td><td><code>test_rename_unknown_model_returns_404</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>109</td><td><code>test_benchmark_new.py</code></td><td><code>TestDeleteModel</code></td><td><code>test_delete_model_removes_all_data</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>110</td><td><code>test_benchmark_new.py</code></td><td><code>TestDeleteModel</code></td><td><code>test_delete_unknown_model_returns_404</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>111</td><td><code>test_benchmark_new.py</code></td><td><code>TestPatchOrder</code></td><td><code>test_patch_pending_entry_price</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>112</td><td><code>test_benchmark_new.py</code></td><td><code>TestPatchOrder</code></td><td><code>test_patch_pending_confidence</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>113</td><td><code>test_benchmark_new.py</code></td><td><code>TestPatchOrder</code></td><td><code>test_patch_filled_order_description_only</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>114</td><td><code>test_benchmark_new.py</code></td><td><code>TestPatchOrder</code></td><td><code>test_patch_invalid_long_tp_below_entry</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>115</td><td><code>test_benchmark_new.py</code></td><td><code>TestPatchOrder</code></td><td><code>test_patch_unknown_order_returns_404</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>116</td><td><code>test_benchmark_new.py</code></td><td><code>TestPatchBatch</code></td><td><code>test_patch_batch_market_analysis</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>117</td><td><code>test_benchmark_new.py</code></td><td><code>TestPatchBatch</code></td><td><code>test_patch_unknown_batch_returns_404</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>118</td><td><code>test_benchmark_new.py</code></td><td><code>TestDeleteBatch</code></td><td><code>test_delete_batch_cancels_pending_orders</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>119</td><td><code>test_benchmark_new.py</code></td><td><code>TestDeleteBatch</code></td><td><code>test_delete_batch_preserves_filled_orders</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>120</td><td><code>test_benchmark_new.py</code></td><td><code>TestDeleteBatch</code></td><td><code>test_delete_unknown_batch_returns_404</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>121</td><td><code>test_benchmark_new.py</code></td><td><code>TestSourceField</code></td><td><code>test_manual_order_has_source_manual</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>122</td><td><code>test_benchmark_new.py</code></td><td><code>TestSourceField</code></td><td><code>test_orders_endpoint_returns_source_field</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>123</td><td><code>test_benchmark_new.py</code></td><td><code>TestTP2Validation</code></td><td><code>test_long_tp2_must_be_above_tp1</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>124</td><td><code>test_benchmark_new.py</code></td><td><code>TestTP2Validation</code></td><td><code>test_short_tp2_must_be_below_tp1</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>125</td><td><code>test_benchmark_new.py</code></td><td><code>TestTP2Validation</code></td><td><code>test_valid_long_tp2_accepted</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>126</td><td><code>test_benchmark_new.py</code></td><td><code>TestMarketOrderType</code></td><td><code>test_market_order_stored_correctly</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>127</td><td><code>test_benchmark_new.py</code></td><td><code>TestMarketOrderType</code></td><td><code>test_limit_order_stored_correctly</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>128</td><td><code>test_benchmark_new.py</code></td><td><code>TestLiveOrderValidation</code></td><td><code>test_order_rejected_when_price_exceeds_tp</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>129</td><td><code>test_data_api_new.py</code></td><td><code>TestTickerEndpoint</code></td><td><code>test_ticker_returns_price</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>130</td><td><code>test_data_api_new.py</code></td><td><code>TestTickerEndpoint</code></td><td><code>test_ticker_returns_timestamp</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>131</td><td><code>test_data_api_new.py</code></td><td><code>TestTickerEndpoint</code></td><td><code>test_ticker_exchange_error_returns_500</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>132</td><td><code>test_data_api_new.py</code></td><td><code>TestSymbolsEndpoint</code></td><td><code>test_symbols_returns_list</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>133</td><td><code>test_data_api_new.py</code></td><td><code>TestCandlesResample</code></td><td><code>test_5m_resampled_from_1m</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>134</td><td><code>test_data_api_new.py</code></td><td><code>TestCandlesResample</code></td><td><code>test_15m_resampled_from_1m</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>135</td><td><code>test_data_api_new.py</code></td><td><code>TestCandlesResample</code></td><td><code>test_30m_resampled_from_1m</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>136</td><td><code>test_data_api_new.py</code></td><td><code>TestCandlesResample</code></td><td><code>test_4h_resampled_from_1h</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>137</td><td><code>test_data_api_new.py</code></td><td><code>TestCandlesResample</code></td><td><code>test_1D_resampled_from_1h</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>138</td><td><code>test_data_api_new.py</code></td><td><code>TestCandlesResample</code></td><td><code>test_invalid_timeframe_returns_400</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>139</td><td><code>test_data_api_new.py</code></td><td><code>TestCandlesResample</code></td><td><code>test_resample_ohlc_correctness</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>140</td><td><code>test_data_api_new.py</code></td><td><code>TestCandlesStrategyIndicators</code></td><td><code>test_ema_trend_indicators_present</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>141</td><td><code>test_data_api_new.py</code></td><td><code>TestCandlesStrategyIndicators</code></td><td><code>test_bb_squeeze_indicators_present</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>142</td><td><code>test_data_api_new.py</code></td><td><code>TestCandlesStrategyIndicators</code></td><td><code>test_rsi_divergence_rsi_present</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>143</td><td><code>test_db.py</code></td><td><code>TestCandleOperations</code></td><td><code>test_save_and_get_candles</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>144</td><td><code>test_db.py</code></td><td><code>TestCandleOperations</code></td><td><code>test_get_candles_filters_by_range</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>145</td><td><code>test_db.py</code></td><td><code>TestCandleOperations</code></td><td><code>test_get_candles_filters_by_symbol</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>146</td><td><code>test_db.py</code></td><td><code>TestCandleOperations</code></td><td><code>test_duplicate_candles_ignored</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>147</td><td><code>test_db.py</code></td><td><code>TestCandleOperations</code></td><td><code>test_empty_result</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>148</td><td><code>test_db.py</code></td><td><code>TestBacktestRunOperations</code></td><td><code>test_save_and_get_run</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>149</td><td><code>test_db.py</code></td><td><code>TestBacktestRunOperations</code></td><td><code>test_get_nonexistent_run</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>150</td><td><code>test_db.py</code></td><td><code>TestCoinSummaryOperations</code></td><td><code>test_save_and_get_summaries</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>151</td><td><code>test_db.py</code></td><td><code>TestCoinSummaryOperations</code></td><td><code>test_empty_summaries</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>152</td><td><code>test_db.py</code></td><td><code>TestTradeOperations</code></td><td><code>test_save_and_get_trades</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>153</td><td><code>test_db.py</code></td><td><code>TestTradeOperations</code></td><td><code>test_get_trades_filters_by_symbol</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>154</td><td><code>test_db.py</code></td><td><code>TestTradeOperations</code></td><td><code>test_empty_trades</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>155</td><td><code>test_e2e_backtest.py</code></td><td><code>TestE2EBacktest</code></td><td><code>test_full_rsi_pipeline</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>156</td><td><code>test_e2e_backtest.py</code></td><td><code>TestE2EBacktest</code></td><td><code>test_full_ema_pipeline</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>157</td><td><code>test_e2e_backtest.py</code></td><td><code>TestE2EBacktest</code></td><td><code>test_full_bb_pipeline</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>158</td><td><code>test_e2e_backtest.py</code></td><td><code>TestE2EBacktest</code></td><td><code>test_summary_trade_count_matches_coin_sum</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>159</td><td><code>test_e2e_backtest.py</code></td><td><code>TestE2EBacktest</code></td><td><code>test_coin_trade_count_matches_detail</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>160</td><td><code>test_e2e_backtest.py</code></td><td><code>TestE2EBacktest</code></td><td><code>test_balance_monotonically_tracked</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='skip'><td>161</td><td><code>test_e2e_backtest.py</code></td><td><code>TestE2EBacktest</code></td><td><code>test_no_overlapping_trades</code></td><td>⏭️</td><td class='msg'></td></tr>
+<tr class='pass'><td>162</td><td><code>test_e2e_backtest.py</code></td><td><code>TestE2EBacktest</code></td><td><code>test_exit_reasons_are_valid</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>163</td><td><code>test_e2e_backtest.py</code></td><td><code>TestE2EBacktest</code></td><td><code>test_multiple_runs_are_independent</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>164</td><td><code>test_e2e_backtest.py</code></td><td><code>TestE2EBacktest</code></td><td><code>test_404_for_unknown_run</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>165</td><td><code>test_e2e_benchmark.py</code></td><td><code>TestE2EBenchmark</code></td><td><code>test_full_order_lifecycle_limit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>166</td><td><code>test_e2e_benchmark.py</code></td><td><code>TestE2EBenchmark</code></td><td><code>test_full_order_lifecycle_market</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>167</td><td><code>test_e2e_benchmark.py</code></td><td><code>TestE2EBenchmark</code></td><td><code>test_leaderboard_after_multiple_models</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>168</td><td><code>test_e2e_benchmark.py</code></td><td><code>TestE2EBenchmark</code></td><td><code>test_balance_reflects_market_order_cost</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>169</td><td><code>test_e2e_benchmark.py</code></td><td><code>TestE2EBenchmark</code></td><td><code>test_batch_deletion_flow</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>170</td><td><code>test_e2e_benchmark.py</code></td><td><code>TestE2EBenchmark</code></td><td><code>test_model_metrics_zero_when_no_closed</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>171</td><td><code>test_e2e_benchmark.py</code></td><td><code>TestE2EBenchmark</code></td><td><code>test_model_rename_then_resubmit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>172</td><td><code>test_e2e_benchmark.py</code></td><td><code>TestE2EBenchmark</code></td><td><code>test_delete_model_cleans_all</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>173</td><td><code>test_e2e_benchmark.py</code></td><td><code>TestE2EBenchmark</code></td><td><code>test_available_balance_decreases_with_orders</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>174</td><td><code>test_e2e_benchmark.py</code></td><td><code>TestE2EBenchmark</code></td><td><code>test_get_model_orders_sorted_by_created</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>175</td><td><code>test_integration_backtest.py</code></td><td><code>TestBacktestStrategyRouting</code></td><td><code>test_ema_strategy_accepted</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>176</td><td><code>test_integration_backtest.py</code></td><td><code>TestBacktestStrategyRouting</code></td><td><code>test_bb_strategy_accepted</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>177</td><td><code>test_integration_backtest.py</code></td><td><code>TestBacktestStrategyRouting</code></td><td><code>test_invalid_strategy_rejected</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>178</td><td><code>test_integration_backtest.py</code></td><td><code>TestBacktestStrategyRouting</code></td><td><code>test_default_strategy_is_rsi</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>179</td><td><code>test_integration_backtest.py</code></td><td><code>TestBacktestStrategyRouting</code></td><td><code>test_ema_summary_has_correct_fields</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>180</td><td><code>test_integration_backtest.py</code></td><td><code>TestBacktestStrategyRouting</code></td><td><code>test_bb_summary_has_correct_fields</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>181</td><td><code>test_integration_backtest.py</code></td><td><code>TestBacktestStrategyRouting</code></td><td><code>test_multi_coin_backtest</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>182</td><td><code>test_integration_backtest.py</code></td><td><code>TestBacktestStrategyRouting</code></td><td><code>test_stream_endpoint_emits_done</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>183</td><td><code>test_integration_backtest.py</code></td><td><code>TestBacktestStrategyRouting</code></td><td><code>test_stream_progress_increases</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>184</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_ema_gap_too_small_blocks</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>185</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_ema_gap_sufficient_passes</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>186</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_trapped_between_emas_blocks</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>187</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_price_outside_ema_zone_passes</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>188</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_adx_below_20_blocks</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>189</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_adx_above_20_passes</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>190</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_spike_within_cooldown_blocks</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>191</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_spike_outside_cooldown_passes</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>192</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_btc_crash_blocks_altcoin_long</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>193</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_btc_crash_does_not_block_short</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>194</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_btc_crash_does_not_block_btc_itself</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>195</td><td><code>test_risk_filters.py</code></td><td><code>TestShouldBlockSignal</code></td><td><code>test_no_btc_data_passes</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>196</td><td><code>test_risk_filters.py</code></td><td><code>TestCheckBBExpansionFilter</code></td><td><code>test_long_blocked_when_lower_band_rising</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>197</td><td><code>test_risk_filters.py</code></td><td><code>TestCheckBBExpansionFilter</code></td><td><code>test_long_allowed_when_lower_band_falling</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>198</td><td><code>test_risk_filters.py</code></td><td><code>TestCheckBBExpansionFilter</code></td><td><code>test_short_never_blocked</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>199</td><td><code>test_risk_filters.py</code></td><td><code>TestCheckBBExpansionFilter</code></td><td><code>test_insufficient_bars_passes</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>200</td><td><code>test_strategy.py</code></td><td><code>TestComputeRSI</code></td><td><code>test_rsi_returns_series</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>201</td><td><code>test_strategy.py</code></td><td><code>TestComputeRSI</code></td><td><code>test_rsi_range</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>202</td><td><code>test_strategy.py</code></td><td><code>TestComputeRSI</code></td><td><code>test_rsi_first_value_is_nan</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>203</td><td><code>test_strategy.py</code></td><td><code>TestComputeRSI</code></td><td><code>test_rsi_all_up_near_100</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>204</td><td><code>test_strategy.py</code></td><td><code>TestComputeRSI</code></td><td><code>test_rsi_all_down_near_0</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>205</td><td><code>test_strategy.py</code></td><td><code>TestFindEntrySignals</code></td><td><code>test_no_signals_on_flat_market</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>206</td><td><code>test_strategy.py</code></td><td><code>TestFindEntrySignals</code></td><td><code>test_no_signals_on_uptrend</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>207</td><td><code>test_strategy.py</code></td><td><code>TestFindEntrySignals</code></td><td><code>test_signals_have_required_fields</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>208</td><td><code>test_strategy.py</code></td><td><code>TestFindEntrySignals</code></td><td><code>test_entry_price_is_next_candle_open</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>209</td><td><code>test_strategy.py</code></td><td><code>TestFindEntrySignals</code></td><td><code>test_sl_price_below_signal_low</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>210</td><td><code>test_strategy.py</code></td><td><code>TestFindEntrySignals</code></td><td><code>test_rsi_threshold_filters</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>211</td><td><code>test_strategy.py</code></td><td><code>TestSimulateExit</code></td><td><code>test_sl_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>212</td><td><code>test_strategy.py</code></td><td><code>TestSimulateExit</code></td><td><code>test_no_sl_hit_when_price_above_sl</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>213</td><td><code>test_strategy.py</code></td><td><code>TestSimulateExit</code></td><td><code>test_tp1_by_price</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>214</td><td><code>test_strategy.py</code></td><td><code>TestSimulateExit</code></td><td><code>test_empty_candles_returns_no_data</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>215</td><td><code>test_strategy.py</code></td><td><code>TestSimulateExit</code></td><td><code>test_tp2_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>216</td><td><code>test_strategy.py</code></td><td><code>TestSimulateExit</code></td><td><code>test_be_after_tp1</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>217</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBFindEntrySignals</code></td><td><code>test_no_signals_high_volatility</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>218</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBFindEntrySignals</code></td><td><code>test_no_signals_insufficient_squeeze</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>219</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBFindEntrySignals</code></td><td><code>test_no_signals_low_volume_long</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>220</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBFindEntrySignals</code></td><td><code>test_no_signals_low_volume_short</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>221</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBFindEntrySignals</code></td><td><code>test_signals_have_required_fields</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>222</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBFindEntrySignals</code></td><td><code>test_long_sl_is_bb_midline</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>223</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBFindEntrySignals</code></td><td><code>test_short_sl_is_bb_midline</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>224</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBSimulateExit</code></td><td><code>test_long_sl_midline_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>225</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBSimulateExit</code></td><td><code>test_long_trailing_stop_activates</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>226</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBSimulateExit</code></td><td><code>test_long_trailing_updates_on_new_high</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>227</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBSimulateExit</code></td><td><code>test_short_sl_midline_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>228</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBSimulateExit</code></td><td><code>test_short_fixed_tp_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>229</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBSimulateExit</code></td><td><code>test_long_timeout</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>230</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBSimulateExit</code></td><td><code>test_short_sl_via_bb_midline</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>231</td><td><code>test_strategy_bb.py</code></td><td><code>TestBBSimulateExit</code></td><td><code>test_empty_candles_returns_no_data</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>232</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMAFindEntrySignals</code></td><td><code>test_no_signals_flat_market</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>233</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMAFindEntrySignals</code></td><td><code>test_no_signals_missing_15m</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>234</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMAFindEntrySignals</code></td><td><code>test_no_signals_below_adx_threshold</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>235</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMAFindEntrySignals</code></td><td><code>test_signals_have_required_fields</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>236</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMAFindEntrySignals</code></td><td><code>test_long_sl_below_entry</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>237</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMAFindEntrySignals</code></td><td><code>test_short_sl_above_entry</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>238</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMAFindEntrySignals</code></td><td><code>test_entry_price_is_next_candle_open</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>239</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMASimulateExit</code></td><td><code>test_long_sl_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>240</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMASimulateExit</code></td><td><code>test_long_tp1_hit_then_phase2</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>241</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMASimulateExit</code></td><td><code>test_short_sl_hit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>242</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMASimulateExit</code></td><td><code>test_short_tp1_hit_then_phase2</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>243</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMASimulateExit</code></td><td><code>test_long_be_stop_after_tp1</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>244</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMASimulateExit</code></td><td><code>test_short_be_stop_after_tp1</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>245</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMASimulateExit</code></td><td><code>test_long_ema_cross_exit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>246</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMASimulateExit</code></td><td><code>test_timeout_no_exit</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>247</td><td><code>test_strategy_ema.py</code></td><td><code>TestEMASimulateExit</code></td><td><code>test_empty_candles_returns_no_data</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>248</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseMirrolyEntry</code></td><td><code>test_longing_btc</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>249</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseMirrolyEntry</code></td><td><code>test_shorting_eth</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>250</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseMirrolyEntry</code></td><td><code>test_longing_without_now_prefix</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>251</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseMirrolyEntry</code></td><td><code>test_shorting_case_insensitive</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>252</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseMirrolyEntry</code></td><td><code>test_unknown_coin_returns_none</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>253</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseMirrolyExit</code></td><td><code>test_closed_btc_long</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>254</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseMirrolyExit</code></td><td><code>test_closed_eth_short</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>255</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseMirrolyExit</code></td><td><code>test_closed_no_side</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>256</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseMirrolyExit</code></td><td><code>test_exit_preferred_over_entry_for_closed</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>257</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseNoise</code></td><td><code>test_none_for_empty_string</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>258</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseNoise</code></td><td><code>test_none_for_plain_text</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>259</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseNoise</code></td><td><code>test_none_for_price_update</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>260</td><td><code>test_telegram_listener.py</code></td><td><code>TestParseNoise</code></td><td><code>test_none_for_random_numbers</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>261</td><td><code>test_telegram_listener.py</code></td><td><code>TestNormalizeCoin</code></td><td><code>test_lowercase_btc</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>262</td><td><code>test_telegram_listener.py</code></td><td><code>TestNormalizeCoin</code></td><td><code>test_usdt_suffix_stripped</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>263</td><td><code>test_telegram_listener.py</code></td><td><code>TestNormalizeCoin</code></td><td><code>test_none_input_returns_none</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>264</td><td><code>test_telegram_listener.py</code></td><td><code>TestNormalizeCoin</code></td><td><code>test_unknown_coin_returns_none</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>265</td><td><code>test_telegram_listener.py</code></td><td><code>TestNormalizeCoin</code></td><td><code>test_pepe_passthrough</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>266</td><td><code>test_telegram_listener.py</code></td><td><code>TestHandleEntry</code></td><td><code>test_entry_inserts_order</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>267</td><td><code>test_telegram_listener.py</code></td><td><code>TestHandleEntry</code></td><td><code>test_entry_skipped_when_no_market_price</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>268</td><td><code>test_telegram_listener.py</code></td><td><code>TestHandleEntry</code></td><td><code>test_entry_skipped_duplicate_position</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>269</td><td><code>test_telegram_listener.py</code></td><td><code>TestHandleEntry</code></td><td><code>test_entry_skipped_zero_balance</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>270</td><td><code>test_telegram_listener.py</code></td><td><code>TestHandleExit</code></td><td><code>test_exit_closes_order_and_updates_balance</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>271</td><td><code>test_telegram_listener.py</code></td><td><code>TestHandleExit</code></td><td><code>test_exit_long_profit_pnl_positive</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>272</td><td><code>test_telegram_listener.py</code></td><td><code>TestHandleExit</code></td><td><code>test_exit_short_profit_pnl_positive</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>273</td><td><code>test_telegram_listener.py</code></td><td><code>TestHandleExit</code></td><td><code>test_exit_no_open_position_is_noop</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>274</td><td><code>test_telegram_listener.py</code></td><td><code>TestHandleExit</code></td><td><code>test_exit_skipped_when_no_market_price</code></td><td>✅</td><td class='msg'></td></tr>
+</tbody>
+    </table>
+
+
+
+    <div class="export-note">
+      💡 <strong>스프레드시트 내보내기</strong>: 동일 타임스탬프의 <code>.csv</code> 파일을
+      Google Sheets 또는 Excel에서 열거나 가져오기(Import)하면 됩니다.
+    </div>
+    </body>
+    </html>
