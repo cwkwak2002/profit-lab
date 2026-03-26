@@ -1,96 +1,85 @@
-# Supercycl 홍보 영상 제작 기록
+# ProfitLab 홍보 영상 제작 기록
 
-| 항목 | 내용 |
-|------|------|
-| **영상 파일** | `supercycl-promo-27s.mp4` |
-| **총 길이** | ~27초 (800프레임 @ 30fps) |
-| **해상도** | 1080 × 1920 (세로형 — 쇼츠/릴스 최적화) |
-| **제작 도구** | Remotion 4.0 (React 기반 영상 렌더링) |
-| **최종 수정일** | 2026-03-26 |
+## 영상 목록
+
+| 파일 | 비율 | 해상도 | 길이 | 용도 |
+|------|------|--------|------|------|
+| `profitlab-promo-v1-4x5.mp4` | 4:5 | 1080×1350 | ~26초 (800프레임) | Instagram 피드 (권장) |
+| — | 9:16 | 1080×1920 | ~26초 (800프레임) | Reels / TikTok / Shorts |
+
+> **현재 권장 비율**: 4:5 (1080×1350) — 세로형이지만 덜 길어서 피드에 적합
 
 ---
 
 ## 1. 영상 컨셉
 
 ### 브랜드 방향
-Supercycl은 AI 모델들이 실전 거래를 경쟁하고, 검증된 전략으로 수익을 내는 **차세대 트레이딩 플랫폼**이다.
-홍보 영상은 이 두 가지 핵심 가치를 직관적으로 전달하는 것을 목표로 설계했다.
-
-- **AI 벤치마크**: 여러 AI 모델이 실제 주문을 내고 성과로 순위를 겨룬다
-- **전략 백테스트**: 수백 번의 과거 거래 데이터로 승률을 검증한 전략을 제공한다
+ProfitLab은 AI가 시장을 분석하고 최적 타이밍에 자동 실행하는 스마트 트레이딩 플랫폼이다.
+영상은 **픽셀 레트로 + 사이버펑크** 미감으로 기술력과 신뢰감을 전달한다.
 
 ### 비주얼 컨셉
-- **컬러**: `#060610` 딥 다크 배경 + `#37FF00` 네온 그린 포인트
-- **타이포**: Exo 2 ExtraBold Italic (브랜드명) + IBM Plex Sans (본문)
-- **분위기**: 미래적, 기술적, 신뢰감 — 블룸버그 터미널 + 사이버펑크 미감
+- **컬러**: `#0a0a1a` 딥 다크 배경 + `#ffe000` 노란 포인트 + `#00eeff` 사이안 액센트
+- **타이포**: Press Start 2P (픽셀 헤드라인) + JetBrains Mono (수치/본문)
+- **배경 효과**: 픽셀 그리드 오버레이 + 스캔라인 + 대기 glow (상단 노란/하단 파란)
+- **분위기**: 픽셀 아트 레트로 게임 + 트레이딩 터미널
 
 ---
 
 ## 2. 스토리라인 구성
 
-총 7개 씬으로 구성되며, 각 씬은 fade-out으로 자연스럽게 전환된다.
+총 6개 씬으로 구성되며, 각 씬은 fade-out으로 자연스럽게 전환된다.
 
 | # | 씬 | 프레임 | 시간 | 내용 |
 |---|----|----|------|------|
-| 1 | **Logo Reveal** | 0 – 80 | 0 – 2.7s | 브랜드 심볼 + SUPERCYCL 텍스트 + 태그라인 등장 |
-| 2 | **Connected Exchanges** | 90 – 210 | 3 – 7s | 5개 거래소 로고 배지 순차 등장 |
-| 3 | **AI Model Benchmark** | 220 – 380 | 7.3 – 12.7s | AI 주문 카드(PENDING→FILLED→CLOSED) → 리더보드 전환 |
-| 4 | **Strategy Backtest** | 390 – 550 | 13 – 18.3s | RSI DIV / EMA TREND / BB SQUEEZE 전략 카드 + 승률 바 |
-| 5 | **Proven Results** | 560 – 680 | 18.7 – 22.7s | 카운트업 숫자(승률 68% / 557 trades / +38%) + 에퀴티 커브 |
-| 6 | **Why Supercycl?** | 690 – 760 | 23 – 25.3s | 5 거래소 / 1 지갑 / ∞ 수익 StatCard |
-| 7 | **CTA** | 770 – 800 | 25.7 – 26.7s | 로고 + SUPERCYCL + Start Trading Today + app.supercycl.io |
+| 1 | **Logo Reveal** | 0 – 90 | 0 – 3s | 픽셀 아트 로고 + PROFIT-LAB + AI-Powered Smart Trading |
+| 2 | **Smart Trading** | 100 – 260 | 3.3 – 8.7s | 실시간 거래 시그널 4개 + 통계 배지 3개 |
+| 3 | **AI Benchmark** | 270 – 430 | 9 – 14.3s | AI 주문 카드 → 리더보드 전환 |
+| 4 | **Strategy Backtest** | 440 – 600 | 14.7 – 20s | 전략 카드 3종 + 승률 바 애니메이션 |
+| 5 | **Proven Results** | 610 – 730 | 20.3 – 24.3s | 카운트업 통계 3종 + 에퀴티 커브 |
+| 6 | **CTA** | 740 – 800 | 24.7 – 26.7s | 픽셀 로고 pulse glow + profit-lab.io |
 
 ---
 
 ## 3. 씬별 상세 내용
 
 ### Scene 1 — Logo Reveal
-- 브랜드 심볼 이미지 (배경 제거된 투명 PNG) spring 애니메이션으로 등장
-- "SUPERCYCL" 텍스트 네온 그린 glow 효과
-- 하단 "Trade Everywhere. Win Together." 태그라인 fade-in
+- favicon.svg 픽셀 패턴을 React div로 재현한 8×8 픽셀 아트 로고
+- "PROFIT-LAB" 노란 glow 텍스트 (Press Start 2P)
+- 사이안 divider 라인 애니메이션
+- "AI-Powered Smart Trading" 서브타이틀 fade-in
 
-### Scene 2 — Connected Exchanges
-- "One Platform. **5 Exchanges.**" 헤드라인
-- OKX / Gate / Bybit / Bitget / Hyperliquid 로고 배지 stagger 등장 (2×2 그리드 + 중앙 1개)
-- "+ More partnerships coming" 힌트 텍스트
+### Scene 2 — Smart Trading
+- "AUTO EXECUTE. MAX PROFIT." 헤드라인
+- 4개 거래 시그널 카드 (BTC/ETH/SOL/BNB) — LONG/SHORT 배지 + 진입가→청산가 + P&L
+- 통계 배지 3개: TOTAL TRADES 1,247 / WIN RATE 68.4% / AVG RETURN +4.5%
 
 ### Scene 3 — AI Model Benchmark
 **Phase 1 (frame 0–66)**: 실시간 주문 카드
 - GPT-4o / Claude 3.5 / Gemini Pro / DeepSeek R2 주문 카드
-- 각 카드: 모델명 + 코인페어 + LONG/SHORT 배지 + P&L + 상태(PENDING/FILLED/CLOSED)
 - 상태별 컬러: CLOSED=녹색, FILLED=노랑, PENDING=회색
 
-**Phase 2 (frame 80+)**: 리더보드 — fade-in 전환 (슬라이드 없음)
+**Phase 2 (frame 80+)**: 리더보드 fade-in 전환
 - 랭킹 배지 + 모델명 + 승률 + 누적 P&L
-- 1위 강조 (네온 그린 하이라이트)
+- 1위 네온 그린 하이라이트
 
 ### Scene 4 — Strategy Backtest
-profit-lab 실제 전략 3종을 카드로 시각화:
 
-| 전략 | 색상 | 승률 | 누적수익 | 거래수 |
-|------|------|------|---------|--------|
+| 전략 | 색상 | 승률 | 수익 | 거래수 |
+|------|------|------|------|--------|
 | RSI Divergence | 네온 그린 | 68% | +38.4% | 214 |
 | EMA Trend | 블루 | 61% | +27.1% | 187 |
 | BB Squeeze | 퍼플 | 57% | +19.8% | 156 |
 
-- 각 카드: 전략 태그 + 설명 + 승률 바 애니메이션
-
 ### Scene 5 — Proven Results
-- 3개 BigStat 카드 (scale spring 애니메이션):
-  - **68%** Win Rate (avg across strategies)
-  - **+557** Trades Backtested
-  - **+38%** Best Return (RSI Divergence)
-- 에퀴티 커브 SVG 드로잉 애니메이션 (우상향 곡선 + 면적 그라디언트)
+- **68%** Win Rate (avg across strategies)
+- **+557** Trades Backtested
+- **+38%** Best Return (RSI Divergence)
+- 에퀴티 커브 SVG 드로잉 애니메이션
 
-### Scene 6 — Why Supercycl?
-- **5** Exchanges Connected — Best prices across all markets
-- **1** Wallet Required — Start trading in seconds
-- **∞** Your Rewards — Keep everything you earn
-
-### Scene 7 — CTA (엔딩)
-- 브랜드 심볼 + SUPERCYCL pulse glow 애니메이션
-- "Start Trading Today"
-- `app.supercycl.io` URL 필
+### Scene 6 — CTA
+- 픽셀 로고 pulse glow (Math.sin 기반 숨쉬기)
+- "Start Trading Smarter Today"
+- `profit-lab.io` URL 필
 
 ---
 
@@ -100,37 +89,38 @@ profit-lab 실제 전략 3종을 카드로 시각화:
 ```
 test_remotion/
 ├── src/
-│   ├── Root.tsx                          # Composition 등록 (800프레임)
-│   └── projects/supercycl/promo-10s/
-│       ├── Promo.tsx                     # 메인 — 7개 Sequence 조합
-│       ├── constants.ts                  # 컬러, 거래소, 씬 타이밍
-│       ├── fonts.ts                      # Exo2 + IBM Plex Sans
+│   ├── Root.tsx                              # Composition 등록
+│   └── projects/profitlab/promo-v1/
+│       ├── Promo.tsx                         # 메인 — Background + 6개 Sequence
+│       ├── constants.ts                      # COLORS, SCENES 타이밍
+│       ├── fonts.ts                          # Press Start 2P + JetBrains Mono
 │       └── scenes/
-│           ├── SceneLogo.tsx
-│           ├── SceneExchanges.tsx
-│           ├── SceneBenchmark.tsx
-│           ├── SceneBacktest.tsx
-│           ├── SceneWinRate.tsx
-│           ├── SceneValueProps.tsx
-│           └── SceneCTA.tsx
-└── public/logos/
-    ├── supercycl_nobg.png                # 배경 제거 로고 (Python PIL)
-    ├── okx.png / gate.png / bybit.png
-    ├── bitget.png / hyper.png
+│           ├── SceneLogo.tsx                 # 픽셀 아트 로고
+│           ├── SceneSmartTrade.tsx           # 거래 시그널 + 통계
+│           ├── SceneBenchmark.tsx            # AI 주문 카드 + 리더보드
+│           ├── SceneBacktest.tsx             # 전략 카드
+│           ├── SceneResults.tsx              # 카운트업 + 에퀴티 커브
+│           └── SceneCTA.tsx                  # 엔딩
 ```
 
+### Remotion Composition 등록 (Root.tsx)
+
+| Composition ID | 비율 | 해상도 | 프레임 |
+|----------------|------|--------|--------|
+| `ProfitLabPromoV1` | 9:16 | 1080×1920 | 800 |
+| `ProfitLabPromoV1-4x5` | 4:5 | 1080×1350 | 800 |
+
 ### 씬 타이밍 수정 방법
-`constants.ts`의 `SCENES` 객체에서 각 씬의 `from`(시작 프레임)과 `duration`(길이)을 조정:
+`constants.ts`의 `SCENES` 객체에서 조정:
 
 ```ts
 export const SCENES = {
-  logo:       { from: 0,   duration: 80  },
-  exchanges:  { from: 90,  duration: 120 },
-  benchmark:  { from: 220, duration: 160 },
-  backtest:   { from: 390, duration: 160 },
-  winRate:    { from: 560, duration: 120 },  // 4초
-  valueProps: { from: 690, duration: 70  },
-  cta:        { from: 770, duration: 30  },
+  logo:       { from: 0,   duration: 90  },
+  smartTrade: { from: 100, duration: 160 },
+  benchmark:  { from: 270, duration: 160 },
+  backtest:   { from: 440, duration: 160 },
+  results:    { from: 610, duration: 120 },
+  cta:        { from: 740, duration: 60  },
 } as const;
 ```
 
@@ -141,16 +131,8 @@ export const SCENES = {
 - **interpolate()**: opacity, translateX/Y, scale 전환
 - **카운트업**: easing out cubic으로 숫자 증가 효과
 - **SVG path 드로잉**: progress 기반 점 슬라이싱으로 에퀴티 커브 실시간 그리기
-- **pulse glow**: `Math.sin(frame * 0.15)` 기반 CTA 로고 숨쉬기 효과
-
-### 로고 배경 제거
-```python
-# Python PIL + NumPy로 검은 배경 투명 처리
-darkness = R + G + B
-alpha = where(darkness < 80, 0,
-        where(darkness > 180, 255,
-        (darkness - 80) / 100 * 255))
-```
+- **pulse glow**: `Math.sin(frame * 0.12)` 기반 CTA 로고 숨쉬기 효과
+- **픽셀 아트 로고**: 8×8 grid를 React div 배열로 렌더링
 
 ---
 
@@ -164,32 +146,30 @@ alpha = where(darkness < 80, 0,
   - BB Squeeze: period=20, min squeeze bars=15
 
 - **벤치마크 파라미터**: `backend/tests/fixtures/v1/benchmark_params.json`
-  - 주문 타임아웃: 30분
-  - 포지션 타임아웃: 360분
   - 상태 전이: PENDING → FILLED → CLOSED
 
 - **전략 목록**: `backend/strategy/` (rsi_divergence.py, ema_trend.py, bb_squeeze.py)
 
 ---
 
-## 6. 렌더링 및 배포
+## 6. 렌더링
 
 ```bash
-# 렌더링
 cd /Users/myungjookim/_claude26/test_remotion
-npx remotion render SupercyclPromo10s out/supercycl-promo-27s.mp4
 
-# 로컬 재생 호환 변환 (yuv420p + faststart)
-ffmpeg -i out/supercycl-promo-27s.mp4 \
-  -c:v libx264 -profile:v baseline -pix_fmt yuv420p \
-  -movflags +faststart -c:a aac \
-  /path/to/marketingvideo/supercycl-promo-27s.mp4
+# 4:5 버전 렌더링 (권장)
+npx remotion render ProfitLabPromoV1-4x5 \
+  /Users/myungjookim/_claude26/profit-lab/marketingvideo/profitlab-promo-v1-4x5.mp4
+
+# 9:16 버전 렌더링
+npx remotion render ProfitLabPromoV1 \
+  /Users/myungjookim/_claude26/profit-lab/marketingvideo/profitlab-promo-v1.mp4
 ```
 
 | 항목 | 값 |
 |------|---|
-| Codec | H.264 baseline, yuv420p |
-| 파일 크기 | ~2.2 MB |
+| Codec | H.264 (Remotion 기본) |
+| 파일 크기 | ~3.8 MB (4:5 기준) |
 | 총 프레임 | 800 (30fps) |
 | 렌더링 소요 | ~60초 |
 
@@ -197,24 +177,14 @@ ffmpeg -i out/supercycl-promo-27s.mp4 \
 
 ## 7. 동료를 위한 환경 세팅
 
-### 사전 준비
 ```bash
-# 1. Remotion 스캐폴드 생성
-npm create video@latest
-# → TypeScript 선택, 프로젝트명 test_remotion
-
-# 2. remotion-best-practices skill 설치 (Claude Code)
-# Claude Code에서: /install-skill remotion-best-practices
-
-# 3. 의존성 설치
+# 1. 의존성 설치
 cd test_remotion && npm install
 
-# 4. 소스 복사
-# 이 저장소의 test_remotion/src/ 및 test_remotion/public/ 폴더를 덮어쓰기
-
-# 5. 개발 서버 실행
+# 2. 개발 서버 실행
 npx remotion studio
 # → http://localhost:3000 에서 실시간 미리보기
+# → 사이드바에서 ProfitLabPromoV1 또는 ProfitLabPromoV1-4x5 선택
 ```
 
 ### 씬 수정 가이드
@@ -223,18 +193,11 @@ npx remotion studio
 |-----------|------|-----------|
 | 씬 길이/순서 | `constants.ts` | `SCENES` 객체 |
 | 총 영상 길이 | `Root.tsx` | `durationInFrames` |
-| 주문 카드 데이터 | `SceneBenchmark.tsx` | `OrderCard` props |
+| 배경 컬러/glow | `constants.ts` | `COLORS` 객체 |
+| 거래 시그널 데이터 | `SceneSmartTrade.tsx` | `TradeSignal` props |
+| AI 주문 카드 데이터 | `SceneBenchmark.tsx` | `OrderCard` props |
 | 전략 카드 데이터 | `SceneBacktest.tsx` | `StrategyCard` props |
-| 승률/수익 숫자 | `SceneWinRate.tsx` | `CountUp` target 값 |
-| 브랜드 컬러 | `constants.ts` | `COLORS` 객체 |
-
-### 알려진 이슈
-
-| 이슈 | 원인 | 해결 |
-|------|------|------|
-| 로컬에서 영상 재생 안 됨 | yuvj420p pixel format | FFmpeg으로 yuv420p + faststart 재인코딩 |
-| 거래소 로고 안 보임 | `public/logos/` 에 파일 없음 | `cp src/logos/*.png public/logos/` |
-| React 타입 오류 | `React` import 누락 | `import React from 'react'` 추가 |
+| 성과 수치 | `SceneResults.tsx` | `CountUp` target 값 |
 
 ---
 
@@ -245,18 +208,15 @@ npx remotion studio
 렌더링(~60초)을 거치지 않고 **파일 저장 즉시 브라우저에서 실시간 확인**할 수 있다.
 
 ```bash
-cd test_remotion
-npx remotion studio
+cd test_remotion && npx remotion studio
 # → http://localhost:3000 열어두기
 ```
 
-파일을 저장하면 스튜디오에 즉시 반영된다. `top`, `padding`, `fontSize` 같은 수치 조정은 스튜디오를 보면서 직접 수정하는 것이 가장 빠르다.
+파일을 저장하면 스튜디오에 즉시 반영된다. `padding`, `fontSize` 같은 수치 조정은 스튜디오를 보면서 직접 수정하는 것이 가장 빠르다.
 
 ---
 
 ### 작업 전 반드시: git checkpoint 저장
-
-수정을 시작하기 전에 현재 상태를 커밋해두면 언제든 되돌릴 수 있다.
 
 ```bash
 git add -A && git commit -m "checkpoint: before layout fix"
@@ -264,9 +224,8 @@ git add -A && git commit -m "checkpoint: before layout fix"
 
 잘못 수정했을 때:
 ```bash
-git log --oneline        # 커밋 목록 확인
-git checkout <커밋해시> -- src/projects/supercycl/promo-10s/scenes/SceneBenchmark.tsx
-# 특정 파일만 이전 버전으로 복원
+git log --oneline
+git checkout <커밋해시> -- src/projects/profitlab/promo-v1/scenes/SceneBenchmark.tsx
 ```
 
 ---
@@ -276,19 +235,25 @@ git checkout <커밋해시> -- src/projects/supercycl/promo-10s/scenes/SceneBenc
 | 작업 종류 | 방법 |
 |-----------|------|
 | 씬 구조 변경, 새 컴포넌트 추가, 애니메이션 로직 | Claude에게 요청 |
-| `top`, `padding`, `fontSize` 등 수치 미세 조정 | Studio 열고 직접 수정 |
-| 최종 렌더링 + FFmpeg 변환 + 파일 복사 | Claude에게 요청 |
+| `padding`, `fontSize` 등 수치 미세 조정 | Studio 열고 직접 수정 |
+| 최종 렌더링 + 파일 복사 | Claude에게 요청 |
 
 ---
 
-### 레이아웃 수치 기준 (1080 × 1920px)
+### 레이아웃 수치 기준 (4:5 기준 1080×1350px)
 
-세로 위치를 잡을 때 참고:
+| 위치 | 방법 | 비고 |
+|------|------|------|
+| 화면 중앙 | `justifyContent: center` | 기본값 |
+| 중앙보다 위 | `padding: '0 72px 200px'` | paddingBottom으로 위로 이동 |
+| 좌우 여백 | `padding: '0 72px'` | 모든 씬 공통 |
 
-| 위치 | paddingTop 기준 | 비고 |
-|------|----------------|------|
-| 화면 상단 | `160px` | 씬 3, 4 헤더 고정 위치 |
-| 화면 중앙 | `justifyContent: center` | 씬 1, 2, 5 기본값 |
-| 중앙보다 위 | `padding: '0 72px 200px'` | center + paddingBottom으로 위로 이동 |
+---
 
-좌우 여백은 모든 씬 공통으로 `padding: '0 72px'` 사용.
+## 변경 이력
+
+| 날짜 | 내용 |
+|------|------|
+| 2026-03-26 | ProfitLab promo-v1 신규 제작 (픽셀 레트로 디자인, 6개 씬) |
+| 2026-03-26 | 4:5 비율 추가 (ProfitLabPromoV1-4x5), 9:16 대비 Instagram 피드 최적화 |
+| 2026-03-26 | 서브타이틀 및 카드 내 폰트 크기 전면 확대 (가독성 개선) |
