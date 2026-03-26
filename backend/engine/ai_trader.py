@@ -1,5 +1,5 @@
 """Automated AI trader: fetches Bybit Futures market data, asks Claude for
-recommendations, and submits orders to the benchmark system every 5 minutes."""
+recommendations, and submits orders to the benchmark system every 30 minutes."""
 
 import asyncio
 import json
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 MODEL_NAME = "Claude Sonnet 4 (Calico)"
 CLAUDE_MODEL = "claude-sonnet-4-20250514"
-INTERVAL_SEC = 300  # 5 minutes
+INTERVAL_SEC = 1800  # 30 minutes
 TARGET_COIN_COUNT = 30
 
 LOG_DIR = Path(__file__).parent.parent.parent / "data" / "ai_trader_logs"

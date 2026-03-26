@@ -17,25 +17,29 @@ import {
 import type { Trade } from "@/lib/api";
 
 const reasonStyleMap: Record<string, string> = {
-  SL: "bg-[#f85149]/15 text-[#f85149] border-transparent",
-  TP2: "bg-[#3fb950]/15 text-[#3fb950] border-transparent",
+  SL:       "bg-[#f85149]/15 text-[#f85149] border-transparent",
+  TP2:      "bg-[#3fb950]/15 text-[#3fb950] border-transparent",
   FIXED_TP: "bg-[#3fb950]/15 text-[#3fb950] border-transparent",
-  BE: "bg-[#d29922]/15 text-[#d29922] border-transparent",
-  EMA_CROSS: "bg-[#a371f7]/15 text-[#a371f7] border-transparent",
-  TRAIL: "bg-[#3fb950]/15 text-[#3fb950] border-transparent",
-  TIMEOUT: "bg-transparent text-muted-foreground border-border",
-  NO_DATA: "bg-transparent text-muted-foreground border-border",
+  BE:       "bg-[#d29922]/15 text-[#d29922] border-transparent",
+  EMA_CROSS:"bg-[#a371f7]/15 text-[#a371f7] border-transparent",
+  TRAIL:    "bg-[#3fb950]/15 text-[#3fb950] border-transparent",
+  ST_FLIP:  "bg-[#a371f7]/15 text-[#a371f7] border-transparent",
+  UT_FLIP:  "bg-[#a371f7]/15 text-[#a371f7] border-transparent",
+  TIMEOUT:  "bg-transparent text-[#8888aa] border-border",
+  NO_DATA:  "bg-transparent text-[#8888aa] border-border",
 };
 
 const reasonLabels: Record<string, string> = {
-  SL: "SL",
-  TP2: "TP1+TP2",
+  SL:       "SL",
+  TP2:      "TP1+TP2",
   FIXED_TP: "TP +3.5%",
-  BE: "TP1+BE",
-  EMA_CROSS: "TP1+EMA Cross",
-  TRAIL: "TRAIL",
-  TIMEOUT: "TIMEOUT",
-  NO_DATA: "NO_DATA",
+  BE:       "TP1+BE",
+  EMA_CROSS:"TP1+EMA Cross",
+  TRAIL:    "TRAIL",
+  ST_FLIP:  "TP1+ST Flip",
+  UT_FLIP:  "TP1+UT Flip",
+  TIMEOUT:  "TIMEOUT",
+  NO_DATA:  "NO_DATA",
 };
 
 const riskReasonLabels: Record<string, string> = {
@@ -58,6 +62,29 @@ const columns: ColumnDef<Trade>[] = [
     accessorKey: "entry_time",
     header: "진입시점",
     cell: ({ row }) => row.original.entry_time,
+  },
+  {
+    accessorKey: "side",
+    header: "Side",
+    cell: ({ row }) => {
+      const side = row.original.side;
+      if (!side) return "—";
+      const isLong = side === "long";
+      return (
+        <span style={{
+          display: "inline-block",
+          padding: "1px 8px",
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: "0.05em",
+          color: isLong ? "#00ff7f" : "#ff3333",
+          background: isLong ? "rgba(0,255,127,0.12)" : "rgba(255,51,51,0.12)",
+          border: `1px solid ${isLong ? "rgba(0,255,127,0.3)" : "rgba(255,51,51,0.3)"}`,
+        }}>
+          {isLong ? "LONG" : "SHORT"}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "entry_price",
@@ -166,7 +193,7 @@ export function TradeTable({ data, onRowClick, highlightClickable }: Props) {
           {table.getHeaderGroups().map((hg) => (
             <TableRow key={hg.id}>
               {hg.headers.map((header) => (
-                <TableHead key={header.id} className="whitespace-nowrap text-xs">
+                <TableHead key={header.id} className="whitespace-nowrap text-xs" style={{ color: "#00eeff", fontFamily: "monospace", letterSpacing: "0.05em" }}>
                   {flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
               ))}

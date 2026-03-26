@@ -6,6 +6,8 @@ from config import (
     DEFAULT_SEED, DEFAULT_LEVERAGE, TAKER_FEE, SLIPPAGE,
     TP1_CLOSE_RATIO,
     EMA_TP1_CLOSE_RATIO,
+    ST_TP1_CLOSE_RATIO,
+    UTBOT_TP1_CLOSE_RATIO,
 )
 from strategy.rsi_divergence import (
     find_entry_signals as rsi_find_entries,
@@ -19,6 +21,14 @@ from strategy.ema_trend import (
 from strategy.bb_squeeze import (
     find_entry_signals as sqz_find_entries,
     simulate_exit_on_1m as sqz_simulate_exit,
+)
+from strategy.supertrend import (
+    find_entry_signals as st_find_entries,
+    simulate_exit_on_1m as st_simulate_exit,
+)
+from strategy.utbot import (
+    find_entry_signals as utbot_find_entries,
+    simulate_exit_on_1m as utbot_simulate_exit,
 )
 from strategy.risk_filters import prepare_risk_context, should_block_signal
 
@@ -46,6 +56,12 @@ def run_backtest_for_coin(
             return _empty_result(symbol, seed)
         signals = sqz_find_entries(df_15m)
         tp1_close_ratio = TP1_CLOSE_RATIO
+    elif strategy == "supertrend":
+        signals = st_find_entries(df_1h)
+        tp1_close_ratio = ST_TP1_CLOSE_RATIO
+    elif strategy == "utbot":
+        signals = utbot_find_entries(df_1h)
+        tp1_close_ratio = UTBOT_TP1_CLOSE_RATIO
     else:
         signals = rsi_find_entries(df_1h)
         tp1_close_ratio = TP1_CLOSE_RATIO
@@ -86,6 +102,9 @@ def run_backtest_for_coin(
             btc_df_1h=btc_df_1h, symbol=symbol,
         )
         signals = _apply_risk_filter(signals, should_block_rsi_signal, rsi_risk_ctx)
+    elif strategy in ("supertrend", "utbot"):
+        # These strategies use their own dynamic trailing stop; skip shared risk filters
+        pass
     else:
         risk_ctx = prepare_risk_context(
             df_1h=df_1h, df_15m=df_15m, df_1m=df_1m,
@@ -155,6 +174,18 @@ def run_backtest_for_coin(
             exit_result = sqz_simulate_exit(
                 position_1m, entry_price, sl_price, entry_time, side=side,
             )
+        elif strategy == "supertrend":
+            exit_result = st_simulate_exit(
+                position_1m, entry_price, sl_price, entry_time,
+                tp1_target=signal.get("tp1_target", 0.0),
+                df_1h=df_1h, side=side,
+            )
+        elif strategy == "utbot":
+            exit_result = utbot_simulate_exit(
+                position_1m, entry_price, sl_price, entry_time,
+                tp1_target=signal.get("tp1_target", 0.0),
+                df_1h=df_1h, side=side,
+            )
         else:
             exit_result = rsi_simulate_exit(
                 position_1m, entry_price, sl_price, entry_time,
@@ -167,7 +198,7 @@ def run_backtest_for_coin(
         # Calculate P&L (direction-aware)
         is_long = side == "long"
 
-        if exit_result.get("tp1_hit", False) and exit_reason in ("TP2", "BE", "TIMEOUT", "EMA_CROSS", "TRAIL"):
+        if exit_result.get("tp1_hit", False) and exit_reason in ("TP2", "BE", "TIMEOUT", "EMA_CROSS", "TRAIL", "ST_FLIP", "UT_FLIP"):
             tp1_price_raw = exit_result["tp1_price"]
             tp1_price = tp1_price_raw * (1 - SLIPPAGE if is_long else 1 + SLIPPAGE)
 

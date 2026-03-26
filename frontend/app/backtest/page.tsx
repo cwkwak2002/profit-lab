@@ -39,9 +39,11 @@ const ALL_COINS = [
 const DEFAULT_COINS = ALL_COINS.slice(0, 5);
 
 const STRATEGIES = [
-  { id: "rsi_divergence", name: "RSI DIV", fullName: "RSI Divergence", desc: "RSI 상승 다이버전스 + BB 회귀 + W-Pattern 확인 후 반전 매수 (Long Only)" },
-  { id: "ema_trend",      name: "EMA TREND", fullName: "EMA Trend",  desc: "1H EMA 정배열/역배열 추세 확인 후 15m 눌림목/반등 진입 (Long & Short)" },
-  { id: "bb_squeeze",     name: "BB SQUEEZE", fullName: "BB Squeeze", desc: "볼린저 밴드 응축 후 거래량 동반 돌파 시 브레이크아웃 진입 (Long & Short)" },
+  { id: "rsi_divergence", name: "RSI DIV",    fullName: "RSI Divergence", desc: "RSI 상승 다이버전스 + BB 회귀 + W-Pattern 확인 후 반전 매수 (Long Only)" },
+  { id: "ema_trend",      name: "EMA TREND",  fullName: "EMA Trend",      desc: "1H EMA 정배열/역배열 추세 확인 후 15m 눌림목/반등 진입 (Long & Short)" },
+  { id: "bb_squeeze",     name: "BB SQUEEZE", fullName: "BB Squeeze",     desc: "볼린저 밴드 응축 후 거래량 동반 돌파 시 브레이크아웃 진입 (Long & Short)" },
+  { id: "supertrend",     name: "SUPERTREND",  fullName: "SuperTrend",  desc: "(TradingView) ATR(Average True Range) 기반의 트레일링 스톱 지표를 이용한 자동매매 전략" },
+  { id: "utbot",          name: "UT BOT",      fullName: "UT Bot",      desc: "(TradingView) 이 전략은 QuantNomad에서 개발한 UT Bot 지표에 기반하고, 모바일 정지 (mobile stop loss) 의 사고를 결합한다." },
 ] as const;
 
 /* ── Inner page ─────────────────────────────────────────────────────────── */
@@ -386,9 +388,63 @@ function BacktestPageInner() {
                   <li>BTC 1H 수익률 -5% 이하 → 알트코인 Long 진입 금지</li>
                 </RuleBlock>
               </>
+            ) : strategy === "supertrend" ? (
+              <>
+                <RuleBlock title="지표 개요">
+                  <li>SuperTrend는 ATR 기반의 트레일링 스탑 지표 중 가장 널리 사용되는 것 중 하나</li>
+                  <li>ATR 계산 방식: 기본값 RMA(Wilder's), 대안으로 SMA 사용 가능</li>
+                  <li>두 파라미터로 구성 — <b>기간(Period): 10</b>, <b>승수(Multiplier): 3.0</b></li>
+                  <li>ATR은 가격 변동성의 정도를 신호화하며 슈퍼트렌드 계산의 핵심 역할</li>
+                </RuleBlock>
+                <RuleBlock title="진입 조건 (1H 봉)">
+                  <li><span style={{ color: PX.green }}>Long</span> — SuperTrend 방향이 -1 → +1 전환 (매수 신호 발생)</li>
+                  <li><span style={{ color: PX.red }}>Short</span> — SuperTrend 방향이 +1 → -1 전환 (매도 신호 발생)</li>
+                  <li>전환 봉 마감 후, 다음 봉 시가에 진입</li>
+                </RuleBlock>
+                <RuleBlock title="매매 신호 원리">
+                  <li>지표가 종가 아래에 위치(지지선) → 매수 신호 (초록색)</li>
+                  <li>지표가 종가 위에 위치(저항선) → 매도 신호 (빨간색)</li>
+                  <li>하락 → 상승 추세 전환을 시사하며, 상승 → 하락 전환 시 색상이 빨간색으로 변경</li>
+                </RuleBlock>
+                <RuleBlock title="청산 규칙 (1m 봉)">
+                  <li><span style={{ color: PX.red }}>SL</span> — 1H SuperTrend 라인 이탈 (동적 트레일링 스탑)</li>
+                  <li><span style={{ color: PX.cyan }}>TP1 (50%)</span> — 손익비 1.5배 도달 → 50% 청산, 잔여 본절 스탑 이동</li>
+                  <li><span style={{ color: "#a371f7" }}>ST Flip</span> — SuperTrend 방향 역전환 시 전량 청산</li>
+                </RuleBlock>
+                <RuleBlock title="적용 범위 및 주의사항">
+                  <li>주식, 선물, 외환, 암호화폐 시장 모두 활용 가능</li>
+                  <li>일봉, 주봉, 시간봉 등 다양한 타임프레임에서 사용 가능</li>
+                  <li>횡보장(Sideways Market)에서는 잦은 위험 신호로 효과가 제한적</li>
+                </RuleBlock>
+              </>
+            ) : strategy === "utbot" ? (
+              <>
+                <RuleBlock title="지표 개요">
+                  <li>최초 <b>Yo_adriiiiaan</b>이 개발, 원본 아이디어는 <b>HPotter</b>의 것</li>
+                  <li><b>QuantNomad</b>이 코드 정리 및 Pine Script v4로 변환하여 전략화</li>
+                  <li>헤이킨아시 캔들 기반 신호 전환 옵션 포함 (실캔들 사용 권장)</li>
+                  <li>파라미터 — <b>Key Value(감도): 1</b>, <b>ATR 기간: 10</b></li>
+                </RuleBlock>
+                <RuleBlock title="트레일링 스탑 계산 (래칫 로직)">
+                  <li>nLoss = Key Value × ATR(기간)</li>
+                  <li>상승 연속: stop = max(이전 stop, close − nLoss) ← 하락 금지</li>
+                  <li>하락 연속: stop = min(이전 stop, close + nLoss) ← 상승 금지</li>
+                  <li>방향 전환 시 새로운 stop 리셋</li>
+                </RuleBlock>
+                <RuleBlock title="진입 조건 (1H 봉)">
+                  <li><span style={{ color: PX.green }}>Long</span> — 종가가 xATRTrailingStop 상향 돌파 (매수 신호)</li>
+                  <li><span style={{ color: PX.red }}>Short</span> — 종가가 xATRTrailingStop 하향 이탈 (매도 신호)</li>
+                  <li>신호 봉 마감 후, 다음 봉 시가에 진입</li>
+                </RuleBlock>
+                <RuleBlock title="청산 규칙 (1m 봉)">
+                  <li><span style={{ color: PX.red }}>SL</span> — 1H xATRTrailingStop 이탈 (동적 트레일링 스탑)</li>
+                  <li><span style={{ color: PX.cyan }}>TP1 (50%)</span> — 손익비 1.5배 도달 → 50% 청산, 잔여 본절 스탑 이동</li>
+                  <li><span style={{ color: "#a371f7" }}>UT Flip</span> — 트레일링 스탑 방향 역전환 시 전량 청산</li>
+                </RuleBlock>
+              </>
             ) : (
               <>
-                <RuleBlock title="스퀘즈 확인 (15m 봉)" visual={<VizBBSqueeze />}>
+                <RuleBlock title="스퀴즈 확인 (15m 봉)" visual={<VizBBSqueeze />}>
                   <li>BB Width(20, 2σ)가 최근 100봉 중 하위 20% = 응축 구간</li>
                   <li>스퀘즈 상태가 최소 15봉 이상 지속된 후의 돌파만 유효</li>
                 </RuleBlock>

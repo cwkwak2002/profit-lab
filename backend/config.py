@@ -71,6 +71,18 @@ RISK_SPIKE_PCT = 0.03             # 5-min 3%+ move → cooldown
 RISK_SPIKE_COOLDOWN_MS = 60 * 60 * 1000  # 60 min cooldown
 RISK_BTC_CRASH_PCT = -0.05       # BTC 1H -5%+ → no altcoin longs
 
+# SuperTrend Strategy (KivancOzbilgic) defaults
+ST_ATR_PERIOD    = 10     # ATR period (original default: 10)
+ST_MULTIPLIER    = 3.0    # ATR multiplier (original default: 3.0)
+ST_TP1_RR        = 1.5    # TP1 risk:reward ratio
+ST_TP1_CLOSE_RATIO = 0.5  # Close 50% at TP1
+
+# UT Bot Strategy (QuantNomad / Yo_adriiiiaan / HPotter) defaults
+UTBOT_KEY_VALUE      = 1      # ATR sensitivity multiplier (original default: 1)
+UTBOT_ATR_PERIOD     = 10     # ATR period (original default: 10)
+UTBOT_TP1_RR         = 1.5    # TP1 risk:reward ratio
+UTBOT_TP1_CLOSE_RATIO = 0.5   # Close 50% at TP1
+
 # Exchange
 EXCHANGE_ID = "bybit"
 

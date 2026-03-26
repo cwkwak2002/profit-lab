@@ -73,6 +73,8 @@ export default function CoinDetailPage() {
           rsi_divergence: "RSI Divergence",
           ema_trend:      "EMA Trend",
           bb_squeeze:     "BB Squeeze",
+          supertrend:     "SuperTrend",
+          utbot:          "UT Bot",
         };
         setStrategyLabel(labels[summaryData.run.params?.strategy as string] || "");
       } catch (err) {

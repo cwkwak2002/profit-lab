@@ -18,7 +18,7 @@ from engine.backtester import run_backtest_for_coin
 router = APIRouter(prefix="/api/backtest", tags=["backtest"])
 
 
-VALID_STRATEGIES = {"rsi_divergence", "ema_trend", "bb_squeeze"}
+VALID_STRATEGIES = {"rsi_divergence", "ema_trend", "bb_squeeze", "supertrend", "utbot"}
 
 
 class BacktestRequest(BaseModel):
