@@ -52,8 +52,7 @@ export function ResizableSplit({
 
   return (
     <div ref={containerRef} style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden", position: "relative" }}>
-      {isDragging && <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 50, userSelect: "none" }} />}
-      <div style={{ flex: `0 0 ${ratio * 100}%`, overflow: "hidden" }}>
+      <div style={{ flex: `0 0 ${ratio * 100}%`, overflow: "hidden", pointerEvents: isDragging ? "none" : undefined }}>
         {top}
       </div>
       <div
