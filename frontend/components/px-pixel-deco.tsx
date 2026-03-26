@@ -94,7 +94,7 @@ function DecoTrophy({ s }: { s: number }) {
     [5,13,border],[6,13,border],[7,13,border],[8,13,border],[9,13,border],[10,13,border],
     [4,14,border],[5,14,border],[6,14,border],[7,14,border],[8,14,border],[9,14,border],[10,14,border],[11,14,border],
   ];
-  return <>{cup.map(([x,y,color]) => <Px key={`${x}-${y}`} x={x} y={y} s={s} color={color} />)}</>;
+  return <>{cup.map(([x,y,color], i) => <Px key={`${x}-${y}-${i}`} x={x} y={y} s={s} color={color} />)}</>;
 }
 
 /* Circuit/brain — AI model detail */
@@ -122,7 +122,7 @@ function DecoBrain({ s }: { s: number }) {
     // data flow dots
     [5,11,`${cyan}88`],[9,11,`${cyan}88`],[5,1,`${cyan}88`],[9,1,`${cyan}88`],
   ];
-  return <>{nodes.map(([x,y,color]) => <Px key={`${x}-${y}`} x={x} y={y} s={s} color={color} />)}</>;
+  return <>{nodes.map(([x,y,color], i) => <Px key={`${x}-${y}-${i}`} x={x} y={y} s={s} color={color} />)}</>;
 }
 
 /* Candle chart — coin detail */
@@ -184,7 +184,7 @@ function DecoLab({ s }: { s: number }) {
     // glow
     [6,10,`${cyan}44`],[7,10,`${cyan}44`],[8,10,`${cyan}44`],
   ];
-  return <>{pixels.map(([x,y,color]) => <Px key={`${x}-${y}`} x={x} y={y} s={s} color={color} />)}</>;
+  return <>{pixels.map(([x,y,color], i) => <Px key={`${x}-${y}-${i}`} x={x} y={y} s={s} color={color} />)}</>;
 }
 
 /* ── Main export ─────────────────────────────────────────────────────────── */
