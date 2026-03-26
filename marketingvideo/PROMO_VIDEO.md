@@ -235,3 +235,60 @@ npx remotion studio
 | 로컬에서 영상 재생 안 됨 | yuvj420p pixel format | FFmpeg으로 yuv420p + faststart 재인코딩 |
 | 거래소 로고 안 보임 | `public/logos/` 에 파일 없음 | `cp src/logos/*.png public/logos/` |
 | React 타입 오류 | `React` import 누락 | `import React from 'react'` 추가 |
+
+---
+
+## 8. 영상 수정 시 권장 워크플로우
+
+### 핵심 원칙: Remotion Studio를 열어두고 작업
+
+렌더링(~60초)을 거치지 않고 **파일 저장 즉시 브라우저에서 실시간 확인**할 수 있다.
+
+```bash
+cd test_remotion
+npx remotion studio
+# → http://localhost:3000 열어두기
+```
+
+파일을 저장하면 스튜디오에 즉시 반영된다. `top`, `padding`, `fontSize` 같은 수치 조정은 스튜디오를 보면서 직접 수정하는 것이 가장 빠르다.
+
+---
+
+### 작업 전 반드시: git checkpoint 저장
+
+수정을 시작하기 전에 현재 상태를 커밋해두면 언제든 되돌릴 수 있다.
+
+```bash
+git add -A && git commit -m "checkpoint: before layout fix"
+```
+
+잘못 수정했을 때:
+```bash
+git log --oneline        # 커밋 목록 확인
+git checkout <커밋해시> -- src/projects/supercycl/promo-10s/scenes/SceneBenchmark.tsx
+# 특정 파일만 이전 버전으로 복원
+```
+
+---
+
+### 역할 분담
+
+| 작업 종류 | 방법 |
+|-----------|------|
+| 씬 구조 변경, 새 컴포넌트 추가, 애니메이션 로직 | Claude에게 요청 |
+| `top`, `padding`, `fontSize` 등 수치 미세 조정 | Studio 열고 직접 수정 |
+| 최종 렌더링 + FFmpeg 변환 + 파일 복사 | Claude에게 요청 |
+
+---
+
+### 레이아웃 수치 기준 (1080 × 1920px)
+
+세로 위치를 잡을 때 참고:
+
+| 위치 | paddingTop 기준 | 비고 |
+|------|----------------|------|
+| 화면 상단 | `160px` | 씬 3, 4 헤더 고정 위치 |
+| 화면 중앙 | `justifyContent: center` | 씬 1, 2, 5 기본값 |
+| 중앙보다 위 | `padding: '0 72px 200px'` | center + paddingBottom으로 위로 이동 |
+
+좌우 여백은 모든 씬 공통으로 `padding: '0 72px'` 사용.
