@@ -44,17 +44,33 @@ LOG_DIR = Path(__file__).parent.parent.parent / "data" / "telegram_logs"
 # ── Signal parsing ──────────────────────────────────────────────────────────
 
 # Mirroly Live message patterns (real examples):
-#   Entry: "now longing HYPE at $213,140 at $38.038 (Hyperliquid). on a heater."
-#          "now shorting BTC at $525,034 at $70,037.207 (Hyperliquid)."
-#   Exit:  "closed HYPE long at ..." / "closed BTC short at ..."
+#   New format:
+#     Entry: "Steel Shark opened a BTC SHORT for $1,411,934 Entry 70,596.713"
+#     Exit:  "Steel Shark closed a BTC SHORT"
+#   Old format:
+#     Entry: "now longing HYPE at $213,140 at $38.038 (Hyperliquid). on a heater."
+#            "now shorting BTC at $525,034 at $70,037.207 (Hyperliquid)."
+#     Exit:  "closed HYPE long at ..." / "closed BTC short at ..."
 
-# Entry: "longing <COIN>" or "shorting <COIN>"
+# New format: "{ID} opened a {COIN} {LONG|SHORT} ..."
+_MIRROLY_OPEN_RE = re.compile(
+    r"^(.+?)\s+opened\s+a\s+(\w+)\s+(LONG|SHORT)",
+    re.IGNORECASE,
+)
+
+# New format: "{ID} closed a {COIN} {LONG|SHORT}" or "{ID} closed {COIN} {LONG|SHORT}"
+_MIRROLY_CLOSE_RE = re.compile(
+    r"^(.+?)\s+closed\s+(?:a\s+)?(\w+)(?:\s+(LONG|SHORT))?",
+    re.IGNORECASE,
+)
+
+# Old format entry: "longing <COIN>" or "shorting <COIN>"
 _MIRROLY_ENTRY_RE = re.compile(
     r"(?:now\s+)?(longing|shorting)\s+(\w+)",
     re.IGNORECASE,
 )
 
-# Exit: "closed <COIN> <side>" or "closed <COIN>"
+# Old format exit: "closed <COIN> <side>" or "closed <COIN>"
 _MIRROLY_EXIT_RE = re.compile(
     r"closed\s+(\w+)(?:\s+(long|short))?",
     re.IGNORECASE,
@@ -94,45 +110,64 @@ def parse_signal(text: str) -> dict | None:
     """Parse a Telegram message into a trading signal.
 
     Returns dict with keys:
-        action: "entry" or "exit"
-        coin: normalized coin name (e.g. "BTC")
-        side: "long" or "short" (for entry; may be None for exit)
+        action:     "entry" or "exit"
+        coin:       normalized coin name (e.g. "BTC")
+        side:       "long" or "short" (may be None for exit)
+        trader_id:  trader name from message (e.g. "Steel Shark"), or None
     Or None if the message is not a trading signal.
     """
     text_clean = text.strip()
 
-    # 1. Mirroly-specific: "closed <COIN>" (check exit before entry)
+    # 1. New format: "{ID} opened a {COIN} {LONG|SHORT} ..."
+    m = _MIRROLY_OPEN_RE.search(text_clean)
+    if m:
+        trader_id = m.group(1).strip()
+        coin = _normalize_coin(m.group(2))
+        side = m.group(3).lower()
+        if coin:
+            return {"action": "entry", "coin": coin, "side": side, "trader_id": trader_id}
+
+    # 2. New format: "{ID} closed (a) {COIN} {LONG|SHORT}"
+    m = _MIRROLY_CLOSE_RE.search(text_clean)
+    if m:
+        trader_id = m.group(1).strip()
+        coin = _normalize_coin(m.group(2))
+        side = m.group(3).lower() if m.group(3) else None
+        if coin:
+            return {"action": "exit", "coin": coin, "side": side, "trader_id": trader_id}
+
+    # 3. Old format: "closed <COIN> <side>"
     m = _MIRROLY_EXIT_RE.search(text_clean)
     if m:
         coin = _normalize_coin(m.group(1))
         side = m.group(2).lower() if m.group(2) else None
         if coin:
-            return {"action": "exit", "coin": coin, "side": side}
+            return {"action": "exit", "coin": coin, "side": side, "trader_id": None}
 
-    # 2. Mirroly-specific: "longing/shorting <COIN>"
+    # 4. Old format: "longing/shorting <COIN>"
     m = _MIRROLY_ENTRY_RE.search(text_clean)
     if m:
         direction = m.group(1).lower()
         coin = _normalize_coin(m.group(2))
         side = "long" if direction == "longing" else "short"
         if coin:
-            return {"action": "entry", "coin": coin, "side": side}
+            return {"action": "entry", "coin": coin, "side": side, "trader_id": None}
 
-    # 3. Generic exit fallback
+    # 5. Generic exit fallback
     m = _EXIT_RE.search(text_clean)
     if m:
         coin = _normalize_coin(m.group(1) or m.group(3))
         side = m.group(2).lower() if m.group(2) else None
         if coin:
-            return {"action": "exit", "coin": coin, "side": side}
+            return {"action": "exit", "coin": coin, "side": side, "trader_id": None}
 
-    # 4. Generic entry fallback
+    # 6. Generic entry fallback
     m = _ENTRY_RE.search(text_clean)
     if m:
         coin = _normalize_coin(m.group(1) or m.group(3))
         side = m.group(2).lower() if m.group(2) else None
         if coin and side:
-            return {"action": "entry", "coin": coin, "side": side}
+            return {"action": "entry", "coin": coin, "side": side, "trader_id": None}
 
     return None
 
@@ -152,7 +187,7 @@ def _get_market_price(coin: str) -> float | None:
 
 # ── Order handling ──────────────────────────────────────────────────────────
 
-def _handle_entry(coin: str, side: str, raw_message: str) -> str | None:
+def _handle_entry(coin: str, side: str, raw_message: str, trader_id: str | None = None) -> str | None:
     """Open a new position at market price. Returns action summary for logging."""
     price = _get_market_price(coin)
     if price is None:
@@ -162,15 +197,24 @@ def _handle_entry(coin: str, side: str, raw_message: str) -> str | None:
     now = datetime.now(timezone.utc).isoformat()
     batch_id = str(uuid.uuid4())[:8]
 
+    # Description prefix: "$Steel Shark / " if trader_id is known
+    id_prefix = f"${trader_id} / " if trader_id else ""
+
     with get_db() as conn:
         model = get_or_create_model(conn, MODEL_NAME, BENCHMARK_SEED, BENCHMARK_LEVERAGE)
         model_id = model["id"]
 
-        # Check for duplicate: same coin+side already FILLED
-        existing = conn.execute(
-            "SELECT id FROM benchmark_orders WHERE model_id=? AND symbol=? AND side=? AND status='FILLED' AND source='telegram'",
-            (model_id, coin, side),
-        ).fetchone()
+        # Check for duplicate: same trader_id+coin+side already FILLED
+        if trader_id:
+            existing = conn.execute(
+                "SELECT id FROM benchmark_orders WHERE model_id=? AND symbol=? AND side=? AND status='FILLED' AND source='telegram' AND description LIKE ?",
+                (model_id, coin, side, f"{id_prefix}%"),
+            ).fetchone()
+        else:
+            existing = conn.execute(
+                "SELECT id FROM benchmark_orders WHERE model_id=? AND symbol=? AND side=? AND status='FILLED' AND source='telegram'",
+                (model_id, coin, side),
+            ).fetchone()
         if existing:
             logger.info("Already have open %s %s position — skipping", coin, side)
             return f"{coin} {side} entry skipped — duplicate position"
@@ -186,7 +230,7 @@ def _handle_entry(coin: str, side: str, raw_message: str) -> str | None:
         insert_benchmark_batch(conn, {
             "id": batch_id,
             "model_id": model_id,
-            "market_analysis": raw_message,
+            "market_analysis": f"{id_prefix}{raw_message}",
             "created_at": now,
         })
 
@@ -198,7 +242,7 @@ def _handle_entry(coin: str, side: str, raw_message: str) -> str | None:
             "entry_price": price,
             "tp_price": 0,  # no TP — exit via telegram signal
             "sl_price": 0,  # no SL — exit via telegram signal
-            "description": f"[MARKET ENTRY] {raw_message[:200]}",
+            "description": f"{id_prefix}[MARKET ENTRY] {raw_message[:200]}",
             "margin": margin,
             "status": "FILLED",
             "created_at": now,
@@ -211,11 +255,11 @@ def _handle_entry(coin: str, side: str, raw_message: str) -> str | None:
 
         new_balance = model["balance"]  # balance not changed on entry
 
-    logger.info("Mirroly ENTRY: %s %s @ %.6f (margin=%.4f)", side.upper(), coin, price, margin)
-    return f"{coin} {side} {price} open, margin {margin:.4f}, balance {new_balance:.4f}"
+    logger.info("Mirroly ENTRY: %s %s %s @ %.6f (margin=%.4f)", trader_id or "?", side.upper(), coin, price, margin)
+    return f"{id_prefix}{coin} {side} {price} open, margin {margin:.4f}, balance {new_balance:.4f}"
 
 
-def _handle_exit(coin: str, side: str | None, raw_message: str):
+def _handle_exit(coin: str, side: str | None, raw_message: str, trader_id: str | None = None):
     """Close an open position at market price."""
     price = _get_market_price(coin)
     if price is None:
@@ -228,9 +272,12 @@ def _handle_exit(coin: str, side: str | None, raw_message: str):
         model = get_or_create_model(conn, MODEL_NAME, BENCHMARK_SEED, BENCHMARK_LEVERAGE)
         model_id = model["id"]
 
-        # Find open position for this coin
+        # Find open position: match by trader_id+coin+side when trader_id is known
         query = "SELECT * FROM benchmark_orders WHERE model_id=? AND symbol=? AND status='FILLED' AND source='telegram'"
         params: list = [model_id, coin]
+        if trader_id:
+            query += " AND description LIKE ?"
+            params.append(f"${trader_id} /%")
         if side:
             query += " AND side=?"
             params.append(side)
@@ -320,10 +367,11 @@ async def _on_message(text: str):
 
     logger.info("Mirroly signal: %s", signal)
 
+    trader_id = signal.get("trader_id")
     if signal["action"] == "entry":
-        await asyncio.to_thread(_handle_entry, signal["coin"], signal["side"], text)
+        await asyncio.to_thread(_handle_entry, signal["coin"], signal["side"], text, trader_id)
     elif signal["action"] == "exit":
-        await asyncio.to_thread(_handle_exit, signal["coin"], signal.get("side"), text)
+        await asyncio.to_thread(_handle_exit, signal["coin"], signal.get("side"), text, trader_id)
 
 
 async def telegram_listener_loop():
