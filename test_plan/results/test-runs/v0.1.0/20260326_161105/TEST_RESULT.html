@@ -1,0 +1,145 @@
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[QA] Profit-Lab 테스트 결과 — 2026-03-26 16:11:05</title>
+    <style>
+      body { font-family: 'Segoe UI', sans-serif; background:#f8fafc; color:#1e293b; margin:0; padding:24px; }
+      h1   { font-size:1.6rem; border-bottom:3px solid #7c3aed; padding-bottom:8px; }
+      h2   { font-size:1.1rem; margin-top:2rem; color:#334155; }
+      .qa-tag { display:inline-block; padding:3px 10px; border-radius:4px; font-size:.75rem;
+                 font-weight:700; color:#fff; background:#7c3aed; margin-left:12px;
+                 vertical-align:middle; }
+      .badge { display:inline-block; padding:6px 16px; border-radius:6px; font-weight:700;
+                font-size:1rem; color:#fff; background:#ef4444; margin-bottom:16px; }
+      .meta  { display:flex; gap:32px; flex-wrap:wrap; margin-bottom:24px; }
+      .meta span { font-size:.9rem; color:#64748b; }
+      .meta strong { color:#1e293b; }
+      .summary-grid { display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+      .stat-card { background:#fff; border:1px solid #e2e8f0; border-radius:8px;
+                    padding:16px 24px; min-width:110px; text-align:center;
+                    box-shadow:0 1px 3px rgba(0,0,0,.06); }
+      .stat-card .num { font-size:2rem; font-weight:700; line-height:1; }
+      .stat-card .lbl { font-size:.75rem; color:#94a3b8; margin-top:4px; }
+      .pass .num { color:#22c55e; }
+      .fail .num { color:#ef4444; }
+      .skip .num { color:#f59e0b; }
+      table  { width:100%; border-collapse:collapse; font-size:.85rem; background:#fff;
+                border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+      th     { background:#1e293b; color:#f1f5f9; padding:10px 12px; text-align:left; font-weight:600; }
+      td     { padding:8px 12px; border-bottom:1px solid #f1f5f9; }
+      tr.pass td:nth-child(5) { color:#22c55e; font-weight:600; }
+      tr.fail { background:#fff5f5; }
+      tr.fail td:nth-child(5) { color:#ef4444; font-weight:600; }
+      tr.skip { background:#fffbeb; }
+      tr.skip td:nth-child(5) { color:#f59e0b; font-weight:600; }
+      tr:hover { background:#f8fafc; }
+      .msg   { font-size:.78rem; color:#64748b; max-width:320px; word-break:break-all; }
+      code   { background:#f1f5f9; padding:1px 5px; border-radius:3px; font-size:.82rem; }
+      .fail-block { background:#fff5f5; border-left:4px solid #ef4444;
+                     padding:12px 16px; margin:8px 0; border-radius:0 6px 6px 0; }
+      .fail-block pre { margin:8px 0 0; font-size:.82rem; color:#7f1d1d; white-space:pre-wrap; }
+      .export-note { margin-top:32px; padding:16px; background:#f5f3ff; border-radius:8px;
+                      border:1px solid #ddd6fe; font-size:.85rem; color:#4c1d95; }
+      @media print { body { padding:8px; } }
+    </style>
+    </head>
+    <body>
+    <h1>Profit-Lab 테스트 결과 보고서 <span class="qa-tag">QA</span></h1>
+    <div class="badge">❌ FAILED</div>
+    <div class="meta">
+      <span><strong>실행 일시</strong>: 2026-03-26 16:11:05</span>
+      <span><strong>소요 시간</strong>: 100.56s</span>
+      <span><strong>총 TC</strong>: 59</span>
+      <span><strong>실행 주체</strong>: QA 팀</span>
+    </div>
+
+    <div class="summary-grid">
+      <div class="stat-card pass"><div class="num">58</div><div class="lbl">PASSED</div></div>
+      <div class="stat-card fail"><div class="num">1</div><div class="lbl">FAILED</div></div>
+      <div class="stat-card skip"><div class="num">0</div><div class="lbl">SKIPPED</div></div>
+    </div>
+
+    <h2>파일별 결과</h2>
+    <table>
+      <thead><tr><th>파일</th><th>✅ Pass</th><th>❌ Fail</th><th>⏭️ Skip</th></tr></thead>
+      <tbody><tr><td><code>test_journey_backtest.py</code></td><td class='pass'>23</td><td class='fail'>1</td><td class='skip'>0</td></tr>
+<tr><td><code>test_journey_benchmark.py</code></td><td class='pass'>22</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+<tr><td><code>test_journey_error.py</code></td><td class='pass'>13</td><td class='fail'>0</td><td class='skip'>0</td></tr>
+</tbody>
+    </table>
+
+    <h2>전체 TC 목록</h2>
+    <table>
+      <thead><tr><th>#</th><th>파일</th><th>클래스</th><th>테스트명</th><th>결과</th><th>비고</th></tr></thead>
+      <tbody><tr class='pass'><td>1</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestPageLoad</code></td><td><code>test_page_loads[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>2</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestPageLoad</code></td><td><code>test_strategy_buttons_visible[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>3</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestPageLoad</code></td><td><code>test_date_range_inputs_present[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>4</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestPageLoad</code></td><td><code>test_run_button_present[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>5</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestPageLoad</code></td><td><code>test_coin_list_visible[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>6</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestPageLoad</code></td><td><code>test_no_error_on_load[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>7</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestStrategySelection</code></td><td><code>test_click_ema_trend[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>8</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestStrategySelection</code></td><td><code>test_click_bb_squeeze[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>9</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestStrategySelection</code></td><td><code>test_switch_strategy_back_to_rsi[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>10</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestStrategySelection</code></td><td><code>test_strategy_description_updates[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>11</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestDateInput</code></td><td><code>test_start_date_accepts_value[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>12</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestDateInput</code></td><td><code>test_end_date_accepts_value[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>13</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestDateInput</code></td><td><code>test_run_button_enabled_after_date_set[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>14</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestCoinToggle</code></td><td><code>test_coin_button_clickable[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>15</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestCoinToggle</code></td><td><code>test_multiple_coin_clicks[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>16</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestCoinToggle</code></td><td><code>test_coin_deselect_reselect[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>17</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestRunButton</code></td><td><code>test_run_button_not_disabled_initially[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>18</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestRunButton</code></td><td><code>test_run_button_click_no_crash[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='fail'><td>19</td><td><code>test_journey_backtest.py</code></td><td><code>TestBacktestRunButton</code></td><td><code>test_run_button_shows_loading_state[chromium]</code></td><td>❌</td><td class='msg'>playwright._impl._errors.TimeoutError: Locator.is_disabled: Timeout 3000ms exceeded.</td></tr>
+<tr class='pass'><td>20</td><td><code>test_journey_backtest.py</code></td><td><code>TestHomePage</code></td><td><code>test_home_page_loads[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>21</td><td><code>test_journey_backtest.py</code></td><td><code>TestHomePage</code></td><td><code>test_home_hero_text_visible[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>22</td><td><code>test_journey_backtest.py</code></td><td><code>TestHomePage</code></td><td><code>test_home_cta_buttons_present[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>23</td><td><code>test_journey_backtest.py</code></td><td><code>TestHomePage</code></td><td><code>test_home_leaderboard_section[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>24</td><td><code>test_journey_backtest.py</code></td><td><code>TestHomePage</code></td><td><code>test_home_start_simulation_link[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>25</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderPage</code></td><td><code>test_page_loads[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>26</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderPage</code></td><td><code>test_model_name_input_visible[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>27</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderPage</code></td><td><code>test_market_analysis_textarea_visible[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>28</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderPage</code></td><td><code>test_add_order_button_present[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>29</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderPage</code></td><td><code>test_submit_button_present[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>30</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderPage</code></td><td><code>test_live_benchmark_nav_button[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>31</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderPage</code></td><td><code>test_order_card_labels_visible[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>32</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderPage</code></td><td><code>test_no_error_on_load[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>33</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkModelInput</code></td><td><code>test_model_name_accepts_input[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>34</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkModelInput</code></td><td><code>test_available_balance_label_visible[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>35</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkModelInput</code></td><td><code>test_empty_model_name_submit_shows_error[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>36</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderCard</code></td><td><code>test_add_order_increases_card_count[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>37</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderCard</code></td><td><code>test_remove_order_removes_last_card[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>38</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderCard</code></td><td><code>test_side_toggle_short[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>39</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderCard</code></td><td><code>test_confidence_button_clickable[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>40</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderCard</code></td><td><code>test_clear_all_removes_orders[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>41</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkOrderCard</code></td><td><code>test_analysis_only_changes_submit_label[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>42</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkLeaderboard</code></td><td><code>test_leaderboard_page_loads[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>43</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkLeaderboard</code></td><td><code>test_leaderboard_renders_content[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>44</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkLeaderboard</code></td><td><code>test_leaderboard_no_500_error[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>45</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkLeaderboard</code></td><td><code>test_leaderboard_has_rankings_when_models_exist[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>46</td><td><code>test_journey_benchmark.py</code></td><td><code>TestBenchmarkLeaderboard</code></td><td><code>test_live_benchmark_button_navigates_to_leaderboard[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>47</td><td><code>test_journey_error.py</code></td><td><code>TestPageAccessibility</code></td><td><code>test_home_page_accessible[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>48</td><td><code>test_journey_error.py</code></td><td><code>TestPageAccessibility</code></td><td><code>test_backtest_page_accessible[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>49</td><td><code>test_journey_error.py</code></td><td><code>TestPageAccessibility</code></td><td><code>test_benchmark_page_accessible[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>50</td><td><code>test_journey_error.py</code></td><td><code>TestPageAccessibility</code></td><td><code>test_leaderboard_page_accessible[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>51</td><td><code>test_journey_error.py</code></td><td><code>TestPageAccessibility</code></td><td><code>test_404_page_not_blank[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>52</td><td><code>test_journey_error.py</code></td><td><code>TestInputValidationErrors</code></td><td><code>test_benchmark_empty_model_name_error[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>53</td><td><code>test_journey_error.py</code></td><td><code>TestInputValidationErrors</code></td><td><code>test_benchmark_no_stacktrace_in_error[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>54</td><td><code>test_journey_error.py</code></td><td><code>TestInputValidationErrors</code></td><td><code>test_backtest_run_no_crash_without_coins[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>55</td><td><code>test_journey_error.py</code></td><td><code>TestUXQuality</code></td><td><code>test_all_pages_have_nav[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>56</td><td><code>test_journey_error.py</code></td><td><code>TestUXQuality</code></td><td><code>test_pages_have_no_horizontal_overflow[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>57</td><td><code>test_journey_error.py</code></td><td><code>TestUXQuality</code></td><td><code>test_benchmark_submit_button_disabled_while_loading[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>58</td><td><code>test_journey_error.py</code></td><td><code>TestUXQuality</code></td><td><code>test_footer_visible_on_main_pages[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+<tr class='pass'><td>59</td><td><code>test_journey_error.py</code></td><td><code>TestUXQuality</code></td><td><code>test_no_console_errors_on_load[chromium]</code></td><td>✅</td><td class='msg'></td></tr>
+</tbody>
+    </table>
+
+    <h2>실패 상세</h2><div class='fail-block'><strong>❌ test_journey_backtest.py::TestBacktestRunButton::test_run_button_shows_loading_state[chromium]</strong><pre>playwright._impl._errors.TimeoutError: Locator.is_disabled: Timeout 3000ms exceeded.</pre></div>
+
+    <div class="export-note">
+      💡 <strong>스프레드시트 내보내기</strong>: 동일 타임스탬프의 <code>.csv</code> 파일을
+      Google Sheets 또는 Excel에서 열거나 가져오기(Import)하면 됩니다.
+    </div>
+    </body>
+    </html>

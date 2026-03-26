@@ -1,0 +1,60 @@
+﻿실행일시,파일,클래스,테스트명,결과,비고
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestPageLoad,test_page_loads[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestPageLoad,test_strategy_buttons_visible[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestPageLoad,test_date_range_inputs_present[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestPageLoad,test_run_button_present[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestPageLoad,test_coin_list_visible[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestPageLoad,test_no_error_on_load[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestStrategySelection,test_click_ema_trend[chromium],FAIL,playwright._impl._errors.TimeoutError: Locator.click: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestStrategySelection,test_click_bb_squeeze[chromium],FAIL,playwright._impl._errors.TimeoutError: Locator.click: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestStrategySelection,test_switch_strategy_back_to_rsi[chromium],FAIL,playwright._impl._errors.TimeoutError: Locator.click: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestStrategySelection,test_strategy_description_updates[chromium],FAIL,playwright._impl._errors.TimeoutError: Locator.click: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestDateInput,test_start_date_accepts_value[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestDateInput,test_end_date_accepts_value[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestDateInput,test_run_button_enabled_after_date_set[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestCoinToggle,test_coin_button_clickable[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestCoinToggle,test_multiple_coin_clicks[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestCoinToggle,test_coin_deselect_reselect[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestRunButton,test_run_button_not_disabled_initially[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestRunButton,test_run_button_click_no_crash[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestBacktestRunButton,test_run_button_shows_loading_state[chromium],FAIL,playwright._impl._errors.TimeoutError: Locator.is_disabled: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_backtest.py,TestHomePage,test_home_page_loads[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_backtest.py,TestHomePage,test_home_hero_text_visible[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestHomePage,test_home_cta_buttons_present[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestHomePage,test_home_leaderboard_section[chromium],PASS,
+2026-03-26 15:58:10,test_journey_backtest.py,TestHomePage,test_home_start_simulation_link[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderPage,test_page_loads[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderPage,test_model_name_input_visible[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderPage,test_market_analysis_textarea_visible[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderPage,test_add_order_button_present[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderPage,test_submit_button_present[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderPage,test_live_benchmark_nav_button[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderPage,test_order_card_labels_visible[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderPage,test_no_error_on_load[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkModelInput,test_model_name_accepts_input[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkModelInput,test_available_balance_label_visible[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkModelInput,test_empty_model_name_submit_shows_error[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderCard,test_add_order_increases_card_count[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderCard,test_remove_order_removes_last_card[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderCard,test_side_toggle_short[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderCard,test_confidence_button_clickable[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderCard,test_clear_all_removes_orders[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkOrderCard,test_analysis_only_changes_submit_label[chromium],PASS,
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkLeaderboard,test_leaderboard_page_loads[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkLeaderboard,test_leaderboard_renders_content[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkLeaderboard,test_leaderboard_no_500_error[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkLeaderboard,test_leaderboard_has_rankings_when_models_exist[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_benchmark.py,TestBenchmarkLeaderboard,test_live_benchmark_button_navigates_to_leaderboard[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_error.py,TestPageAccessibility,test_home_page_accessible[chromium],PASS,
+2026-03-26 15:58:10,test_journey_error.py,TestPageAccessibility,test_backtest_page_accessible[chromium],PASS,
+2026-03-26 15:58:10,test_journey_error.py,TestPageAccessibility,test_benchmark_page_accessible[chromium],PASS,
+2026-03-26 15:58:10,test_journey_error.py,TestPageAccessibility,test_leaderboard_page_accessible[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_error.py,TestPageAccessibility,test_404_page_not_blank[chromium],PASS,
+2026-03-26 15:58:10,test_journey_error.py,TestInputValidationErrors,test_benchmark_empty_model_name_error[chromium],PASS,
+2026-03-26 15:58:10,test_journey_error.py,TestInputValidationErrors,test_benchmark_no_stacktrace_in_error[chromium],PASS,
+2026-03-26 15:58:10,test_journey_error.py,TestInputValidationErrors,test_backtest_run_no_crash_without_coins[chromium],PASS,
+2026-03-26 15:58:10,test_journey_error.py,TestUXQuality,test_all_pages_have_nav[chromium],FAIL,playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2026-03-26 15:58:10,test_journey_error.py,TestUXQuality,test_pages_have_no_horizontal_overflow[chromium],PASS,
+2026-03-26 15:58:10,test_journey_error.py,TestUXQuality,test_benchmark_submit_button_disabled_while_loading[chromium],FAIL,AssertionError: 제출 중 로딩 피드백 또는 리디렉션이 없습니다
+2026-03-26 15:58:10,test_journey_error.py,TestUXQuality,test_footer_visible_on_main_pages[chromium],PASS,
+2026-03-26 15:58:10,test_journey_error.py,TestUXQuality,test_no_console_errors_on_load[chromium],PASS,

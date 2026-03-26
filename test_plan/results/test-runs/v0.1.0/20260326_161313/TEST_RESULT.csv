@@ -1,0 +1,2 @@
+﻿실행일시,파일,클래스,테스트명,결과,비고
+2026-03-26 16:13:13,test_journey_backtest.py,TestBacktestRunButton,test_run_button_shows_loading_state[chromium],PASS,

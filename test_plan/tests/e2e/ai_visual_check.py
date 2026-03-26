@@ -118,9 +118,9 @@ def capture_screenshots(pages: list[str]) -> dict[str, Path]:
 
             print(f"[CAPTURE] {name} ({url})")
             try:
-                # leaderboard 는 WebSocket 때문에 networkidle 대기 불가 → load 사용
-                wait_until = "load" if name == "leaderboard" else "networkidle"
-                timeout = 30000 if name == "leaderboard" else 15000
+                # 모든 페이지 load 사용 (ticker WebSocket 등으로 networkidle 미도달)
+                wait_until = "load"
+                timeout = 15000
                 page.goto(url, wait_until=wait_until, timeout=timeout)
                 page.wait_for_timeout(1000)  # 애니메이션 안정화 대기
 
