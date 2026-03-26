@@ -51,7 +51,7 @@ export function ResizableSplit({
   }, [minTopPx, minBottomPx]);
 
   return (
-    <div ref={containerRef} style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden", position: "relative" }}>
+    <div ref={containerRef} style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflow: "hidden", position: "relative" }}>
       <div style={{ flex: `0 0 ${ratio * 100}%`, overflow: "hidden", pointerEvents: isDragging ? "none" : undefined }}>
         {top}
       </div>

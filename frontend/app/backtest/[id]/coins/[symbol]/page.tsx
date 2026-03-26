@@ -262,7 +262,7 @@ export default function CoinDetailPage() {
         </aside>
 
         {/* Main content */}
-        <main style={{ flex: 1, overflow: "hidden" }}>
+        <main style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
           <ResizableSplit
             top={
               <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
