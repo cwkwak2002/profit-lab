@@ -315,7 +315,7 @@ function TradingViewChartInner({ symbol, interval = "15m", showRsi = true, trade
     };
   }, [symbol, interval, showRsi]);
 
-  return <div ref={containerRef} className="w-full h-full" />;
+  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 });
 
 /* eslint-enable @typescript-eslint/no-explicit-any */

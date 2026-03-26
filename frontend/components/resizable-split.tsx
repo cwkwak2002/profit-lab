@@ -48,18 +48,18 @@ export function ResizableSplit({
   }, [minTopPx, minBottomPx]);
 
   return (
-    <div ref={containerRef} className="flex flex-col h-full overflow-hidden relative">
-      {isDragging && <div className="absolute inset-0 z-50" />}
-      <div style={{ flex: `0 0 ${ratio * 100}%` }} className="overflow-hidden">
+    <div ref={containerRef} style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden", position: "relative" }}>
+      {isDragging && <div style={{ position: "absolute", inset: 0, zIndex: 50 }} />}
+      <div style={{ flex: `0 0 ${ratio * 100}%`, overflow: "hidden" }}>
         {top}
       </div>
       <div
         onMouseDown={onMouseDown}
-        className="flex-shrink-0 h-2 cursor-row-resize bg-border hover:bg-primary/20 transition-colors flex items-center justify-center"
+        style={{ flexShrink: 0, height: 8, cursor: "row-resize", background: "rgba(51,85,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}
       >
-        <div className="w-8 h-0.5 rounded bg-muted-foreground/40" />
+        <div style={{ width: 32, height: 2, borderRadius: 2, background: "rgba(136,136,170,0.4)" }} />
       </div>
-      <div style={{ flex: 1 }} className="overflow-auto">
+      <div style={{ flex: 1, overflow: "auto" }}>
         {bottom}
       </div>
     </div>

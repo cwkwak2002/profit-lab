@@ -694,7 +694,7 @@ export default function ModelDetailPage() {
         </aside>
 
         {/* Right content */}
-        <main style={{ flex: 1, overflow: "hidden" }}>
+        <main style={{ flex: 1, overflow: "hidden", height: "100%" }}>
           <ResizableSplit
             top={
               <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
