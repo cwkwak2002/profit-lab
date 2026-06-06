@@ -32,3 +32,6 @@ Thumbs.db
 backend/test-results/
 backend/reports/
 TEST_STRATEGY.html
+
+# Temp work files (local scratch — never committed)
+temp/
