@@ -12,6 +12,7 @@ node_modules/
 
 # Database
 data/*.db
+*.db
 
 # AI trader logs
 data/ai_trader_logs/
@@ -24,9 +25,16 @@ data/*.session
 .env
 .env.local
 
+# Claude Code (local agent config & settings)
+.claude/
+
 # OS
 .DS_Store
 Thumbs.db
+
+# IDE
+.idea/
+.vscode/
 
 # Test artifacts
 backend/test-results/

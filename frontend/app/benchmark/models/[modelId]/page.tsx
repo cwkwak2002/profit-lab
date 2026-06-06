@@ -23,6 +23,7 @@ import {
   type BenchmarkOrder,
   type BenchmarkBatch,
 } from "@/lib/api";
+import { useAuth } from "@/design-system/providers/auth-provider";
 
 
 const TOP_COINS = [
@@ -118,6 +119,7 @@ function StatItem({ label, value, color, sub }: { label: string; value: string; 
 // --- Editable analysis ---
 
 function EditableAnalysis({ batch, onSave }: { batch: BenchmarkBatch; onSave: () => void }) {
+  const { guard } = useAuth();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(batch.market_analysis);
   const [saving, setSaving] = useState(false);
@@ -132,7 +134,7 @@ function EditableAnalysis({ batch, onSave }: { batch: BenchmarkBatch; onSave: ()
   if (!editing) {
     return (
       <div
-        onClick={() => { setEditing(true); setText(batch.market_analysis); }}
+        onClick={() => guard(() => { setEditing(true); setText(batch.market_analysis); })}
         title="클릭하여 수정"
         style={{
           background: "rgba(51,85,255,0.06)",
@@ -210,6 +212,7 @@ function EditableOrderRow({
   onClickSymbol: (order: BenchmarkOrder) => void;
   onClickAnalysis: (batchId: string) => void;
 }) {
+  const { guard } = useAuth();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<BenchmarkOrder>>({});
   const [saving, setSaving] = useState(false);
@@ -330,7 +333,7 @@ function EditableOrderRow({
             className="group-hover:opacity-100-btn"
             onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = PX.cyan; }}
             onMouseLeave={(e) => { e.currentTarget.style.opacity = "0"; e.currentTarget.style.color = PX.dim; }}
-            onClick={startEdit} title={isPending ? "주문 수정" : "근거 수정"}>수정</button>
+            onClick={() => guard(startEdit)} title={isPending ? "주문 수정" : "근거 수정"}>수정</button>
         </TableCell>
       </TableRow>
     );
@@ -407,6 +410,7 @@ function EditableOrderRow({
 // --- Main page ---
 
 export default function ModelDetailPage() {
+  const { guard, isAuthenticated } = useAuth();
   const params = useParams();
   const router = useRouter();
   const modelId = params.modelId as string;
@@ -602,7 +606,7 @@ export default function ModelDetailPage() {
                 {model.name}
               </h1>
               <button
-                onClick={() => { setNewName(model.name); setRenaming(true); setRenameError(""); }}
+                onClick={() => guard(() => { setNewName(model.name); setRenaming(true); setRenameError(""); })}
                 style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = PX.mid; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}
@@ -616,7 +620,7 @@ export default function ModelDetailPage() {
         {/* Right: actions */}
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button
-            onClick={() => router.push(`/benchmark?model=${encodeURIComponent(model?.name || "")}`)}
+            onClick={() => guard(() => router.push(`/benchmark?model=${encodeURIComponent(model?.name || "")}`))}
             style={{
               fontFamily: PX.fb, fontSize: 13,
               padding: "7px 16px",
@@ -624,18 +628,21 @@ export default function ModelDetailPage() {
               background: "rgba(0,238,255,0.1)", color: PX.cyan,
               cursor: "pointer",
               transition: "all 0.1s steps(1)",
+              display: "inline-flex", alignItems: "center", gap: 6,
             }}
             onMouseEnter={(e) => { e.currentTarget.style.background = PX.cyan; e.currentTarget.style.color = "#000"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,238,255,0.1)"; e.currentTarget.style.color = PX.cyan; }}
           >
+            {!isAuthenticated && <span className="material-symbols-outlined" style={{ fontSize: 15 }}>lock</span>}
             + 주문 입력
           </button>
           <button
-            onClick={handleDeleteModel}
-            style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
+            onClick={() => guard(handleDeleteModel)}
+            style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3 }}
             onMouseEnter={(e) => { e.currentTarget.style.color = PX.red; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}
           >
+            {!isAuthenticated && <span className="material-symbols-outlined" style={{ fontSize: 11 }}>lock</span>}
             삭제
           </button>
         </div>
@@ -863,7 +870,7 @@ export default function ModelDetailPage() {
 
                               {(isAnalysisOnly || hasPending || allTerminal) && (
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteBatch(batch.id); }}
+                                  onClick={(e) => { e.stopPropagation(); guard(() => handleDeleteBatch(batch.id)); }}
                                   style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
                                   onMouseEnter={(e) => { e.currentTarget.style.color = PX.red; }}
                                   onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}

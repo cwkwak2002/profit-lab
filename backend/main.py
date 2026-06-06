@@ -58,6 +58,7 @@ if _ca:
 from fastapi.middleware.cors import CORSMiddleware
 
 from data.db import init_db
+from routers.auth import router as auth_router
 from routers.data import router as data_router
 from routers.backtest import router as backtest_router
 from routers.benchmark import router as benchmark_router
@@ -85,14 +86,22 @@ async def lifespan(app):
 
 app = FastAPI(title="Profit Lab", version="0.1.0", lifespan=lifespan)
 
+# CORS origins from env (comma-separated). Defaults to local dev frontend.
+# Production: set ALLOWED_ORIGINS to the deployed frontend domain in .env.
+_allowed_origins = [
+    o.strip()
+    for o in os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(data_router)
 app.include_router(backtest_router)
 app.include_router(benchmark_router)

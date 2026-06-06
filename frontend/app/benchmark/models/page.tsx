@@ -7,6 +7,7 @@ import { PxFooter } from "@/components/px-footer";
 import { PxPageShell } from "@/components/px-page-shell";
 import { PxPixelDeco } from "@/components/px-pixel-deco";
 import { PX } from "@/design-system/tokens/px";
+import { useAuth } from "@/design-system/providers/auth-provider";
 
 /* ── Metric card ─────────────────────────────────────────────────────────── */
 function MetricCard({ label, value, sub, color, accent }: {
@@ -66,6 +67,7 @@ function TH({ children, align = "left", fontSize = 10 }: { children: React.React
 
 /* ── Main page ───────────────────────────────────────────────────────────── */
 export default function LeaderboardPage() {
+  const { guard, isAuthenticated } = useAuth();
   const router = useRouter();
   const [models, setModels] = useState<BenchmarkModel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,7 +102,7 @@ export default function LeaderboardPage() {
           등록된 모델 없음
         </p>
         <button
-          onClick={() => router.push("/benchmark")}
+          onClick={() => guard(() => router.push("/benchmark"))}
           style={{
             fontFamily: PX.fp, fontSize: 8,
             padding: "10px 20px",
@@ -109,8 +111,10 @@ export default function LeaderboardPage() {
             color: PX.cyan,
             cursor: "pointer",
             borderRadius: 0,
+            display: "inline-flex", alignItems: "center", gap: 6,
           }}
         >
+          {!isAuthenticated && <span className="material-symbols-outlined" style={{ fontSize: 13 }}>lock</span>}
           ▶ 주문 입력하기
         </button>
       </div>
@@ -141,7 +145,7 @@ export default function LeaderboardPage() {
           </div>
         </div>
         <button
-          onClick={() => router.push("/benchmark")}
+          onClick={() => guard(() => router.push("/benchmark"))}
           style={{
             fontFamily: PX.fb, fontSize: 13,
             padding: "10px 18px",
@@ -151,8 +155,10 @@ export default function LeaderboardPage() {
             cursor: "pointer",
             borderRadius: 0,
             transition: "all 0.1s steps(1)",
+            display: "inline-flex", alignItems: "center", gap: 6,
           }}
         >
+          {!isAuthenticated && <span className="material-symbols-outlined" style={{ fontSize: 15 }}>lock</span>}
           + 주문 입력
         </button>
       </div>

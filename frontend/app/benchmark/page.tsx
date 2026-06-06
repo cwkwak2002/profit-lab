@@ -9,6 +9,7 @@ import {
 } from "@/lib/api";
 import { PxFooter } from "@/components/px-footer";
 import { PX } from "@/design-system/tokens/px";
+import { useAuth } from "@/design-system/providers/auth-provider";
 
 const pxPanel: React.CSSProperties = {
   background: PX.panel,
@@ -76,6 +77,7 @@ export default function BenchmarkPage() {
 
 /* ── Inner ───────────────────────────────────────────────────────────────── */
 function BenchmarkPageInner() {
+  const { guard, isAuthenticated, initialized, openLogin } = useAuth();
   const router       = useRouter();
   const searchParams = useSearchParams();
 
@@ -116,6 +118,11 @@ function BenchmarkPageInner() {
     }, 300);
     return () => clearTimeout(timer);
   }, [modelName]);
+
+  // 주문 입력은 관리자 전용 — 비로그인 진입 시 로그인 모달 자동 표시
+  useEffect(() => {
+    if (initialized && !isAuthenticated) openLogin();
+  }, [initialized, isAuthenticated, openLogin]);
 
   const filteredSuggestions = suggestions.filter((s) =>
     s.toLowerCase().includes(modelName.toLowerCase())
@@ -172,6 +179,43 @@ function BenchmarkPageInner() {
   }
 
   const isAnalysisOnly = orders.length === 0 && marketAnalysis.trim().length > 0;
+
+  // 토큰 확인 전에는 폼을 렌더하지 않음 (비로그인 폼 깜빡임 방지)
+  if (!initialized) return null;
+
+  // 비로그인 상태에서는 주문 입력 폼 자체를 차단 (페이지 진입 차단)
+  if (!isAuthenticated) {
+    return (
+      <div style={{
+        flex: 1, margin: "0 -24px -24px",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20,
+        background: "linear-gradient(135deg, #05051e 0%, #1a0b2e 50%, #0c0c1d 100%)",
+        color: PX.white, minHeight: 400,
+      }}>
+        <span className="material-symbols-outlined" style={{ fontSize: 56, color: PX.mid }}>lock</span>
+        <div style={{ fontFamily: PX.fp, fontSize: 14, color: PX.yellow, letterSpacing: 1, textAlign: "center", lineHeight: 1.8 }}>
+          주문 입력은 관리자 전용입니다
+        </div>
+        <div style={{ fontFamily: PX.fb, fontSize: 13, color: PX.mid }}>
+          계속하려면 로그인하세요.
+        </div>
+        <button
+          onClick={openLogin}
+          style={{
+            fontFamily: PX.fp, fontSize: 11, letterSpacing: 1,
+            padding: "12px 28px",
+            border: `2px solid ${PX.cyan}`, background: "rgba(0,238,255,0.1)", color: PX.cyan,
+            cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8,
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = PX.cyan; e.currentTarget.style.color = "#000"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,238,255,0.1)"; e.currentTarget.style.color = PX.cyan; }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>login</span>
+          로그인
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -400,7 +444,7 @@ function BenchmarkPageInner() {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, paddingTop: 24, paddingBottom: 32 }}>
           <div style={{ height: 1, width: "100%", background: "linear-gradient(to right, transparent, rgba(51,85,255,0.5), transparent)", marginBottom: 8 }} />
           <button
-            onClick={handleSubmit}
+            onClick={() => guard(handleSubmit)}
             disabled={loading}
             style={{
               fontFamily: PX.fp, fontSize: 14, letterSpacing: "0.08em",
@@ -412,10 +456,14 @@ function BenchmarkPageInner() {
               borderRadius: 0,
               boxShadow: loading ? "none" : `0 0 20px rgba(0,219,235,0.3)`,
               transition: "all 0.1s steps(1)",
+              display: "inline-flex", alignItems: "center", gap: 8,
             }}
             onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.background = PX.cyan; e.currentTarget.style.color = "#0a0a1a"; } }}
             onMouseLeave={(e) => { if (!loading) { e.currentTarget.style.background = "#1e1e2f"; e.currentTarget.style.color = PX.cyan; } }}
           >
+            {!isAuthenticated && !loading && (
+              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>lock</span>
+            )}
             {loading ? "제출 중..." : isAnalysisOnly ? "▶ 분석 제출" : "▶ 주문 제출"}
           </button>
           <p style={{ fontFamily: PX.fm, fontSize: 10, color: "rgba(0,238,255,0.6)", letterSpacing: "0.08em", margin: 0, animation: "pulse 2s infinite" }}>

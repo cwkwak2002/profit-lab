@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { NavLinks } from "@/components/nav-links";
+import { AuthButton } from "@/components/auth-button";
 import { PixelCoin } from "@/components/pixel-coin";
 import { TickerTape } from "@/components/ticker-tape";
 import { ThemeProvider } from "@/design-system/providers/theme-provider";
+import { AuthProvider } from "@/design-system/providers/auth-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -42,6 +44,7 @@ export default function RootLayout({
         style={{ background: "var(--px-black, #0a0a1a)", color: "var(--px-white, #f0f0ff)" }}
       >
         <ThemeProvider defaultTheme="theme-pixel">
+         <AuthProvider>
           {/* ── HEADER ───────────────────────────────────────────────── */}
           <header
             className="sticky top-0 z-50 flex items-center justify-between px-6"
@@ -70,16 +73,19 @@ export default function RootLayout({
 
             <NavLinks />
 
-            <div
-              style={{
-                fontFamily: "'Press Start 2P', monospace",
-                fontSize: 8,
-                color: "#ff3333",
-                letterSpacing: 1,
-                lineHeight: 1,
-              }}
-            >
-              ♥ ♥ ♥
+            <div className="flex items-center gap-4">
+              <AuthButton />
+              <div
+                style={{
+                  fontFamily: "'Press Start 2P', monospace",
+                  fontSize: 8,
+                  color: "#ff3333",
+                  letterSpacing: 1,
+                  lineHeight: 1,
+                }}
+              >
+                ♥ ♥ ♥
+              </div>
             </div>
           </header>
 
@@ -89,6 +95,7 @@ export default function RootLayout({
           <main className="flex-1 flex flex-col p-6" style={{ color: "var(--px-white, #f0f0ff)" }}>
             {children}
           </main>
+         </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
