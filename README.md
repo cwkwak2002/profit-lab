@@ -129,7 +129,8 @@ profit-lab/
 │   ├── ai_trader_logs/
 │   └── telegram_logs/
 │
-├── docker-compose.yml             # 배포 구성
+├── Caddyfile                      # Caddy 리버스 프록시 (단일 도메인, 자동 HTTPS)
+├── docker-compose.yml             # 배포 구성 (Caddy + backend + frontend)
 ├── .env.example                   # 환경 변수 템플릿
 └── SPEC.md                        # 상세 기술 스펙
 ```
@@ -217,18 +218,26 @@ npm run dev
 
 ---
 
-### 방법 2: Docker 배포
+### 방법 2: Docker 배포 (Caddy + 자동 HTTPS)
 
-```bash
-# 빌드 & 실행
-docker compose up -d --build
+배포는 **Caddy** 리버스 프록시가 앞단에서 단일 도메인으로 프론트/백엔드를 통합하고, Let's Encrypt로 **HTTPS를 자동 발급·갱신**합니다.
 
-# → Frontend: http://localhost:3000
-# → Backend:  http://localhost:8000
+```
+https://<DOMAIN>/api/*  →  backend:8000   (FastAPI, SSE 포함)
+https://<DOMAIN>/*      →  frontend:3000  (Next.js)
 ```
 
-- `.env` 파일의 `API_URL`이 `docker-compose.yml`에서 `NEXT_PUBLIC_API_URL` 빌드 arg로 전달됩니다.
-- DB는 `./data` 볼륨으로 마운트되어 컨테이너 재시작 시에도 유지됩니다. 컨테이너 내부 경로: `/data/profit-lab.db`
+```bash
+# .env 에 DOMAIN / API_URL / ALLOWED_ORIGINS 를 도메인으로 설정 후
+docker compose up -d --build
+
+# → https://<DOMAIN>  (Caddy가 80/443 처리, 인증서 자동)
+```
+
+- **`DOMAIN`**: 공개 도메인 (예: DuckDNS `yourname.duckdns.org`). Caddy가 이 도메인으로 인증서를 발급합니다.
+- **same-origin 구조**: 프론트가 `https://<DOMAIN>/api/*`로 호출하므로 CORS가 사실상 불필요해집니다 (`ALLOWED_ORIGINS`는 안전망).
+- backend/frontend는 호스트에 포트를 노출하지 않고 **Caddy를 통해서만** 접근됩니다 (`:8000`/`:3000` 직접 노출 없음).
+- DB는 `./data` 볼륨으로 마운트되어 재시작 시에도 유지됩니다. 컨테이너 내부 경로: `/data/profit-lab.db`
 - Telegram 세션 파일(`data/telegram.session`)은 로컬에서 생성 후 서버로 복사해야 합니다.
 
 ```bash
@@ -251,20 +260,24 @@ sudo apt update && sudo apt install -y docker.io docker-compose-v2
 sudo systemctl enable --now docker
 sudo usermod -aG docker $USER  # 재로그인 필요
 
-# 2) 코드 클론 & 환경 설정
+# 2) DuckDNS 도메인 등록 (https://www.duckdns.org)
+#    - 서브도메인 생성 후, 해당 도메인이 이 서버의 공인 IP를 가리키도록 설정
+#    - 동적 IP면 DuckDNS 갱신 cron 추가 (고정 IP면 불필요)
+
+# 3) 코드 클론 & 환경 설정
 git clone <repo-url> ~/Work/profit-lab
 cd ~/Work/profit-lab
 cp .env.example .env
-vi .env  # API 키, API_URL 설정
+vi .env  # API 키 + DOMAIN / API_URL / ALLOWED_ORIGINS (도메인) + 관리자 인증
 
-# 3) Telegram 세션 파일 복사 (로컬에서)
+# 4) Telegram 세션 파일 복사 (로컬에서)
 scp data/telegram.session user@server:~/Work/profit-lab/data/
 
-# 4) 실행
+# 5) 실행 (Caddy가 인증서 자동 발급)
 docker compose up -d --build
 ```
 
-> **방화벽**: 서버의 Security List(OCI) 또는 Security Group(AWS)에서 3000, 8000 포트 인그레스를 허용해야 합니다.
+> **방화벽**: 서버의 Security List(OCI) 또는 Security Group(AWS)에서 **80, 443** 포트 인그레스를 허용해야 합니다. (Caddy가 80에서 인증서 챌린지·HTTPS 리다이렉트, 443에서 서비스. `3000`/`8000`은 더 이상 외부 노출하지 않습니다.)
 
 ## Configuration
 

@@ -332,10 +332,11 @@ Telegram 채널의 트레이딩 시그널을 자동 수신·실행하는 시스�
 - **주문 입력 페이지(`/benchmark`)**: 비로그인 시 진입 자체를 차단 — 폼 미표시 + 로그인 모달 자동 표시
 - 헤더에 로그인/로그아웃 토글 버튼 (인증 상태 표시)
 
-### 5E-4. 배포 주의
-- 토큰·비밀번호가 평문 HTTP로 노출되지 않도록 운영 환경에서는 **HTTPS(TLS) 적용 필요** (DNS 도메인 등록 후 Let's Encrypt 등으로 적용)
-- **CORS**: `allow_origins`는 환경변수 `ALLOWED_ORIGINS`(콤마 구분)로 주입. 기본값 `http://localhost:3000`(개발), 배포 시 프론트 도메인 지정. 토큰을 `Authorization` 헤더로 전송하므로 `allow_credentials`는 사용하지 않음
-- **호스트 주소**: repo 문서/예시에는 실제 IP/도메인을 박지 않고 플레이스홀더 사용. 실제 값은 `.env`(gitignore)에서만 관리
+### 5E-4. 배포 (Caddy + 자동 HTTPS)
+- **리버스 프록시**: `Caddyfile` + docker-compose의 `caddy` 서비스가 단일 도메인(`{$DOMAIN}`)으로 통합. `/api/*` → backend:8000, 그 외 → frontend:3000. backend/frontend는 호스트 포트를 노출하지 않고 Caddy를 통해서만 접근
+- **HTTPS**: Caddy가 Let's Encrypt로 인증서 **자동 발급·갱신**. 토큰·비밀번호의 평문 전송 문제 해소. (도메인: DuckDNS 등, 방화벽 80/443)
+- **CORS**: `allow_origins`는 환경변수 `ALLOWED_ORIGINS`(콤마 구분)로 주입. Caddy same-origin 구조에서는 사실상 안전망. 토큰을 `Authorization` 헤더로 전송하므로 `allow_credentials`는 사용하지 않음
+- **호스트 주소**: repo 문서/예시에는 실제 IP/도메인을 박지 않고 플레이스홀더 사용. 실제 값은 `.env`(gitignore)의 `DOMAIN`/`API_URL`/`ALLOWED_ORIGINS`에서만 관리. 단순 DNS는 IP 은닉이 안 되므로, IP 은닉이 필요하면 Cloudflare 프록시 또는 origin 방화벽으로 별도 처리
 
 ---
 

@@ -1,0 +1,16 @@
+# Caddy reverse proxy — automatic HTTPS via Let's Encrypt.
+# DOMAIN is injected from the environment (see docker-compose.yml / .env).
+# Local/dev without a public domain: set DOMAIN=localhost (Caddy uses its internal CA).
+
+{$DOMAIN} {
+	# Backend API (FastAPI). Includes SSE at /api/benchmark/stream — Caddy streams
+	# text/event-stream responses without buffering by default.
+	handle /api/* {
+		reverse_proxy backend:8000
+	}
+
+	# Frontend (Next.js standalone) — everything else.
+	handle {
+		reverse_proxy frontend:3000
+	}
+}

@@ -1,8 +1,25 @@
 services:
+  caddy:
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
   backend:
     build: ./backend
-    ports:
-      - "8000:8000"
+    # Internal only — reachable via Caddy at /api/*, not exposed to the host.
+    expose:
+      - "8000"
     volumes:
       - ./data:/data
     env_file:
@@ -13,9 +30,15 @@ services:
     build:
       context: ./frontend
       args:
+        # Same-origin: frontend calls https://<domain>/api/* (Caddy routes to backend).
         - NEXT_PUBLIC_API_URL=${API_URL:-http://localhost:8000}
-    ports:
-      - "3000:3000"
+    # Internal only — served via Caddy, not exposed to the host.
+    expose:
+      - "3000"
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
