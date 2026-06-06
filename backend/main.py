@@ -86,10 +86,17 @@ async def lifespan(app):
 
 app = FastAPI(title="Profit Lab", version="0.1.0", lifespan=lifespan)
 
+# CORS origins from env (comma-separated). Defaults to local dev frontend.
+# Production: set ALLOWED_ORIGINS to the deployed frontend domain in .env.
+_allowed_origins = [
+    o.strip()
+    for o in os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

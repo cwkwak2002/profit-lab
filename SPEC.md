@@ -333,8 +333,9 @@ Telegram 채널의 트레이딩 시그널을 자동 수신·실행하는 시스�
 - 헤더에 로그인/로그아웃 토글 버튼 (인증 상태 표시)
 
 ### 5E-4. 배포 주의
-- 토큰·비밀번호가 평문 HTTP로 노출되지 않도록 운영 환경에서는 **HTTPS(TLS) 적용 필요** (현재 HTTP — 인프라 레벨에서 별도 적용 예정)
-- CORS는 배포 프론트 오리진으로 제한 권장
+- 토큰·비밀번호가 평문 HTTP로 노출되지 않도록 운영 환경에서는 **HTTPS(TLS) 적용 필요** (DNS 도메인 등록 후 Let's Encrypt 등으로 적용)
+- **CORS**: `allow_origins`는 환경변수 `ALLOWED_ORIGINS`(콤마 구분)로 주입. 기본값 `http://localhost:3000`(개발), 배포 시 프론트 도메인 지정. 토큰을 `Authorization` 헤더로 전송하므로 `allow_credentials`는 사용하지 않음
+- **호스트 주소**: repo 문서/예시에는 실제 IP/도메인을 박지 않고 플레이스홀더 사용. 실제 값은 `.env`(gitignore)에서만 관리
 
 ---
 

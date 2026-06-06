@@ -157,6 +157,7 @@ TELEGRAM_API_ID=12345678              # Telegram Listener용
 TELEGRAM_API_HASH=abcdef...           # Telegram Listener용
 TELEGRAM_CHANNEL=MirrorlyLive         # Telegram 채널명
 API_URL=http://<backend-host>:8000    # Docker 배포 시 Backend URL
+ALLOWED_ORIGINS=http://localhost:3000 # CORS 허용 오리진(콤마 구분). 배포 시 프론트 도메인
 
 # 관리자 인증 (쓰기/관리 엔드포인트 보호에 필수)
 ADMIN_USERNAME=admin                  # 관리자 로그인 ID
