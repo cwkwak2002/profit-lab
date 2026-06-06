@@ -264,17 +264,24 @@ sudo usermod -aG docker $USER  # 재로그인 필요
 #    - 서브도메인 생성 후, 해당 도메인이 이 서버의 공인 IP를 가리키도록 설정
 #    - 동적 IP면 DuckDNS 갱신 cron 추가 (고정 IP면 불필요)
 
-# 3) 코드 클론 & 환경 설정
+# 3) 관리자 인증 값 생성 (로컬에서 — 서버에 Python 환경 불필요)
+#    - 비밀번호 해시: cd backend && python scripts/hash_password.py  → 출력된 해시를 .env 의 ADMIN_PASSWORD_HASH 에
+#    - JWT_SECRET:    python -c "import secrets; print(secrets.token_urlsafe(48))"
+
+# 4) 코드 클론 & 환경 설정
 git clone <repo-url> ~/Work/profit-lab
 cd ~/Work/profit-lab
 cp .env.example .env
-vi .env  # API 키 + DOMAIN / API_URL / ALLOWED_ORIGINS (도메인) + 관리자 인증
+vi .env  # API 키 + DOMAIN / API_URL / ALLOWED_ORIGINS (도메인)
+         # + 관리자 인증: ADMIN_USERNAME / ADMIN_PASSWORD_HASH(위에서 생성) / JWT_SECRET
 
-# 4) Telegram 세션 파일 복사 (로컬에서)
+# 5) Telegram 세션 파일 복사 (로컬에서)
 scp data/telegram.session user@server:~/Work/profit-lab/data/
 
-# 5) 실행 (Caddy가 인증서 자동 발급)
+# 6) 실행 (Caddy가 인증서 자동 발급)
 docker compose up -d --build
+
+# 7) 확인: https://<DOMAIN> 접속 → 로그인 → 관리 기능 동작
 ```
 
 > **방화벽**: 서버의 Security List(OCI) 또는 Security Group(AWS)에서 **80, 443** 포트 인그레스를 허용해야 합니다. (Caddy가 80에서 인증서 챌린지·HTTPS 리다이렉트, 443에서 서비스. `3000`/`8000`은 더 이상 외부 노출하지 않습니다.)
