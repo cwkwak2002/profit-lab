@@ -1,8 +1,9 @@
 import pandas as pd
 import pandas_ta as ta
 from pydantic import BaseModel
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from auth import require_token
 from data.db import get_db, get_candles, save_candles
 from data.fetcher import get_exchange, fetch_ohlcv, fetch_available_symbols, date_to_ms, end_date_to_ms, get_stored_range
 from config import (
@@ -24,7 +25,7 @@ class SyncResponse(BaseModel):
     errors: dict[str, str]
 
 
-@router.post("/sync", response_model=SyncResponse)
+@router.post("/sync", response_model=SyncResponse, dependencies=[Depends(require_token)])
 def sync_data(req: SyncRequest):
     """Fetch and store OHLCV data for specified coins and date range."""
     exchange = get_exchange()

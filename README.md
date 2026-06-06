@@ -18,6 +18,7 @@
 | **데이터 수집** | CCXT (Bybit Futures) |
 | **AI** | Anthropic Claude API (claude-sonnet-4) |
 | **메시징** | Telethon (Telegram userbot) |
+| **인증** | JWT (PyJWT, HS256) + bcrypt 비밀번호 해시 (관리자 단일 계정) |
 | **배포** | Docker, Docker Compose |
 | **UI 디자인** | Pixel-Retro 디자인 시스템 (Press Start 2P, JetBrains Mono), shadcn/ui |
 
@@ -78,6 +79,8 @@ profit-lab/
 ├── backend/
 │   ├── main.py                    # FastAPI 앱 + lifespan (3개 백그라운드 태스크)
 │   ├── config.py                  # 설정 (코인 목록, 전략 파라미터, 수수료)
+│   ├── auth.py                    # 관리자 인증 (bcrypt 검증 + JWT 발급/검증, require_token)
+│   ├── scripts/hash_password.py   # bcrypt 비밀번호 해시 생성기
 │   ├── Dockerfile                 # Backend Docker 이미지
 │   ├── data/
 │   │   ├── db.py                  # SQLite DB 연산 (WAL, timeout=30)
@@ -93,6 +96,7 @@ profit-lab/
 │   │   ├── ai_trader.py           # Claude API 자동 매매 (Calico)
 │   │   └── telegram_listener.py   # Telegram 시그널 리스너
 │   └── routers/
+│       ├── auth.py                # 관리자 로그인 (JWT 발급)
 │       ├── data.py                # 데이터 동기화/캔들/티커 API
 │       ├── backtest.py            # 백테스트 실행/결과 API (gap detection)
 │       └── benchmark.py           # 벤치마크 API + SSE
@@ -110,8 +114,9 @@ profit-lab/
 │   │   ├── tokens/                # CSS 토큰 (px.ts, pixel-retro.css)
 │   │   ├── primitives/            # 기본 UI 컴포넌트 (Button, Card, Badge 등)
 │   │   ├── patterns/              # 복합 패턴 (MetricRow, StatCard 등)
-│   │   └── providers/             # ThemeProvider
-│   ├── lib/api.ts                 # API 클라이언트
+│   │   └── providers/             # ThemeProvider, AuthProvider (로그인 모달 + 토큰/guard)
+│   ├── lib/api.ts                 # API 클라이언트 (토큰 헤더 자동 첨부, 401 처리)
+│   ├── lib/auth.ts                # 토큰 저장(localStorage)/만료 이벤트
 │   └── Dockerfile                 # Frontend Docker 이미지
 │
 ├── stitch/                        # UI 목업 & 디자인 스펙
@@ -151,10 +156,26 @@ ANTHROPIC_API_KEY=sk-ant-...          # AI Auto-Trader용
 TELEGRAM_API_ID=12345678              # Telegram Listener용
 TELEGRAM_API_HASH=abcdef...           # Telegram Listener용
 TELEGRAM_CHANNEL=MirrorlyLive         # Telegram 채널명
-API_URL=http://138.2.114.50:8000      # Docker 배포 시 Backend URL
+API_URL=http://<backend-host>:8000    # Docker 배포 시 Backend URL
+
+# 관리자 인증 (쓰기/관리 엔드포인트 보호에 필수)
+ADMIN_USERNAME=admin                  # 관리자 로그인 ID
+ADMIN_PASSWORD_HASH=$2b$12$...        # bcrypt 해시 (아래 스크립트로 생성)
+JWT_SECRET=<long-random-string>       # 토큰 서명 키. python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
 > **로컬 개발 시** `.env.local` 파일을 만들면 `.env`를 오버라이드합니다. `.env.local`은 git에 포함되지 않으므로 개인 설정에 적합합니다.
+
+#### 관리자 비밀번호 해시 생성
+
+비밀번호는 평문이 아닌 bcrypt 해시로 저장합니다. 아래 스크립트로 해시를 생성해 `ADMIN_PASSWORD_HASH`에 넣습니다.
+
+```bash
+cd backend
+python scripts/hash_password.py   # 비밀번호 입력 → 출력된 해시를 .env에 복사
+```
+
+> 로그인에 쓰는 **ID와 원본 비밀번호만 기억**하면 됩니다. `ADMIN_PASSWORD_HASH`·`JWT_SECRET`은 서버가 내부적으로만 사용하므로 외울 필요가 없습니다(분실 시 재생성). `JWT_SECRET`을 변경하면 발급된 모든 토큰이 무효화되어 재로그인이 필요합니다.
 
 #### SSL 인증서 설정 (Cloudflare WARP 등 사용 시)
 
@@ -259,19 +280,27 @@ docker compose up -d --build
 
 ## API Endpoints
 
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| `POST` | `/api/data/sync` | 캔들 데이터 수집 & 저장 (1m, 1h) |
-| `GET` | `/api/data/candles` | 캔들 데이터 + 지표 조회 |
-| `GET` | `/api/data/ticker` | 실시간 티커 (현재가) 조회 |
-| `GET` | `/api/data/symbols` | 거래 가능 심볼 목록 |
-| `POST` | `/api/backtest/run-stream` | 백테스트 실행 (SSE 진행률) |
-| `GET` | `/api/backtest/{id}/summary` | 백테스트 결과 요약 |
-| `GET` | `/api/backtest/{id}/coins` | 코인별 결과 목록 |
-| `GET` | `/api/backtest/{id}/coins/{symbol}/trades` | 트레이드 상세 |
-| `POST` | `/api/benchmark/orders` | 벤치마크 주문 제출 |
-| `GET` | `/api/benchmark/models` | 모델 리더보드 |
-| `GET` | `/api/benchmark/models/{id}` | 모델 상세 |
-| `GET` | `/api/benchmark/models/{id}/orders` | 모델 주문 내역 |
-| `GET` | `/api/benchmark/models/{id}/batches` | 모델 배치 목록 |
-| `GET` | `/api/benchmark/stream` | 실시간 SSE 스트림 |
+🔒 = 관리자 JWT 토큰 필요 (`Authorization: Bearer <token>`). 그 외는 공개(조회·백테스트).
+
+| Method | Endpoint | 인증 | 설명 |
+|--------|----------|:--:|------|
+| `POST` | `/api/auth/login` | — | 관리자 로그인 (ID/PW → JWT 발급) |
+| `POST` | `/api/data/sync` | 🔒 | 캔들 데이터 수집 & 저장 (1m, 1h) |
+| `GET` | `/api/data/candles` | — | 캔들 데이터 + 지표 조회 |
+| `GET` | `/api/data/ticker` | — | 실시간 티커 (현재가) 조회 |
+| `GET` | `/api/data/symbols` | — | 거래 가능 심볼 목록 |
+| `POST` | `/api/backtest/run-stream` | — | 백테스트 실행 (SSE 진행률) |
+| `GET` | `/api/backtest/{id}/summary` | — | 백테스트 결과 요약 |
+| `GET` | `/api/backtest/{id}/coins` | — | 코인별 결과 목록 |
+| `GET` | `/api/backtest/{id}/coins/{symbol}/trades` | — | 트레이드 상세 |
+| `POST` | `/api/benchmark/orders` | 🔒 | 벤치마크 주문 제출 |
+| `PATCH` | `/api/benchmark/orders/{id}` | 🔒 | 주문 수정 |
+| `PATCH` | `/api/benchmark/models/{id}` | 🔒 | 모델 이름 변경 |
+| `DELETE` | `/api/benchmark/models/{id}` | 🔒 | 모델 삭제 (주문/배치 포함) |
+| `PATCH` | `/api/benchmark/batches/{id}` | 🔒 | 배치(시장 분석) 수정 |
+| `DELETE` | `/api/benchmark/batches/{id}` | 🔒 | 배치 삭제 |
+| `GET` | `/api/benchmark/models` | — | 모델 리더보드 |
+| `GET` | `/api/benchmark/models/{id}` | — | 모델 상세 |
+| `GET` | `/api/benchmark/models/{id}/orders` | — | 모델 주문 내역 |
+| `GET` | `/api/benchmark/models/{id}/batches` | — | 모델 배치 목록 |
+| `GET` | `/api/benchmark/stream` | — | 실시간 SSE 스트림 |

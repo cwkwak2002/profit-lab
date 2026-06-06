@@ -1,12 +1,47 @@
+import { getToken, clearToken, notifyAuthExpired } from "./auth";
+
 const _apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${_apiBase}${path}`, {
     ...options,
-    headers: { "Content-Type": "application/json", ...options?.headers },
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+      ...options?.headers,
+    },
   });
+  if (res.status === 401) {
+    clearToken();
+    notifyAuthExpired();
+  }
   if (!res.ok) {
     throw new Error(`API error: ${res.status} ${res.statusText}`);
+  }
+  return res.json();
+}
+
+// --- Auth ---
+
+export async function login(
+  username: string,
+  password: string,
+): Promise<{ access_token: string; token_type: string }> {
+  const res = await fetch(`${_apiBase}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  if (res.status === 401) {
+    throw new Error("아이디 또는 비밀번호가 올바르지 않습니다.");
+  }
+  if (!res.ok) {
+    throw new Error(`로그인 실패: ${res.status} ${res.statusText}`);
   }
   return res.json();
 }

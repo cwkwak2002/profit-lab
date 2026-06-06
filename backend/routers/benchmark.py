@@ -6,10 +6,11 @@ import uuid
 from datetime import datetime, timezone
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from auth import require_token
 from config import BENCHMARK_SEED, BENCHMARK_LEVERAGE, TAKER_FEE, SLIPPAGE, TOP_COINS
 from data.db import (
     get_db, get_or_create_model, get_benchmark_model, get_all_benchmark_models,
@@ -122,7 +123,7 @@ def get_batches(model_id: str):
     return {"batches": batches}
 
 
-@router.patch("/models/{model_id}")
+@router.patch("/models/{model_id}", dependencies=[Depends(require_token)])
 def rename_model(model_id: str, req: RenameModelRequest):
     """Rename a benchmark model."""
     new_name = req.name.strip()
@@ -143,7 +144,7 @@ def rename_model(model_id: str, req: RenameModelRequest):
     return {"ok": True}
 
 
-@router.delete("/models/{model_id}")
+@router.delete("/models/{model_id}", dependencies=[Depends(require_token)])
 def remove_model(model_id: str):
     """Delete a model and all its orders/batches."""
     with get_db() as conn:
@@ -154,7 +155,7 @@ def remove_model(model_id: str):
     return {"ok": True}
 
 
-@router.patch("/orders/{order_id}")
+@router.patch("/orders/{order_id}", dependencies=[Depends(require_token)])
 def patch_order(order_id: int, req: UpdateOrderRequest):
     """Update editable fields on an order.
 
@@ -225,7 +226,7 @@ def patch_order(order_id: int, req: UpdateOrderRequest):
     return {"ok": True}
 
 
-@router.patch("/batches/{batch_id}")
+@router.patch("/batches/{batch_id}", dependencies=[Depends(require_token)])
 def patch_batch(batch_id: str, req: UpdateBatchRequest):
     """Update market analysis on a batch."""
     with get_db() as conn:
@@ -236,7 +237,7 @@ def patch_batch(batch_id: str, req: UpdateBatchRequest):
     return {"ok": True}
 
 
-@router.delete("/batches/{batch_id}")
+@router.delete("/batches/{batch_id}", dependencies=[Depends(require_token)])
 def remove_batch(batch_id: str):
     """Delete a batch: cancel PENDING orders, remove batch record.
 
@@ -253,7 +254,7 @@ def remove_batch(batch_id: str):
     return {"ok": True, "cancelled_orders": cancelled_count}
 
 
-@router.post("/orders")
+@router.post("/orders", dependencies=[Depends(require_token)])
 def submit_orders(req: SubmitOrdersRequest):
     """Submit a batch of orders (and/or market analysis) for an AI model."""
     if not req.orders and not req.market_analysis.strip():

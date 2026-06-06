@@ -16,6 +16,7 @@
 | **테이블** | TanStack Table (필터/정렬/페이지네이션) |
 | **DB** | SQLite |
 | **데이터 수집** | ccxt (Bybit Futures) |
+| **인증** | JWT (PyJWT, HS256) + bcrypt 비밀번호 해시 (관리자 단일 계정) |
 
 ---
 
@@ -142,8 +143,13 @@
 
 ## 5. API 엔드포인트 설계
 
+> 🔒 표시 엔드포인트는 관리자 JWT 토큰 필요 (`Authorization: Bearer <token>`). 상세 정책은 [5E. 관리자 인증 & 접근 제어](#5e-관리자-인증--접근-제어) 참조.
+
+### 5-0. 인증
+- `POST /api/auth/login` — 관리자 로그인. `{username, password}` → `{access_token, token_type}` (JWT, HS256, 12h 만료)
+
 ### 5-1. 데이터 수집
-- `POST /api/data/sync` — 지정 코인/기간의 1H, 1m 봉 데이터 수집 및 DB 저장
+- 🔒 `POST /api/data/sync` — 지정 코인/기간의 1H, 1m 봉 데이터 수집 및 DB 저장
 
 ### 5-2. 백테스트 실행
 - `POST /api/backtest/run` — 백테스트 실행
@@ -169,7 +175,12 @@
 - `GET /api/benchmark/models/{id}` — 모델 상세 + 성과 지표
 - `GET /api/benchmark/models/{id}/orders` — 모델의 전체 주문 내역
 - `GET /api/benchmark/models/{id}/batches` — 모델의 배치 목록 (시장 분석 포함)
-- `POST /api/benchmark/orders` — 배치 주문 제출 (model_name + market_analysis + orders[])
+- 🔒 `POST /api/benchmark/orders` — 배치 주문 제출 (model_name + market_analysis + orders[])
+- 🔒 `PATCH /api/benchmark/orders/{id}` — 주문 수정
+- 🔒 `PATCH /api/benchmark/models/{id}` — 모델 이름 변경
+- 🔒 `DELETE /api/benchmark/models/{id}` — 모델 삭제 (주문/배치 포함)
+- 🔒 `PATCH /api/benchmark/batches/{id}` — 배치(시장 분석) 수정
+- 🔒 `DELETE /api/benchmark/batches/{id}` — 배치 삭제
 - `GET /api/benchmark/stream` — SSE 실시간 주문 상태 변경 이벤트
 
 ---
@@ -298,6 +309,35 @@ Telegram 채널의 트레이딩 시그널을 자동 수신·실행하는 시스�
 
 ---
 
+## 5E. 관리자 인증 & 접근 제어
+
+쓰기/관리 작업을 관리자 전용으로 제한한다. 조회와 백테스트 실행은 공개로 유지한다.
+
+### 5E-1. 계정 & 토큰
+- **단일 관리자 계정**: `.env`의 `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`(bcrypt), `JWT_SECRET`로 구성
+- **비밀번호**: 평문이 아닌 bcrypt 해시로만 저장 (`backend/scripts/hash_password.py`로 생성)
+- **로그인**: `POST /api/auth/login` (ID/PW 검증) → JWT(HS256) 발급, 만료 12시간
+- **검증**: 보호 엔드포인트는 `auth.require_token` 의존성으로 `Authorization: Bearer <token>` 검증, 실패 시 401
+
+### 5E-2. 접근 정책
+| 분류 | 대상 | 접근 |
+|---|---|---|
+| 쓰기/관리 | POST/PATCH/DELETE — 주문 제출·수정, 모델·배치 수정·삭제, 데이터 동기화 | 관리자 전용 🔒 |
+| 조회 | 모든 GET — 리더보드, 모델/주문/배치 조회, SSE 스트림 | 공개 |
+| 백테스트 | `POST /api/backtest/run-stream` | 공개 |
+
+### 5E-3. 프론트엔드 동작
+- 토큰을 localStorage에 저장, 모든 API 요청 헤더에 자동 첨부, 401 응답 시 자동 로그아웃
+- **관리 UI 패턴 — "보여주고 로그인 유도"**: 관리 버튼(주문 제출/수정/삭제/이름변경 등)은 비로그인 시 자물쇠(🔒) 표시, 클릭 시 로그인 모달, 로그인 성공 후 원래 동작을 이어서 수행 (`guard`)
+- **주문 입력 페이지(`/benchmark`)**: 비로그인 시 진입 자체를 차단 — 폼 미표시 + 로그인 모달 자동 표시
+- 헤더에 로그인/로그아웃 토글 버튼 (인증 상태 표시)
+
+### 5E-4. 배포 주의
+- 토큰·비밀번호가 평문 HTTP로 노출되지 않도록 운영 환경에서는 **HTTPS(TLS) 적용 필요** (현재 HTTP — 인프라 레벨에서 별도 적용 예정)
+- CORS는 배포 프론트 오리진으로 제한 권장
+
+---
+
 ## 6. 프론트엔드 페이지 구성
 
 ### 6-1. 백테스트 실행 페이지 (`/backtest`)
@@ -330,6 +370,7 @@ Telegram 채널의 트레이딩 시그널을 자동 수신·실행하는 시스�
 - 차트 탭이 아닌 수익 곡선 탭이면 클릭 무시 (이동 없음)
 
 ### 6-4. AI 벤치마크 — 주문 입력 (`/benchmark`)
+- **접근 제한**: 관리자 전용 — 비로그인 시 진입 차단(폼 미표시) + 로그인 모달 자동 표시 (→ 5E 참조)
 - **모델명 입력**: 기존 모델 autocomplete + 신규 모델 생성
 - **가용잔액 표시**: 기존 모델 선택 시 잔액 표시 (신규 모델은 $100)
 - **시장 분석**: 텍스트 영역 — 배치 내 전체 주문에 적용되는 시장 관점 기록
@@ -468,6 +509,8 @@ profit-lab/
 ├── backend/
 │   ├── main.py                    # FastAPI 앱 + lifespan (3개 백그라운드 태스크)
 │   ├── config.py                  # 설정값 (코인 목록, 수수료, 벤치마크 설정 등)
+│   ├── auth.py                    # 관리자 인증 (bcrypt 검증 + JWT 발급/검증, require_token)
+│   ├── scripts/hash_password.py   # bcrypt 비밀번호 해시 생성기
 │   ├── Dockerfile
 │   ├── data/
 │   │   ├── fetcher.py             # ccxt Bybit Futures 데이터 수집
@@ -483,6 +526,7 @@ profit-lab/
 │   │   ├── ai_trader.py           # Claude API 자동 매매 (Calico)
 │   │   └── telegram_listener.py   # Telegram 시그널 리스너 (Mirroly Live)
 │   └── routers/
+│       ├── auth.py                # 관리자 로그인 (JWT 발급)
 │       ├── data.py                # 데이터 수집/캔들/티커 API
 │       ├── backtest.py            # 백테스트 실행/조회 API
 │       └── benchmark.py           # AI 벤치마크 API + SSE 스트림
@@ -508,9 +552,11 @@ profit-lab/
 │   │   ├── resizable-split.tsx
 │   │   ├── trade-table.tsx
 │   │   └── coin-summary-table.tsx
+│   ├── design-system/providers/      # ThemeProvider, AuthProvider (로그인 모달 + 토큰/guard)
 │   ├── public/tradingview/           # TradingView Charting Library (self-hosted)
 │   └── lib/
-│       └── api.ts                    # Backend API 호출 함수
+│       ├── api.ts                    # Backend API 호출 함수 (토큰 헤더 자동 첨부, 401 처리)
+│       └── auth.ts                   # 토큰 저장(localStorage)/만료 이벤트
 ├── data/                             # DB, 로그 (gitignore)
 │   ├── profit-lab.db
 │   ├── ai_trader_logs/

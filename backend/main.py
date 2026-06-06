@@ -58,6 +58,7 @@ if _ca:
 from fastapi.middleware.cors import CORSMiddleware
 
 from data.db import init_db
+from routers.auth import router as auth_router
 from routers.data import router as data_router
 from routers.backtest import router as backtest_router
 from routers.benchmark import router as benchmark_router
@@ -93,6 +94,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(data_router)
 app.include_router(backtest_router)
 app.include_router(benchmark_router)
