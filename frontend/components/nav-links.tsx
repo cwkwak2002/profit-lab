@@ -5,29 +5,31 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const links = [
-  { href: "/backtest",         label: "▶ Strategy Backtest", match: "/backtest" },
-  { href: "/benchmark/models", label: "★ Live Benchmark",    match: "/benchmark" },
+  { href: "/backtest",         label: "Strategy Backtest", match: "/backtest" },
+  { href: "/benchmark/models", label: "Live Benchmark",    match: "/benchmark" },
 ];
 
 const BASE: React.CSSProperties = {
-  fontFamily: "var(--font-pixel), monospace",
-  fontSize: 12,
-  color: "var(--px-cyan)",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  fontWeight: 500,
+  color: "var(--px-grey-mid)",
   textDecoration: "none",
-  padding: "4px 10px",
-  border: "2px solid transparent",
+  padding: "6px 10px",
+  borderRadius: 6,
   lineHeight: 1,
   display: "inline-block",
-  transition: "all 0.1s steps(1)",
+  transition: "color 0.15s ease",
 };
 
 const ACTIVE: React.CSSProperties = {
   ...BASE,
+  color: "var(--px-white)",
 };
 
 const HOVER: React.CSSProperties = {
   ...BASE,
-  color: "#fff",
+  color: "var(--px-white)",
 };
 
 export function NavLinks() {

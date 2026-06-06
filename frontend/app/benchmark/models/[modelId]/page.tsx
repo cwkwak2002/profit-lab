@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { PxPixelDeco } from "@/components/px-pixel-deco";
 import { PX } from "@/design-system/tokens/px";
 import { TableCell, TableRow } from "@/components/ui/table";
 import ReactMarkdown from "react-markdown";
@@ -38,7 +37,7 @@ const TOP_COINS = [
 function statusBadge(status: string) {
   const cfg: Record<string, { color: string; bg: string }> = {
     PENDING:   { color: PX.yellow, bg: "rgba(255,224,0,0.1)" },
-    FILLED:    { color: PX.cyan,   bg: "rgba(0,238,255,0.1)" },
+    FILLED:    { color: PX.cyan,   bg: "rgba(94,106,210,0.1)" },
     CLOSED:    { color: PX.mid,    bg: "rgba(136,136,170,0.1)" },
     CANCELLED: { color: PX.red,    bg: "rgba(255,51,51,0.1)" },
     INVALID:   { color: PX.pink,   bg: "rgba(255,45,120,0.1)" },
@@ -100,10 +99,10 @@ function StatItem({ label, value, color, sub }: { label: string; value: string; 
     <div style={{
       padding: "10px 12px",
       borderLeft: `3px solid ${color || PX.border}`,
-      background: "rgba(51,85,255,0.05)",
+      background: "rgba(94,106,210,0.05)",
       marginBottom: 4,
     }}>
-      <div style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.06em", marginBottom: 6, textTransform: "uppercase" as const }}>
+      <div style={{ fontFamily: PX.fb, fontSize: 11, color: PX.mid, letterSpacing: "0.06em", marginBottom: 6, textTransform: "uppercase" as const }}>
         {label}
       </div>
       <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: color || PX.white, lineHeight: 1 }}>
@@ -137,8 +136,8 @@ function EditableAnalysis({ batch, onSave }: { batch: BenchmarkBatch; onSave: ()
         onClick={() => guard(() => { setEditing(true); setText(batch.market_analysis); })}
         title="클릭하여 수정"
         style={{
-          background: "rgba(51,85,255,0.06)",
-          border: `1px solid rgba(51,85,255,0.3)`,
+          background: "rgba(94,106,210,0.06)",
+          border: `1px solid rgba(94,106,210,0.3)`,
           padding: "12px 14px",
           cursor: "pointer",
           position: "relative",
@@ -153,7 +152,7 @@ function EditableAnalysis({ batch, onSave }: { batch: BenchmarkBatch; onSave: ()
         )}
         <span style={{
           position: "absolute", top: 6, right: 10,
-          fontFamily: PX.fp, fontSize: 8, color: PX.mid,
+          fontFamily: PX.fb, fontSize: 11, color: PX.mid,
           opacity: 0,
         }}
           className="edit-hint"
@@ -180,7 +179,7 @@ function EditableAnalysis({ batch, onSave }: { batch: BenchmarkBatch; onSave: ()
         <button
           onClick={handleSave} disabled={saving}
           style={{
-            padding: "6px 14px", fontFamily: PX.fp, fontSize: 9,
+            padding: "6px 14px", fontFamily: PX.fb, fontSize: 12,
             background: saving ? PX.dim : PX.cyan, color: "#000",
             border: "none", cursor: saving ? "default" : "pointer",
           }}
@@ -190,7 +189,7 @@ function EditableAnalysis({ batch, onSave }: { batch: BenchmarkBatch; onSave: ()
         <button
           onClick={() => setEditing(false)}
           style={{
-            padding: "6px 14px", fontFamily: PX.fp, fontSize: 9,
+            padding: "6px 14px", fontFamily: PX.fb, fontSize: 12,
             background: "transparent", color: PX.mid,
             border: `1px solid ${PX.mid}`, cursor: "pointer",
           }}
@@ -256,7 +255,7 @@ function EditableOrderRow({
   const td: React.CSSProperties = {
     padding: "9px 10px",
     fontFamily: PX.fm, fontSize: 13,
-    borderBottom: "1px solid rgba(51,85,255,0.15)",
+    borderBottom: "1px solid rgba(94,106,210,0.15)",
     color: PX.white,
   };
   const tdMid: React.CSSProperties = { ...td, color: PX.mid };
@@ -265,8 +264,8 @@ function EditableOrderRow({
     return (
       <TableRow
         className="group"
-        style={{ cursor: "pointer", transition: "background 0.1s steps(1)" }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(51,85,255,0.1)")}
+        style={{ cursor: "pointer", transition: "background 0.1s ease" }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(94,106,210,0.1)")}
         onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
       >
         <TableCell style={tdMid}>
@@ -329,7 +328,7 @@ function EditableOrderRow({
         </TableCell>
         <TableCell style={td}>
           <button
-            style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer", opacity: 0 }}
+            style={{ fontFamily: PX.fb, fontSize: 11, color: PX.dim, background: "none", border: "none", cursor: "pointer", opacity: 0 }}
             className="group-hover:opacity-100-btn"
             onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = PX.cyan; }}
             onMouseLeave={(e) => { e.currentTarget.style.opacity = "0"; e.currentTarget.style.color = PX.dim; }}
@@ -342,7 +341,7 @@ function EditableOrderRow({
   // Editing mode
   return (
     <>
-      <TableRow style={{ background: "rgba(51,85,255,0.08)" }}>
+      <TableRow style={{ background: "rgba(94,106,210,0.08)" }}>
         <TableCell style={{ ...td, color: PX.mid, whiteSpace: "nowrap" }}>
           <div style={{ fontFamily: PX.fm, fontSize: 10 }}>{formatTime(order.created_at)}</div>
         </TableCell>
@@ -375,7 +374,7 @@ function EditableOrderRow({
           {isPending ? (
             <div style={{ display: "flex", gap: 2 }}>{[1,2,3,4,5].map((l) => (
               <button key={l}
-                style={{ width: 18, height: 18, fontFamily: PX.fm, fontSize: 10, cursor: "pointer", border: `1px solid ${l <= (draft.confidence || 3) ? PX.cyan : PX.dim}`, background: l <= (draft.confidence || 3) ? "rgba(0,238,255,0.15)" : "transparent", color: l <= (draft.confidence || 3) ? PX.cyan : PX.mid }}
+                style={{ width: 18, height: 18, fontFamily: PX.fm, fontSize: 10, cursor: "pointer", border: `1px solid ${l <= (draft.confidence || 3) ? PX.cyan : PX.dim}`, background: l <= (draft.confidence || 3) ? "rgba(94,106,210,0.15)" : "transparent", color: l <= (draft.confidence || 3) ? PX.cyan : PX.mid }}
                 onClick={() => setDraft({ ...draft, confidence: l })}>{l}</button>
             ))}</div>
           ) : confidenceDots(order.confidence)}
@@ -396,8 +395,8 @@ function EditableOrderRow({
         </TableCell>
         <TableCell style={td}>
           <div style={{ display: "flex", gap: 6 }}>
-            <button style={{ fontFamily: PX.fp, fontSize: 9, color: PX.cyan, background: "none", border: "none", cursor: "pointer" }} onClick={handleSave} disabled={saving}>{saving ? "..." : "저장"}</button>
-            <button style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid, background: "none", border: "none", cursor: "pointer" }} onClick={() => setEditing(false)}>취소</button>
+            <button style={{ fontFamily: PX.fb, fontSize: 12, color: PX.cyan, background: "none", border: "none", cursor: "pointer" }} onClick={handleSave} disabled={saving}>{saving ? "..." : "저장"}</button>
+            <button style={{ fontFamily: PX.fb, fontSize: 11, color: PX.mid, background: "none", border: "none", cursor: "pointer" }} onClick={() => setEditing(false)}>취소</button>
           </div>
         </TableCell>
       </TableRow>
@@ -505,12 +504,12 @@ export default function ModelDetailPage() {
   }
 
   if (loading) return (
-    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fb, fontSize: 11, color: PX.mid, letterSpacing: "0.08em" }}>
       LOADING...
     </div>
   );
   if (!model) return (
-    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fb, fontSize: 11, color: PX.mid, letterSpacing: "0.08em" }}>
       MODEL NOT FOUND
     </div>
   );
@@ -529,9 +528,9 @@ export default function ModelDetailPage() {
   function TH({ children, align = "left" }: { children?: React.ReactNode; align?: "left" | "right" }) {
     return (
       <th style={{
-        fontFamily: PX.fp, fontSize: 10, color: PX.mid, letterSpacing: "0.06em",
-        padding: "10px 10px", textAlign: align, fontWeight: "normal",
-        borderBottom: `2px solid ${PX.border}`, whiteSpace: "nowrap" as const,
+        fontFamily: PX.fb, fontSize: 11, fontWeight: 500, color: PX.mid, letterSpacing: "0.02em",
+        padding: "10px 10px", textAlign: align,
+        borderBottom: `1px solid ${PX.border}`, whiteSpace: "nowrap" as const,
         background: PX.alt,
       }}>
         {children}
@@ -545,7 +544,7 @@ export default function ModelDetailPage() {
       height: "calc(100vh - 110px)",
       display: "flex",
       flexDirection: "column",
-      background: "linear-gradient(135deg, #05051e 0%, #1a0b2e 50%, #0c0c1d 100%)",
+      background: PX.black,
       color: "var(--px-white, #f0f0ff)",
       overflow: "hidden",
       position: "relative",
@@ -562,22 +561,22 @@ export default function ModelDetailPage() {
       {/* ── Header bar ── */}
       <div style={{
         flexShrink: 0, padding: "10px 20px",
-        borderBottom: `2px solid ${PX.border}`,
+        borderBottom: `1px solid ${PX.border}`,
         background: PX.alt,
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        boxShadow: `0 2px 0 rgba(51,85,255,0.3)`,
+        boxShadow: `0 2px 0 rgba(94,106,210,0.3)`,
       }}>
         {/* Left: back + title */}
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <PxPixelDeco variant="brain" size={36} />
+          <span className="material-symbols-outlined" style={{ fontSize: 32, color: PX.blue }}>psychology</span>
           <button
             onClick={() => router.push("/benchmark/models")}
             style={{
-              fontFamily: PX.fp, fontSize: 9, color: PX.cyan,
+              fontFamily: PX.fb, fontSize: 12, color: PX.cyan,
               background: "transparent", border: "none",
               padding: "4px 0", cursor: "pointer",
               letterSpacing: "0.06em",
-              transition: "color 0.1s steps(1)",
+              transition: "color 0.1s ease",
             }}
             onMouseEnter={(e) => { e.currentTarget.style.color = PX.white; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = PX.cyan; }}
@@ -585,7 +584,7 @@ export default function ModelDetailPage() {
             ← Live Benchmark
           </button>
 
-          <div style={{ width: 1, height: 20, background: PX.border }} />
+          <div style={{ width: 1, height: 20, background: PX.blue }} />
 
           {renaming ? (
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -596,18 +595,18 @@ export default function ModelDetailPage() {
                 onKeyDown={(e) => { if (e.key === "Enter") handleRename(); if (e.key === "Escape") setRenaming(false); }}
                 autoFocus
               />
-              <button onClick={handleRename} style={{ fontFamily: PX.fp, fontSize: 9, padding: "5px 12px", background: PX.cyan, color: "#000", border: "none", cursor: "pointer" }}>저장</button>
-              <button onClick={() => setRenaming(false)} style={{ fontFamily: PX.fp, fontSize: 9, padding: "5px 12px", background: "transparent", color: PX.mid, border: `1px solid ${PX.mid}`, cursor: "pointer" }}>취소</button>
+              <button onClick={handleRename} style={{ fontFamily: PX.fb, fontSize: 12, padding: "5px 12px", background: PX.cyan, color: "#000", border: "none", cursor: "pointer" }}>저장</button>
+              <button onClick={() => setRenaming(false)} style={{ fontFamily: PX.fb, fontSize: 12, padding: "5px 12px", background: "transparent", color: PX.mid, border: `1px solid ${PX.mid}`, cursor: "pointer" }}>취소</button>
               {renameError && <span style={{ fontFamily: PX.fb, fontSize: 11, color: PX.red }}>{renameError}</span>}
             </div>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <h1 style={{ fontFamily: PX.fp, fontSize: 10, color: PX.yellow, letterSpacing: 1, margin: 0, textShadow: "1px 1px 0 #886600" }}>
+              <h1 style={{ fontFamily: PX.fp, fontSize: 18, fontWeight: 600, color: PX.white, letterSpacing: "-0.3px", margin: 0 }}>
                 {model.name}
               </h1>
               <button
                 onClick={() => guard(() => { setNewName(model.name); setRenaming(true); setRenameError(""); })}
-                style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
+                style={{ fontFamily: PX.fb, fontSize: 11, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = PX.mid; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}
               >
@@ -624,21 +623,21 @@ export default function ModelDetailPage() {
             style={{
               fontFamily: PX.fb, fontSize: 13,
               padding: "7px 16px",
-              border: `2px solid ${PX.cyan}`,
-              background: "rgba(0,238,255,0.1)", color: PX.cyan,
+              border: `1px solid ${PX.cyan}`,
+              background: "rgba(94,106,210,0.1)", color: PX.cyan,
               cursor: "pointer",
-              transition: "all 0.1s steps(1)",
+              transition: "all 0.1s ease",
               display: "inline-flex", alignItems: "center", gap: 6,
             }}
             onMouseEnter={(e) => { e.currentTarget.style.background = PX.cyan; e.currentTarget.style.color = "#000"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,238,255,0.1)"; e.currentTarget.style.color = PX.cyan; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.1)"; e.currentTarget.style.color = PX.cyan; }}
           >
             {!isAuthenticated && <span className="material-symbols-outlined" style={{ fontSize: 15 }}>lock</span>}
             + 주문 입력
           </button>
           <button
             onClick={() => guard(handleDeleteModel)}
-            style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3 }}
+            style={{ fontFamily: PX.fb, fontSize: 11, color: PX.dim, background: "none", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3 }}
             onMouseEnter={(e) => { e.currentTarget.style.color = PX.red; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}
           >
@@ -654,8 +653,8 @@ export default function ModelDetailPage() {
         {/* Left sidebar */}
         <aside style={{
           width: 180, flexShrink: 0,
-          borderRight: `2px solid ${PX.border}`,
-          background: "#0e0e22",
+          borderRight: `1px solid ${PX.border}`,
+          background: PX.black,
           overflowY: "auto",
           padding: "12px 10px",
         }}>
@@ -672,7 +671,7 @@ export default function ModelDetailPage() {
           {/* Coin navigation */}
           {orderCoins.length > 0 && (
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${PX.border}` }}>
-              <div style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.06em", marginBottom: 8, textTransform: "uppercase" as const }}>
+              <div style={{ fontFamily: PX.fb, fontSize: 11, color: PX.mid, letterSpacing: "0.06em", marginBottom: 8, textTransform: "uppercase" as const }}>
                 코인 목록
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -685,11 +684,11 @@ export default function ModelDetailPage() {
                       style={{
                         display: "block", width: "100%", textAlign: "left",
                         padding: "7px 10px", cursor: "pointer",
-                        background: active ? "rgba(0,238,255,0.1)" : "transparent",
+                        background: active ? "rgba(94,106,210,0.1)" : "transparent",
                         border: active ? `1px solid ${PX.cyan}` : "1px solid transparent",
                         color: active ? PX.cyan : PX.mid,
                         fontFamily: PX.fm, fontSize: 11,
-                        transition: "all 0.1s steps(1)",
+                        transition: "all 0.1s ease",
                       }}
                       onMouseEnter={(e) => { if (!active) { e.currentTarget.style.color = PX.white; e.currentTarget.style.borderColor = PX.dim; } }}
                       onMouseLeave={(e) => { if (!active) { e.currentTarget.style.color = PX.mid; e.currentTarget.style.borderColor = "transparent"; } }}
@@ -715,7 +714,7 @@ export default function ModelDetailPage() {
                 <div style={{
                   flexShrink: 0, display: "flex", alignItems: "center", gap: 4,
                   padding: "8px 14px",
-                  borderBottom: `2px solid ${PX.border}`,
+                  borderBottom: `1px solid ${PX.border}`,
                   background: PX.alt,
                 }}>
                   {(["chart", "equity"] as const).map((tab) => {
@@ -726,11 +725,11 @@ export default function ModelDetailPage() {
                         onClick={() => setChartTab(tab)}
                         style={{
                           padding: "5px 14px", cursor: "pointer",
-                          fontFamily: PX.fp, fontSize: 9, letterSpacing: "0.04em",
+                          fontFamily: PX.fb, fontSize: 12, letterSpacing: "0.04em",
                           background: active ? PX.border : "transparent",
                           color: active ? PX.white : PX.mid,
                           border: active ? "none" : `1px solid transparent`,
-                          transition: "all 0.1s steps(1)",
+                          transition: "all 0.1s ease",
                         }}
                         onMouseEnter={(e) => { if (!active) { e.currentTarget.style.color = PX.white; e.currentTarget.style.borderColor = PX.dim; } }}
                         onMouseLeave={(e) => { if (!active) { e.currentTarget.style.color = PX.mid; e.currentTarget.style.borderColor = "transparent"; } }}
@@ -742,14 +741,14 @@ export default function ModelDetailPage() {
                 </div>
 
                 {/* Chart content */}
-                <div style={{ flex: 1, overflow: "hidden", position: "relative", background: "#0a0a18" }}>
+                <div style={{ flex: 1, overflow: "hidden", position: "relative", background: PX.black }}>
                   {chartTab === "equity" ? (
                     orders.filter((o) => o.status === "CLOSED").length > 0 ? (
                       <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
                         <EquityCurve seed={model.seed} closedOrders={orders.filter((o) => o.status === "CLOSED")} />
                       </div>
                     ) : (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontFamily: PX.fb, fontSize: 11, color: PX.mid, letterSpacing: "0.08em" }}>
                         청산된 주문 없음
                       </div>
                     )
@@ -757,7 +756,7 @@ export default function ModelDetailPage() {
                     chartCoin ? (
                       <BenchmarkChart ref={chartRef} symbol={chartCoin} orders={chartCoinOrders} />
                     ) : (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontFamily: PX.fb, fontSize: 11, color: PX.mid, letterSpacing: "0.08em" }}>
                         좌측에서 코인 선택
                       </div>
                     )
@@ -770,7 +769,7 @@ export default function ModelDetailPage() {
                 {/* Bottom tab bar */}
                 <div style={{
                   flexShrink: 0, display: "flex", alignItems: "center", gap: 0,
-                  borderBottom: `2px solid ${PX.border}`,
+                  borderBottom: `1px solid ${PX.border}`,
                   background: PX.alt,
                 }}>
                   {([
@@ -783,12 +782,12 @@ export default function ModelDetailPage() {
                         onClick={() => setBottomTab(key)}
                         style={{
                           padding: "10px 20px", cursor: "pointer",
-                          fontFamily: PX.fp, fontSize: 9, letterSpacing: "0.04em",
+                          fontFamily: PX.fb, fontSize: 12, letterSpacing: "0.04em",
                           background: active ? PX.border : "transparent",
                           color: active ? PX.white : PX.mid,
                           border: "none",
                           borderRight: `1px solid ${PX.border}`,
-                          transition: "all 0.1s steps(1)",
+                          transition: "all 0.1s ease",
                         }}
                         onMouseEnter={(e) => { if (!active) e.currentTarget.style.color = PX.white; }}
                         onMouseLeave={(e) => { if (!active) e.currentTarget.style.color = PX.mid; }}
@@ -846,23 +845,23 @@ export default function ModelDetailPage() {
 
                         return (
                           <div key={batch.id} ref={(el) => { if (el) batchRefs.current.set(batch.id, el); }}
-                            style={{ borderBottom: `1px solid rgba(51,85,255,0.2)` }}>
+                            style={{ borderBottom: `1px solid rgba(94,106,210,0.2)` }}>
                             {/* Collapsed header */}
                             <div
                               onClick={() => setExpandedBatch(isExpanded ? null : batch.id)}
                               style={{
                                 display: "flex", alignItems: "center", gap: 12,
                                 padding: "10px 16px", cursor: "pointer",
-                                transition: "background 0.1s steps(1)",
+                                transition: "background 0.1s ease",
                               }}
-                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(51,85,255,0.08)"; }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.08)"; }}
                               onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                             >
-                              <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.cyan, display: "inline-block", transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.1s" }}>▶</span>
+                              <span style={{ fontFamily: PX.fb, fontSize: 11, color: PX.cyan, display: "inline-block", transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.1s" }}>▶</span>
                               <span style={{ fontFamily: PX.fm, fontSize: 11, color: PX.dim }}>#{batch.id.slice(0, 8)}</span>
                               <span style={{ fontFamily: PX.fm, fontSize: 12, color: PX.mid }}>{formatTime(batch.created_at)}</span>
                               {isAnalysisOnly ? (
-                                <span style={{ fontFamily: PX.fp, fontSize: 8, padding: "2px 8px", border: `1px solid ${PX.dim}`, color: PX.mid }}>분석만</span>
+                                <span style={{ fontFamily: PX.fb, fontSize: 11, padding: "2px 8px", border: `1px solid ${PX.dim}`, color: PX.mid }}>분석만</span>
                               ) : (
                                 <span style={{ fontFamily: PX.fm, fontSize: 12, color: PX.dim }}>{orderCount}건</span>
                               )}
@@ -871,7 +870,7 @@ export default function ModelDetailPage() {
                               {(isAnalysisOnly || hasPending || allTerminal) && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); guard(() => handleDeleteBatch(batch.id)); }}
-                                  style={{ fontFamily: PX.fp, fontSize: 8, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
+                                  style={{ fontFamily: PX.fb, fontSize: 11, color: PX.dim, background: "none", border: "none", cursor: "pointer" }}
                                   onMouseEnter={(e) => { e.currentTarget.style.color = PX.red; }}
                                   onMouseLeave={(e) => { e.currentTarget.style.color = PX.dim; }}
                                 >삭제</button>
@@ -884,7 +883,7 @@ export default function ModelDetailPage() {
                                 <EditableAnalysis batch={batch} onSave={loadData} />
                                 {orderCount > 0 && (
                                   <div style={{ marginTop: 10, fontFamily: PX.fb, fontSize: 13, color: PX.mid, display: "flex", flexWrap: "wrap" as const, gap: 6, alignItems: "center" }}>
-                                    <span style={{ fontFamily: PX.fp, fontSize: 8, marginRight: 8, color: PX.mid, textTransform: "uppercase" as const }}>주문:</span>
+                                    <span style={{ fontFamily: PX.fb, fontSize: 11, marginRight: 8, color: PX.mid, textTransform: "uppercase" as const }}>주문:</span>
                                     {batchOrders.map((o) => (
                                       <span key={o.id} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                                         <span style={{ color: o.side === "long" ? PX.green : PX.red, fontFamily: PX.fm, fontSize: 12, fontWeight: 700 }}>{o.side.toUpperCase()}</span>
@@ -901,7 +900,7 @@ export default function ModelDetailPage() {
                         );
                       })}
                       {sortedBatches.length === 0 && (
-                        <div style={{ textAlign: "center", padding: "40px 0", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+                        <div style={{ textAlign: "center", padding: "40px 0", fontFamily: PX.fb, fontSize: 11, color: PX.mid, letterSpacing: "0.08em" }}>
                           분석 없음
                         </div>
                       )}
@@ -940,7 +939,7 @@ function EquityCurve({ seed, closedOrders }: { seed: number; closedOrders: Bench
   const lastPt = points[points.length - 1].split(",");
   const areaPoints = [...points, `${parseFloat(lastPt[0])},${h - pad}`, `${pad},${h - pad}`].join(" ");
   const lastBalance = balances[balances.length - 1];
-  const lineColor = lastBalance >= seed ? "#00ff7f" : "#ff3333";
+  const lineColor = lastBalance >= seed ? PX.green : PX.red;
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", maxHeight: 200 }}>

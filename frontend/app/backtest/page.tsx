@@ -18,8 +18,8 @@ const pxLabel: React.CSSProperties = {
 
 const pxInput: React.CSSProperties = {
   background: PX.alt,
-  border: `2px solid ${PX.border}`,
-  borderRadius: 0,
+  border: `1px solid ${PX.border}`,
+  borderRadius: 8,
   padding: "8px 12px",
   fontFamily: PX.fm,
   fontSize: 13,
@@ -111,7 +111,7 @@ function BacktestPageInner() {
 
   return (
     <div style={{
-      background: "linear-gradient(135deg, #05051e 0%, #1a0b2e 50%, #0c0c1d 100%)",
+      background: PX.black,
       backgroundAttachment: "fixed",
       flex: 1,
       margin: "0 -24px -24px",
@@ -120,21 +120,13 @@ function BacktestPageInner() {
       display: "flex",
       flexDirection: "column",
     }}>
-      {/* Scanline overlay */}
-      <div style={{
-        position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-        background: "linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.18) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03))",
-        backgroundSize: "100% 4px, 3px 100%",
-        zIndex: 9998, pointerEvents: "none",
-      }} />
-
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 0", position: "relative", zIndex: 1 }}>
 
       {/* ── Page header: title only ── */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
-          textShadow: `2px 2px 0 #886600, 4px 4px 0 #443300`, marginBottom: 14 }}>
-          ▶ Strategy Backtest
+        <h1 style={{ fontFamily: PX.fp, fontSize: 28, fontWeight: 600, color: PX.white, letterSpacing: "-0.6px", lineHeight: 1.2,
+          marginBottom: 8 }}>
+          Strategy Backtest
         </h1>
         <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
           {currentStrategy.desc}
@@ -152,11 +144,11 @@ function BacktestPageInner() {
               style={{
                 fontFamily: PX.fp, fontSize: 10, letterSpacing: "0.05em",
                 padding: "9px 16px",
-                border: `2px solid ${active ? PX.cyan : PX.border}`,
-                background: active ? "rgba(0,238,255,0.12)" : PX.panel,
+                border: `1px solid ${active ? PX.cyan : PX.border}`,
+                background: active ? "rgba(94,106,210,0.12)" : PX.panel,
                 color: active ? PX.cyan : PX.mid,
-                cursor: "pointer", borderRadius: 0,
-                transition: "all 0.1s steps(1)", lineHeight: 1.6,
+                cursor: "pointer", borderRadius: 8,
+                transition: "all 0.1s ease", lineHeight: 1.6,
               }}
               onMouseEnter={(e) => { if (!active) { e.currentTarget.style.color = PX.white; } }}
               onMouseLeave={(e) => { if (!active) { e.currentTarget.style.color = PX.mid; } }}
@@ -203,8 +195,8 @@ function BacktestPageInner() {
               ].map(({ label, action }) => (
                 <button key={label} onClick={action} style={{
                   fontFamily: PX.fp, fontSize: 9, padding: "5px 10px",
-                  border: `2px solid ${PX.border}`, background: "transparent",
-                  color: PX.mid, cursor: "pointer", borderRadius: 0,
+                  border: `1px solid ${PX.border}`, background: "transparent",
+                  color: PX.mid, cursor: "pointer", borderRadius: 8,
                 }}>
                   {label}
                 </button>
@@ -217,11 +209,11 @@ function BacktestPageInner() {
                   <button key={coin} onClick={() => toggleCoin(coin)} style={{
                     fontFamily: PX.fm, fontSize: 11, fontWeight: 600,
                     padding: "5px 8px",
-                    border: `2px solid ${sel ? PX.cyan : "rgba(51,85,255,0.3)"}`,
-                    background: sel ? "rgba(0,238,255,0.15)" : PX.alt,
+                    border: `1px solid ${sel ? PX.cyan : "rgba(94,106,210,0.3)"}`,
+                    background: sel ? "rgba(94,106,210,0.15)" : PX.alt,
                     color: sel ? PX.cyan : PX.mid,
-                    cursor: "pointer", borderRadius: 0,
-                    transition: "all 0.1s steps(1)",
+                    cursor: "pointer", borderRadius: 8,
+                    transition: "all 0.1s ease",
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                   }}>
                     <span>{coin}</span>
@@ -236,16 +228,16 @@ function BacktestPageInner() {
               style={{
                 width: "100%", marginTop: 6,
                 padding: "6px 0",
-                background: "rgba(51,85,255,0.08)",
-                border: `1px solid rgba(51,85,255,0.3)`,
+                background: "rgba(94,106,210,0.08)",
+                border: `1px solid rgba(94,106,210,0.3)`,
                 color: PX.mid,
-                cursor: "pointer", borderRadius: 0,
+                cursor: "pointer", borderRadius: 8,
                 fontFamily: PX.fm, fontSize: 11,
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                transition: "all 0.1s steps(1)",
+                transition: "all 0.1s ease",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = PX.white; e.currentTarget.style.background = "rgba(51,85,255,0.16)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = PX.mid; e.currentTarget.style.background = "rgba(51,85,255,0.08)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = PX.white; e.currentTarget.style.background = "rgba(94,106,210,0.16)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = PX.mid; e.currentTarget.style.background = "rgba(94,106,210,0.08)"; }}
             >
               {coinsExpanded
                 ? <>▲ 접기 <span style={{ color: PX.mid, fontSize: 9 }}>({ALL_COINS.length - COINS_VISIBLE}개 숨기기)</span></>
@@ -260,30 +252,28 @@ function BacktestPageInner() {
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
 
         {/* ── Execution Section: run button + progress + 4 metric tiles ── */}
-        <section style={{ background: "#0c0c1d", border: `2px solid rgba(51,85,255,0.3)`, padding: "24px" }}>
+        <section style={{ background: "#0c0c1d", border: `1px solid rgba(94,106,210,0.3)`, padding: "24px" }}>
           {/* Run button + progress bar */}
           <div style={{ display: "flex", flexDirection: "row", gap: 24, alignItems: "center", marginBottom: 20 }}>
             <button
               onClick={handleRun}
               disabled={loading}
               style={{
-                fontFamily: PX.fp, fontSize: 11, letterSpacing: "0.1em",
-                padding: "16px 32px",
-                border: `3px solid ${loading ? PX.mid : PX.cyan}`,
-                background: loading ? PX.alt : "transparent",
-                color: loading ? PX.mid : PX.cyan,
+                fontFamily: PX.fb, fontSize: 14, fontWeight: 500,
+                padding: "12px 28px",
+                border: "none",
+                background: loading ? PX.alt : PX.blue,
+                color: loading ? PX.mid : "#fff",
                 cursor: loading ? "not-allowed" : "pointer",
-                borderRadius: 0,
+                borderRadius: 8,
                 flexShrink: 0,
-                transition: "all 0.1s steps(1)",
-                textShadow: loading ? "none" : `0 0 10px ${PX.cyan}`,
-                boxShadow: loading ? "none" : `0 0 20px rgba(0,238,255,0.4)`,
+                transition: "filter 0.15s ease",
                 whiteSpace: "nowrap" as const,
               }}
-              onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.background = PX.cyan; e.currentTarget.style.color = "#000"; } }}
-              onMouseLeave={(e) => { if (!loading) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = PX.cyan; } }}
+              onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.filter = "brightness(1.1)"; } }}
+              onMouseLeave={(e) => { if (!loading) { e.currentTarget.style.filter = "none"; } }}
             >
-              {loading ? "▶▶ 실행 중..." : "▶ 백테스트 실행"}
+              {loading ? "실행 중..." : "백테스트 실행"}
             </button>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
@@ -294,11 +284,11 @@ function BacktestPageInner() {
                   {loading ? `${progress}%` : "--"}
                 </span>
               </div>
-              <div style={{ height: 16, background: "rgba(41,40,58,0.6)", border: `1px solid rgba(51,85,255,0.4)`, overflow: "hidden" }}>
+              <div style={{ height: 16, background: "rgba(41,40,58,0.6)", border: `1px solid rgba(94,106,210,0.4)`, overflow: "hidden" }}>
                 <div style={{
                   height: "100%", width: loading ? `${progress}%` : "0%",
                   background: `linear-gradient(90deg, #0a0a2e 0%, #4b0082 50%, ${PX.cyan} 100%)`,
-                  boxShadow: `inset 0 0 10px rgba(0,238,255,0.5)`,
+                  boxShadow: `inset 0 0 10px rgba(94,106,210,0.5)`,
                   transition: "width 0.3s ease-out",
                 }} />
               </div>
@@ -312,24 +302,24 @@ function BacktestPageInner() {
               { label: "PROFIT_FACTOR",value: "0.00" },
               { label: "NET_PROFIT",   value: "$0.00" },
             ].map(({ label, value, color }) => (
-              <div key={label} style={{ padding: "12px 14px", background: "#1e1e2f" }}>
-                <div style={{ fontFamily: PX.fm, fontSize: 11, color: PX.mid, marginBottom: 6, letterSpacing: "0.06em" }}>{label}</div>
-                <div style={{ fontFamily: PX.fm, fontSize: 20, fontWeight: 700, color: color ?? PX.white }}>{value}</div>
+              <div key={label} style={{ padding: "12px 14px", background: PX.panel }}>
+                <div style={{ fontFamily: PX.fb, fontSize: 11, fontWeight: 500, color: PX.mid, marginBottom: 6, letterSpacing: "0.03em", textTransform: "uppercase" as const }}>{label}</div>
+                <div style={{ fontFamily: PX.fm, fontSize: 22, fontWeight: 600, color: color ?? PX.white }}>{value}</div>
               </div>
             ))}
           </div>
         </section>
 
-        <section style={{ border: `2px solid ${PX.border}`, background: PX.panel, flex: 1 }}>
+        <section style={{ border: `1px solid ${PX.border}`, background: PX.panel, flex: 1 }}>
           {/* Section header */}
           <div style={{
             padding: "14px 24px",
-            borderBottom: `2px solid ${PX.border}`,
+            borderBottom: `1px solid ${PX.border}`,
             background: PX.alt,
             display: "flex", justifyContent: "space-between", alignItems: "center",
           }}>
-            <span style={{ fontFamily: PX.fp, fontSize: 10, color: PX.cyan, letterSpacing: "0.06em" }}>
-              ■ 전략 상세 규칙
+            <span style={{ fontFamily: PX.fb, fontSize: 14, fontWeight: 600, color: PX.white, letterSpacing: "-0.2px" }}>
+              전략 상세 규칙
             </span>
             <span style={{ fontFamily: PX.fm, fontSize: 10, color: PX.mid, background: "#0d0d22", padding: "2px 8px", border: `1px solid ${PX.border}` }}>
               v2.4.0_STABLE
@@ -337,7 +327,7 @@ function BacktestPageInner() {
           </div>
 
             {/* Rules content — always visible */}
-          <div style={{ padding: "20px 24px", fontFamily: PX.fm, fontSize: 12, color: PX.white, lineHeight: 1.9 }}>
+          <div style={{ padding: "20px 24px", fontFamily: PX.fb, fontSize: 14, color: PX.white, lineHeight: 1.8 }}>
             {strategy === "rsi_divergence" ? (
               <>
                 <RuleBlock title="진입 조건 — 4중 필터 (1H 봉)" visual={<VizDivergence />}>
@@ -507,7 +497,7 @@ function RuleBlock({ title, children, visual }: { title: string; children: React
 /* ── Mini visualizations ────────────────────────────────────────────────── */
 const VIZ = {
   bg: "#0a0a1a",
-  border: "1px solid rgba(51,85,255,0.3)",
+  border: "1px solid rgba(94,106,210,0.3)",
   ff: "'JetBrains Mono',monospace",
 };
 
@@ -516,22 +506,22 @@ function VizDivergence() {
     <svg width="100%" viewBox="0 0 220 88" style={{ display: "block", background: VIZ.bg, border: VIZ.border }}>
       <text x="6" y="10" fontSize="7" fontFamily={VIZ.ff} fill="#555577">PRICE</text>
       <text x="6" y="52" fontSize="7" fontFamily={VIZ.ff} fill="#555577">RSI</text>
-      <line x1="0" y1="44" x2="220" y2="44" stroke="rgba(51,85,255,0.25)" strokeWidth="1" strokeDasharray="3,3"/>
+      <line x1="0" y1="44" x2="220" y2="44" stroke="rgba(94,106,210,0.25)" strokeWidth="1" strokeDasharray="3,3"/>
       {/* Price — lower low */}
-      <polyline points="18,18 45,30 72,14 100,34 128,10 158,22 190,9" fill="none" stroke="#f0f0ff" strokeWidth="1.5"/>
-      <circle cx="45" cy="30" r="3" fill="none" stroke="#ffe000" strokeWidth="1.5"/>
-      <circle cx="100" cy="34" r="3" fill="none" stroke="#ffe000" strokeWidth="1.5"/>
-      <line x1="45" y1="30" x2="100" y2="34" stroke="#ffe000" strokeWidth="1" strokeDasharray="4,2"/>
-      <text x="34" y="28" fontSize="6" fontFamily={VIZ.ff} fill="#ffe000">L1</text>
-      <text x="103" y="32" fontSize="6" fontFamily={VIZ.ff} fill="#ffe000">L2↓</text>
+      <polyline points="18,18 45,30 72,14 100,34 128,10 158,22 190,9" fill="none" stroke={PX.white} strokeWidth="1.5"/>
+      <circle cx="45" cy="30" r="3" fill="none" stroke={PX.yellow} strokeWidth="1.5"/>
+      <circle cx="100" cy="34" r="3" fill="none" stroke={PX.yellow} strokeWidth="1.5"/>
+      <line x1="45" y1="30" x2="100" y2="34" stroke={PX.yellow} strokeWidth="1" strokeDasharray="4,2"/>
+      <text x="34" y="28" fontSize="6" fontFamily={VIZ.ff} fill={PX.yellow}>L1</text>
+      <text x="103" y="32" fontSize="6" fontFamily={VIZ.ff} fill={PX.yellow}>L2↓</text>
       {/* RSI — higher low */}
-      <polyline points="18,60 45,74 72,58 100,70 128,54 158,64 190,52" fill="none" stroke="#00eeff" strokeWidth="1.5"/>
-      <circle cx="45" cy="74" r="3" fill="none" stroke="#00ff7f" strokeWidth="1.5"/>
-      <circle cx="100" cy="70" r="3" fill="none" stroke="#00ff7f" strokeWidth="1.5"/>
-      <line x1="45" y1="74" x2="100" y2="70" stroke="#00ff7f" strokeWidth="1" strokeDasharray="4,2"/>
-      <text x="34" y="72" fontSize="6" fontFamily={VIZ.ff} fill="#00ff7f">L1</text>
-      <text x="103" y="68" fontSize="6" fontFamily={VIZ.ff} fill="#00ff7f">L2↑</text>
-      <text x="138" y="44" fontSize="7" fontFamily={VIZ.ff} fill="#ffe000">◀ DIVERGENCE</text>
+      <polyline points="18,60 45,74 72,58 100,70 128,54 158,64 190,52" fill="none" stroke={PX.blue} strokeWidth="1.5"/>
+      <circle cx="45" cy="74" r="3" fill="none" stroke={PX.green} strokeWidth="1.5"/>
+      <circle cx="100" cy="70" r="3" fill="none" stroke={PX.green} strokeWidth="1.5"/>
+      <line x1="45" y1="74" x2="100" y2="70" stroke={PX.green} strokeWidth="1" strokeDasharray="4,2"/>
+      <text x="34" y="72" fontSize="6" fontFamily={VIZ.ff} fill={PX.green}>L1</text>
+      <text x="103" y="68" fontSize="6" fontFamily={VIZ.ff} fill={PX.green}>L2↑</text>
+      <text x="138" y="44" fontSize="7" fontFamily={VIZ.ff} fill={PX.yellow}>◀ DIVERGENCE</text>
     </svg>
   );
 }
@@ -542,8 +532,8 @@ function VizRiskFilter({ items }: { items: string[] }) {
       <div style={{ fontFamily: VIZ.ff, fontSize: 7, color: "#555577", marginBottom: 6, letterSpacing: "0.06em" }}>RISK FILTER STATUS</div>
       {items.map((label) => (
         <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <span style={{ color: "#ff3333", fontSize: 8, lineHeight: 1 }}>⊗</span>
-          <span style={{ fontFamily: VIZ.ff, fontSize: 9, color: "#8888aa" }}>{label}</span>
+          <span style={{ color: PX.red, fontSize: 8, lineHeight: 1 }}>⊗</span>
+          <span style={{ fontFamily: VIZ.ff, fontSize: 9, color: PX.mid }}>{label}</span>
         </div>
       ))}
     </div>
@@ -556,17 +546,17 @@ function VizExitRSI() {
     <svg width="100%" viewBox="0 0 220 78" style={{ display: "block", background: VIZ.bg, border: VIZ.border }}>
       <rect x="28" y={cy.tp2} width="8" height={cy.entry - cy.tp2} fill="rgba(0,255,127,0.08)"/>
       <rect x="28" y={cy.entry} width="8" height={cy.sl - cy.entry} fill="rgba(255,51,51,0.08)"/>
-      <line x1="28" y1={cy.tp2}   x2="215" y2={cy.tp2}   stroke="#00ff7f"  strokeWidth="1"/>
-      <line x1="28" y1={cy.tp1}   x2="215" y2={cy.tp1}   stroke="#00eeff"  strokeWidth="1"/>
-      <line x1="28" y1={cy.entry} x2="215" y2={cy.entry} stroke="#f0f0ff"  strokeWidth="1.5" strokeDasharray="4,2"/>
-      <line x1="28" y1={cy.sl}    x2="215" y2={cy.sl}    stroke="#ff3333"  strokeWidth="1"/>
-      <text x="0"  y={cy.tp2+4}   fontSize="6" fontFamily={VIZ.ff} fill="#00ff7f">TP2</text>
-      <text x="0"  y={cy.tp1+4}   fontSize="6" fontFamily={VIZ.ff} fill="#00eeff">TP1</text>
-      <text x="0"  y={cy.entry+4} fontSize="6" fontFamily={VIZ.ff} fill="#f0f0ff">IN</text>
-      <text x="0"  y={cy.sl+4}    fontSize="6" fontFamily={VIZ.ff} fill="#ff3333">SL</text>
-      <text x="40" y={cy.tp2+4}   fontSize="6" fontFamily={VIZ.ff} fill="#00ff7f">15m 200 EMA 터치 → 전량</text>
-      <text x="40" y={cy.tp1+4}   fontSize="6" fontFamily={VIZ.ff} fill="#00eeff">RSI≥70 또는 R×1.5 → 50% + BE</text>
-      <text x="40" y={cy.sl+4}    fontSize="6" fontFamily={VIZ.ff} fill="#ff3333">다이버전스 저가 -0.5%</text>
+      <line x1="28" y1={cy.tp2}   x2="215" y2={cy.tp2}   stroke={PX.green}  strokeWidth="1"/>
+      <line x1="28" y1={cy.tp1}   x2="215" y2={cy.tp1}   stroke={PX.blue}  strokeWidth="1"/>
+      <line x1="28" y1={cy.entry} x2="215" y2={cy.entry} stroke={PX.white}  strokeWidth="1.5" strokeDasharray="4,2"/>
+      <line x1="28" y1={cy.sl}    x2="215" y2={cy.sl}    stroke={PX.red}  strokeWidth="1"/>
+      <text x="0"  y={cy.tp2+4}   fontSize="6" fontFamily={VIZ.ff} fill={PX.green}>TP2</text>
+      <text x="0"  y={cy.tp1+4}   fontSize="6" fontFamily={VIZ.ff} fill={PX.blue}>TP1</text>
+      <text x="0"  y={cy.entry+4} fontSize="6" fontFamily={VIZ.ff} fill={PX.white}>IN</text>
+      <text x="0"  y={cy.sl+4}    fontSize="6" fontFamily={VIZ.ff} fill={PX.red}>SL</text>
+      <text x="40" y={cy.tp2+4}   fontSize="6" fontFamily={VIZ.ff} fill={PX.green}>15m 200 EMA 터치 → 전량</text>
+      <text x="40" y={cy.tp1+4}   fontSize="6" fontFamily={VIZ.ff} fill={PX.blue}>RSI≥70 또는 R×1.5 → 50% + BE</text>
+      <text x="40" y={cy.sl+4}    fontSize="6" fontFamily={VIZ.ff} fill={PX.red}>다이버전스 저가 -0.5%</text>
     </svg>
   );
 }
@@ -579,15 +569,15 @@ function VizEMACross() {
       <polyline points="18,58 55,55 88,50 118,46 148,42 180,38 210,35" fill="none" stroke="#555577" strokeWidth="1.5" strokeDasharray="5,3"/>
       <text x="194" y="34" fontSize="6" fontFamily={VIZ.ff} fill="#555577">200</text>
       {/* EMA 50 — faster, crosses above */}
-      <polyline points="18,68 55,62 88,50 118,36 148,26 180,20 210,15" fill="none" stroke="#00eeff" strokeWidth="2"/>
-      <text x="194" y="14" fontSize="6" fontFamily={VIZ.ff} fill="#00eeff">50</text>
+      <polyline points="18,68 55,62 88,50 118,36 148,26 180,20 210,15" fill="none" stroke={PX.blue} strokeWidth="2"/>
+      <text x="194" y="14" fontSize="6" fontFamily={VIZ.ff} fill={PX.blue}>50</text>
       {/* Cross marker */}
-      <circle cx="88" cy="50" r="5" fill="none" stroke="#00ff7f" strokeWidth="1.5"/>
-      <text x="52" y="72" fontSize="6" fontFamily={VIZ.ff} fill="#00ff7f">★ GOLDEN X</text>
-      <text x="140" y="20" fontSize="8" fontFamily={VIZ.ff} fill="#00ff7f">▲ LONG</text>
+      <circle cx="88" cy="50" r="5" fill="none" stroke={PX.green} strokeWidth="1.5"/>
+      <text x="52" y="72" fontSize="6" fontFamily={VIZ.ff} fill={PX.green}>★ GOLDEN X</text>
+      <text x="140" y="20" fontSize="8" fontFamily={VIZ.ff} fill={PX.green}>▲ LONG</text>
       {/* Death cross hint */}
-      <polyline points="148,26 180,34 210,44" fill="none" stroke="#ff3333" strokeWidth="1.5" strokeDasharray="3,2"/>
-      <text x="178" y="56" fontSize="6" fontFamily={VIZ.ff} fill="#ff3333">▼ SHORT</text>
+      <polyline points="148,26 180,34 210,44" fill="none" stroke={PX.red} strokeWidth="1.5" strokeDasharray="3,2"/>
+      <text x="178" y="56" fontSize="6" fontFamily={VIZ.ff} fill={PX.red}>▼ SHORT</text>
     </svg>
   );
 }
@@ -597,16 +587,16 @@ function VizPullback() {
     <svg width="100%" viewBox="0 0 220 80" style={{ display: "block", background: VIZ.bg, border: VIZ.border }}>
       <text x="6" y="10" fontSize="7" fontFamily={VIZ.ff} fill="#555577">15m PULLBACK ENTRY</text>
       {/* EMA 50 trend line */}
-      <polyline points="18,64 60,57 100,50 140,43 185,36" fill="none" stroke="#00eeff" strokeWidth="1.5" strokeDasharray="4,2"/>
-      <text x="188" y="40" fontSize="6" fontFamily={VIZ.ff} fill="#00eeff">EMA50</text>
+      <polyline points="18,64 60,57 100,50 140,43 185,36" fill="none" stroke={PX.blue} strokeWidth="1.5" strokeDasharray="4,2"/>
+      <text x="188" y="40" fontSize="6" fontFamily={VIZ.ff} fill={PX.blue}>EMA50</text>
       {/* Price: up trend → pullback to EMA → re-entry */}
-      <polyline points="18,58 42,44 66,32 82,46 96,52 110,49 126,37 152,24 182,15" fill="none" stroke="#f0f0ff" strokeWidth="2"/>
+      <polyline points="18,58 42,44 66,32 82,46 96,52 110,49 126,37 152,24 182,15" fill="none" stroke={PX.white} strokeWidth="2"/>
       {/* Pullback zone */}
       <rect x="78" y="44" width="34" height="12" fill="rgba(255,224,0,0.07)" stroke="rgba(255,224,0,0.4)" strokeWidth="1"/>
-      <text x="80" y="70" fontSize="6" fontFamily={VIZ.ff} fill="#ffe000">눌림목 구간</text>
+      <text x="80" y="70" fontSize="6" fontFamily={VIZ.ff} fill={PX.yellow}>눌림목 구간</text>
       {/* Entry arrow */}
-      <polygon points="118,47 112,54 124,54" fill="#00ff7f"/>
-      <text x="126" y="52" fontSize="6" fontFamily={VIZ.ff} fill="#00ff7f">ENTRY</text>
+      <polygon points="118,47 112,54 124,54" fill={PX.green}/>
+      <text x="126" y="52" fontSize="6" fontFamily={VIZ.ff} fill={PX.green}>ENTRY</text>
     </svg>
   );
 }
@@ -616,13 +606,13 @@ function VizEMAExits() {
     <div style={{ background: VIZ.bg, border: VIZ.border, padding: "10px 12px" }}>
       <div style={{ fontFamily: VIZ.ff, fontSize: 7, color: "#555577", marginBottom: 8, letterSpacing: "0.06em" }}>MULTI-STAGE EXIT FLOW</div>
       {[
-        { icon: "◆", label: "TP1 (50%)", desc: "R×2 도달 → 절반 청산", color: "#00eeff" },
-        { icon: "▬", label: "BE SL",    desc: "TP1 후 SL → 진입가 이동",  color: "#ffe000" },
+        { icon: "◆", label: "TP1 (50%)", desc: "R×2 도달 → 절반 청산", color: PX.blue },
+        { icon: "▬", label: "BE SL",    desc: "TP1 후 SL → 진입가 이동",  color: PX.yellow },
         { icon: "✕", label: "EMA CROSS",desc: "15m 역크로스 → 전량 청산",color: "#ff2d78" },
       ].map(({ icon, label, desc, color }) => (
         <div key={label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
           <span style={{ color, fontSize: 9, width: 14, textAlign: "center" as const }}>{icon}</span>
-          <span style={{ fontFamily: VIZ.ff, fontSize: 9, color: "#8888aa", width: 72 }}>{label}</span>
+          <span style={{ fontFamily: VIZ.ff, fontSize: 9, color: PX.mid, width: 72 }}>{label}</span>
           <span style={{ fontFamily: VIZ.ff, fontSize: 9, color }}>{desc}</span>
         </div>
       ))}
@@ -641,13 +631,13 @@ function VizBBSqueeze() {
       {/* Lower band: mirror */}
       <polyline points="18,62 42,58 66,52 86,47 104,45 118,46 132,52 155,62 185,72 202,76" fill="none" stroke="#3355ff" strokeWidth="1.5"/>
       {/* Band fill */}
-      <polygon points="18,18 42,22 66,28 86,33 104,35 118,34 132,28 155,18 185,8 202,4 202,76 185,72 155,62 132,52 118,46 104,45 86,47 66,52 42,58 18,62" fill="rgba(51,85,255,0.06)"/>
+      <polygon points="18,18 42,22 66,28 86,33 104,35 118,34 132,28 155,18 185,8 202,4 202,76 185,72 155,62 132,52 118,46 104,45 86,47 66,52 42,58 18,62" fill="rgba(94,106,210,0.06)"/>
       {/* Squeeze zone */}
       <rect x="82" y="32" width="38" height="16" fill="none" stroke="rgba(255,224,0,0.6)" strokeWidth="1" strokeDasharray="2,2"/>
-      <text x="84" y="29" fontSize="6" fontFamily={VIZ.ff} fill="#ffe000">SQUEEZE</text>
+      <text x="84" y="29" fontSize="6" fontFamily={VIZ.ff} fill={PX.yellow}>SQUEEZE</text>
       {/* Breakout arrow */}
-      <polygon points="190,12 184,20 196,20" fill="#00ff7f"/>
-      <text x="168" y="32" fontSize="6" fontFamily={VIZ.ff} fill="#00ff7f">BREAK!</text>
+      <polygon points="190,12 184,20 196,20" fill={PX.green}/>
+      <text x="168" y="32" fontSize="6" fontFamily={VIZ.ff} fill={PX.green}>BREAK!</text>
     </svg>
   );
 }
@@ -659,14 +649,14 @@ function VizBBBreakout() {
       {/* BB upper band */}
       <polyline points="18,38 65,36 100,34 130,28 160,20 195,12" fill="none" stroke="#3355ff" strokeWidth="1.5"/>
       {/* Price breaking above */}
-      <polyline points="18,44 50,42 82,38 100,32 116,22 136,14 158,8" fill="none" stroke="#00ff7f" strokeWidth="2"/>
+      <polyline points="18,44 50,42 82,38 100,32 116,22 136,14 158,8" fill="none" stroke={PX.green} strokeWidth="2"/>
       {/* Volume bars */}
       {[22, 36, 50, 64, 78, 92, 106, 120].map((x, i) => {
         const h = i < 5 ? 8 : i < 6 ? 14 : 24;
-        return <rect key={x} x={x} y={76 - h} width="9" height={h} fill={i >= 6 ? "#00ff7f" : "#444466"} opacity={0.85}/>;
+        return <rect key={x} x={x} y={76 - h} width="9" height={h} fill={i >= 6 ? PX.green : "#444466"} opacity={0.85}/>;
       })}
-      <text x="92" y="76" fontSize="6" fontFamily={VIZ.ff} fill="#00ff7f">VOL ≥ 200%</text>
-      <text x="140" y="10" fontSize="7" fontFamily={VIZ.ff} fill="#00ff7f">BREAK!</text>
+      <text x="92" y="76" fontSize="6" fontFamily={VIZ.ff} fill={PX.green}>VOL ≥ 200%</text>
+      <text x="140" y="10" fontSize="7" fontFamily={VIZ.ff} fill={PX.green}>BREAK!</text>
     </svg>
   );
 }
@@ -676,14 +666,14 @@ function VizBBDynamicStop() {
     <svg width="100%" viewBox="0 0 220 78" style={{ display: "block", background: VIZ.bg, border: VIZ.border }}>
       <text x="6" y="10" fontSize="7" fontFamily={VIZ.ff} fill="#555577">DYNAMIC STOP — SMA(20) TOUCH</text>
       {/* SMA center line (dynamic stop) */}
-      <polyline points="18,52 55,50 90,47 125,44 160,42 195,40" fill="none" stroke="#ffe000" strokeWidth="1.5" strokeDasharray="5,2"/>
-      <text x="196" y="44" fontSize="6" fontFamily={VIZ.ff} fill="#ffe000">SMA</text>
+      <polyline points="18,52 55,50 90,47 125,44 160,42 195,40" fill="none" stroke={PX.yellow} strokeWidth="1.5" strokeDasharray="5,2"/>
+      <text x="196" y="44" fontSize="6" fontFamily={VIZ.ff} fill={PX.yellow}>SMA</text>
       {/* Price: rises, then comes back down to SMA */}
-      <polyline points="18,56 42,46 66,34 90,22 110,28 128,38 148,42 160,43" fill="none" stroke="#f0f0ff" strokeWidth="2"/>
+      <polyline points="18,56 42,46 66,34 90,22 110,28 128,38 148,42 160,43" fill="none" stroke={PX.white} strokeWidth="2"/>
       {/* Touch point */}
-      <circle cx="160" cy="42" r="5" fill="none" stroke="#ff3333" strokeWidth="1.5"/>
-      <line x1="160" y1="42" x2="195" y2="42" stroke="#ff3333" strokeWidth="1" strokeDasharray="3,2"/>
-      <text x="166" y="38" fontSize="6" fontFamily={VIZ.ff} fill="#ff3333">SL HIT</text>
+      <circle cx="160" cy="42" r="5" fill="none" stroke={PX.red} strokeWidth="1.5"/>
+      <line x1="160" y1="42" x2="195" y2="42" stroke={PX.red} strokeWidth="1" strokeDasharray="3,2"/>
+      <text x="166" y="38" fontSize="6" fontFamily={VIZ.ff} fill={PX.red}>SL HIT</text>
       {/* Long trail arrow */}
       <text x="65" y="20" fontSize="6" fontFamily={VIZ.ff} fill="#c084fc">TRAIL ▲</text>
     </svg>
@@ -696,10 +686,10 @@ function VizSeedCompound() {
       <div style={{ fontFamily: VIZ.ff, fontSize: 7, color: "#555577", marginBottom: 8, letterSpacing: "0.06em" }}>EXECUTION SETUP</div>
       <div style={{ display: "flex", gap: 16, marginBottom: 10 }}>
         {[
-          { label: "SEED",  value: "$100", color: "#f0f0ff" },
-          { label: "LEV",   value: "×10",  color: "#00eeff" },
-          { label: "FEE",   value: "0.04%",color: "#ff3333" },
-          { label: "SLIP",  value: "0.05%",color: "#ffe000" },
+          { label: "SEED",  value: "$100", color: PX.white },
+          { label: "LEV",   value: "×10",  color: PX.blue },
+          { label: "FEE",   value: "0.04%",color: PX.red },
+          { label: "SLIP",  value: "0.05%",color: PX.yellow },
         ].map(({ label, value, color }) => (
           <div key={label} style={{ textAlign: "center" as const }}>
             <div style={{ fontFamily: VIZ.ff, fontSize: 16, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
@@ -708,7 +698,7 @@ function VizSeedCompound() {
         ))}
       </div>
       <div style={{ fontFamily: VIZ.ff, fontSize: 6, color: "#555577", marginBottom: 4 }}>REINVEST 복리 누적</div>
-      <div style={{ height: 8, background: "#1a1a4e", border: "1px solid rgba(51,85,255,0.3)", overflow: "hidden" }}>
+      <div style={{ height: 8, background: "#1a1a4e", border: "1px solid rgba(94,106,210,0.3)", overflow: "hidden" }}>
         <div style={{ height: "100%", width: "100%", background: "linear-gradient(90deg, #3355ff 0%, #8a2be2 60%, #00eeff 100%)" }}/>
       </div>
     </div>

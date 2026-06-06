@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { NavLinks } from "@/components/nav-links";
 import { AuthButton } from "@/components/auth-button";
-import { PixelCoin } from "@/components/pixel-coin";
 import { TickerTape } from "@/components/ticker-tape";
 import { ThemeProvider } from "@/design-system/providers/theme-provider";
 import { AuthProvider } from "@/design-system/providers/auth-provider";
@@ -28,9 +27,9 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
           rel="stylesheet"
         />
-        {/* JetBrains Mono — 숫자/데이터용 모노스페이스 + Press Start 2P — 픽셀 레트로 타이틀 */}
+        {/* Inter — Linear UI/타이틀/본문 + JetBrains Mono — 숫자/데이터 (Press Start 2P 잔존, 미사용) */}
         <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Press+Start+2P&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Press+Start+2P&display=swap"
           rel="stylesheet"
         />
         {/* Material Symbols Outlined — 아이콘 */}
@@ -49,25 +48,23 @@ export default function RootLayout({
           <header
             className="sticky top-0 z-50 flex items-center justify-between px-6"
             style={{
-              height: 52,
-              background: "var(--px-panel-alt)",
-              borderBottom: "3px solid var(--px-border)",
-              boxShadow: "0 2px 0 rgba(51,85,255,0.25)",
+              height: 56,
+              background: "var(--px-black)",
+              borderBottom: "1px solid var(--px-border)",
             }}
           >
-            <a href="/" className="flex items-center gap-3 no-underline">
-              <PixelCoin size={24} />
+            <a href="/" className="flex items-center gap-2 no-underline">
               <span
                 style={{
-                  fontFamily: "'Press Start 2P', monospace",
-                  fontSize: 13,
-                  letterSpacing: 2,
-                  color: "var(--px-yellow)",
-                  textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300",
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 16,
+                  fontWeight: 700,
+                  letterSpacing: "-0.4px",
+                  color: "var(--px-white)",
                   lineHeight: 1,
                 }}
               >
-                PROFIT LAB
+                Profit Lab
               </span>
             </a>
 
@@ -75,17 +72,6 @@ export default function RootLayout({
 
             <div className="flex items-center gap-4">
               <AuthButton />
-              <div
-                style={{
-                  fontFamily: "'Press Start 2P', monospace",
-                  fontSize: 8,
-                  color: "#ff3333",
-                  letterSpacing: 1,
-                  lineHeight: 1,
-                }}
-              >
-                ♥ ♥ ♥
-              </div>
             </div>
           </header>
 

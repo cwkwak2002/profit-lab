@@ -11,7 +11,6 @@ import {
 } from "@/lib/api";
 import { PxFooter } from "@/components/px-footer";
 import { PxPageShell } from "@/components/px-page-shell";
-import { PxPixelDeco } from "@/components/px-pixel-deco";
 import { PX } from "@/design-system/tokens/px";
 
 const STRATEGY_LABELS: Record<string, string> = {
@@ -25,15 +24,17 @@ function MetricCard({ label, value, color, accent, sub }: {
 }) {
   return (
     <div style={{
-      background: "#1e1e2f",
-      borderLeft: `4px solid ${accent ?? PX.border}`,
-      padding: "14px 18px",
+      background: PX.panel,
+      border: `1px solid ${PX.border}`,
+      borderLeft: `3px solid ${accent ?? PX.blue}`,
+      borderRadius: 12,
+      padding: "16px 20px",
       display: "flex", flexDirection: "column", gap: 6,
     }}>
-      <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
+      <span style={{ fontFamily: PX.fb, fontSize: 12, fontWeight: 500, color: PX.mid, letterSpacing: "0.02em" }}>
         {label}
       </span>
-      <span style={{ fontFamily: PX.fm, fontSize: 22, fontWeight: 700, color: color ?? PX.cyan, lineHeight: 1 }}>
+      <span style={{ fontFamily: PX.fm, fontSize: 24, fontWeight: 600, color: color ?? PX.cyan, lineHeight: 1 }}>
         {value}
       </span>
       {sub && <span style={{ fontFamily: PX.fb, fontSize: 11, color: PX.mid }}>{sub}</span>}
@@ -71,12 +72,12 @@ export default function BacktestResultPage() {
   }, [runId]);
 
   if (loading) return (
-    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fp, fontSize: 8, color: PX.mid, letterSpacing: "0.08em" }}>
+    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fb, fontSize: 13, color: PX.mid, letterSpacing: "0.08em" }}>
       LOADING...
     </div>
   );
   if (error) return (
-    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fp, fontSize: 8, color: PX.red, letterSpacing: "0.08em" }}>
+    <div style={{ textAlign: "center", padding: "80px 0", fontFamily: PX.fb, fontSize: 13, color: PX.red, letterSpacing: "0.08em" }}>
       ERROR: {error}
     </div>
   );
@@ -92,13 +93,13 @@ export default function BacktestResultPage() {
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <PxPixelDeco variant="chart" size={52} />
+          <span className="material-symbols-outlined" style={{ fontSize: 40, color: PX.blue }}>bar_chart</span>
           <div>
           <h1 style={{
-            fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
-            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 14,
+            fontFamily: PX.fp, fontSize: 28, fontWeight: 600, color: PX.white, letterSpacing: "-0.6px", lineHeight: 1.2,
+            marginBottom: 8,
           }}>
-            ◀ 백테스트 결과
+            백테스트 결과
           </h1>
           <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
             {strategyLabel} &nbsp;·&nbsp; {run.start_date} ~ {run.end_date} &nbsp;·&nbsp; {run.coins.length}개 코인
@@ -109,7 +110,7 @@ export default function BacktestResultPage() {
           <button
             onClick={() => router.push("/backtest")}
             style={{
-              fontFamily: PX.fp, fontSize: 8, color: PX.cyan,
+              fontFamily: PX.fb, fontSize: 13, color: PX.cyan,
               background: "transparent", border: "none",
               cursor: "pointer", letterSpacing: "0.06em",
             }}
@@ -152,16 +153,16 @@ export default function BacktestResultPage() {
       </div>
 
       {/* ── Coin results table ── */}
-      <div style={{ border: `2px solid ${PX.border}`, background: "#1a1a2b" }}>
+      <div style={{ border: `1px solid ${PX.border}`, background: PX.panel }}>
         {/* Table header */}
         <div style={{
           padding: "12px 20px",
-          borderBottom: `2px solid ${PX.border}`,
+          borderBottom: `1px solid ${PX.border}`,
           background: PX.alt,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <span style={{ fontFamily: PX.fp, fontSize: 8, color: PX.cyan, letterSpacing: "0.06em" }}>
-            ■ 코인별 결과
+          <span style={{ fontFamily: PX.fb, fontSize: 14, fontWeight: 600, color: PX.white, letterSpacing: "-0.2px" }}>
+            코인별 결과
           </span>
           <span style={{ fontFamily: PX.fm, fontSize: 11, color: PX.mid }}>
             {coins.length}개 코인 &nbsp;·&nbsp; 클릭하면 상세 차트로 이동

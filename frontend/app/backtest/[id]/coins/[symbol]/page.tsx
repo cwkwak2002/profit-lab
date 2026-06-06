@@ -15,7 +15,6 @@ import {
   type CoinSummary,
 } from "@/lib/api";
 
-import { PxPixelDeco } from "@/components/px-pixel-deco";
 import { PX } from "@/design-system/tokens/px";
 
 /* ── Stat card ───────────────────────────────────────────────────────────── */
@@ -114,18 +113,11 @@ export default function CoinDetailPage() {
       height: "calc(100vh - 110px)",
       display: "flex",
       flexDirection: "column",
-      background: "linear-gradient(135deg, #05051e 0%, #1a0b2e 50%, #0c0c1d 100%)",
+      background: PX.black,
       color: PX.white,
       overflow: "hidden",
       position: "relative",
     }}>
-      {/* CRT scanline */}
-      <div style={{
-        position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
-        background: "linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.18) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03))",
-        backgroundSize: "100% 4px, 3px 100%",
-        zIndex: 0, pointerEvents: "none",
-      }} aria-hidden="true" />
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div style={{
@@ -134,15 +126,15 @@ export default function CoinDetailPage() {
         padding: "10px 20px",
         background: "rgba(18,18,42,0.9)",
         backdropFilter: "blur(4px)",
-        borderBottom: `2px solid ${PX.border}`,
-        boxShadow: "0 2px 0 rgba(51,85,255,0.2)",
+        borderBottom: `1px solid ${PX.border}`,
+        boxShadow: "0 2px 0 rgba(94,106,210,0.2)",
       }}>
-        <PxPixelDeco variant="coin" size={32} />
+        <span className="material-symbols-outlined" style={{ fontSize: 28, color: PX.blue }}>paid</span>
         <Link href={`/backtest/${runId}`} style={{
           fontFamily: PX.fp, fontSize: 9, color: PX.mid,
           textDecoration: "none", letterSpacing: "0.05em",
           display: "flex", alignItems: "center", gap: 6,
-          transition: "color 0.1s steps(1)",
+          transition: "color 0.1s ease",
         }}
         onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = PX.cyan; }}
         onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = PX.mid; }}
@@ -150,12 +142,12 @@ export default function CoinDetailPage() {
           ◀ 결과 요약
         </Link>
 
-        <div style={{ width: 1, height: 18, background: "rgba(51,85,255,0.5)" }} />
+        <div style={{ width: 1, height: 18, background: "rgba(94,106,210,0.5)" }} />
 
         <div style={{
-          fontFamily: PX.fp, fontSize: 18, color: PX.cyan,
-          letterSpacing: "0.1em", lineHeight: 1,
-          textShadow: `0 0 12px ${PX.cyan}`,
+          fontFamily: PX.fp, fontSize: 18, fontWeight: 600, color: PX.white,
+          letterSpacing: "-0.4px", lineHeight: 1.2,
+          textShadow: "none",
         }}>
           {symbol}
         </div>
@@ -164,8 +156,8 @@ export default function CoinDetailPage() {
           <div style={{
             fontFamily: PX.fm, fontSize: 11, color: PX.mid,
             padding: "2px 8px",
-            border: `1px solid rgba(51,85,255,0.4)`,
-            background: "rgba(51,85,255,0.08)",
+            border: `1px solid rgba(94,106,210,0.4)`,
+            background: "rgba(94,106,210,0.08)",
           }}>
             {strategyLabel}
           </div>
@@ -179,21 +171,21 @@ export default function CoinDetailPage() {
                 {ret >= 0 ? "+" : ""}{ret}%
               </div>
             </div>
-            <div style={{ width: 1, height: 28, background: "rgba(51,85,255,0.3)" }} />
+            <div style={{ width: 1, height: 28, background: "rgba(94,106,210,0.3)" }} />
             <div style={{ textAlign: "center" as const }}>
               <div style={{ fontFamily: PX.fp, fontSize: 9, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>승률</div>
               <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: summary.win_rate >= 50 ? PX.green : PX.red }}>
                 {summary.win_rate}%
               </div>
             </div>
-            <div style={{ width: 1, height: 28, background: "rgba(51,85,255,0.3)" }} />
+            <div style={{ width: 1, height: 28, background: "rgba(94,106,210,0.3)" }} />
             <div style={{ textAlign: "center" as const }}>
               <div style={{ fontFamily: PX.fp, fontSize: 9, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>MDD</div>
               <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: PX.yellow }}>
                 {summary.max_drawdown}%
               </div>
             </div>
-            <div style={{ width: 1, height: 28, background: "rgba(51,85,255,0.3)" }} />
+            <div style={{ width: 1, height: 28, background: "rgba(94,106,210,0.3)" }} />
             <div style={{ textAlign: "center" as const }}>
               <div style={{ fontFamily: PX.fp, fontSize: 9, color: PX.dim, letterSpacing: "0.06em", marginBottom: 4 }}>최종잔액</div>
               <div style={{ fontFamily: PX.fm, fontSize: 14, fontWeight: 700, color: PX.white }}>
@@ -212,7 +204,7 @@ export default function CoinDetailPage() {
           width: 160,
           flexShrink: 0,
           background: PX.panel,
-          borderRight: `2px solid rgba(51,85,255,0.25)`,
+          borderRight: `1px solid rgba(94,106,210,0.25)`,
           overflowY: "auto" as const,
           display: "flex",
           flexDirection: "column" as const,
@@ -220,9 +212,9 @@ export default function CoinDetailPage() {
           {/* Coin list header */}
           <div style={{
             padding: "10px 12px 8px",
-            borderBottom: `1px solid rgba(51,85,255,0.25)`,
+            borderBottom: `1px solid rgba(94,106,210,0.25)`,
           }}>
-            <div style={{ fontFamily: PX.fp, fontSize: 9, color: PX.border, letterSpacing: "0.08em" }}>
+            <div style={{ fontFamily: PX.fp, fontSize: 9, color: PX.blue, letterSpacing: "0.08em" }}>
               코인 목록
             </div>
           </div>
@@ -239,13 +231,13 @@ export default function CoinDetailPage() {
                   style={{
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                     padding: "6px 8px",
-                    background: active ? "rgba(0,238,255,0.1)" : "transparent",
+                    background: active ? "rgba(94,106,210,0.1)" : "transparent",
                     border: `1px solid ${active ? PX.cyan : "transparent"}`,
                     textDecoration: "none",
-                    transition: "all 0.1s steps(1)",
+                    transition: "all 0.1s ease",
                   }}
                   onMouseEnter={(e) => {
-                    if (!active) (e.currentTarget as HTMLAnchorElement).style.background = "rgba(51,85,255,0.1)";
+                    if (!active) (e.currentTarget as HTMLAnchorElement).style.background = "rgba(94,106,210,0.1)";
                   }}
                   onMouseLeave={(e) => {
                     if (!active) (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
@@ -274,7 +266,7 @@ export default function CoinDetailPage() {
                   display: "flex", gap: 4, alignItems: "center",
                   padding: "8px 14px",
                   background: PX.panel,
-                  borderBottom: `2px solid rgba(51,85,255,0.3)`,
+                  borderBottom: `1px solid rgba(94,106,210,0.3)`,
                 }}>
                   {(["chart", "equity"] as const).map((tab) => {
                     const active = activeTab === tab;
@@ -283,11 +275,11 @@ export default function CoinDetailPage() {
                       <button key={tab} onClick={() => setActiveTab(tab)} style={{
                         fontFamily: PX.fp, fontSize: 10, letterSpacing: "0.05em",
                         padding: "6px 14px",
-                        border: `2px solid ${active ? PX.cyan : "rgba(51,85,255,0.4)"}`,
-                        background: active ? "rgba(0,238,255,0.12)" : "transparent",
+                        border: `1px solid ${active ? PX.cyan : "rgba(94,106,210,0.4)"}`,
+                        background: active ? "rgba(94,106,210,0.12)" : "transparent",
                         color: active ? PX.cyan : PX.mid,
-                        cursor: "pointer", borderRadius: 0,
-                        transition: "all 0.1s steps(1)",
+                        cursor: "pointer", borderRadius: 8,
+                        transition: "all 0.1s ease",
                         lineHeight: 1.6,
                       }}>
                         {label}
@@ -325,7 +317,7 @@ export default function CoinDetailPage() {
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   padding: "8px 16px",
                   background: PX.alt,
-                  borderBottom: `2px solid ${PX.border}`,
+                  borderBottom: `1px solid ${PX.border}`,
                 }}>
                   <span style={{ fontFamily: PX.fp, fontSize: 10, color: PX.cyan, letterSpacing: "0.06em" }}>
                     ■ 포지션 상세
@@ -333,8 +325,8 @@ export default function CoinDetailPage() {
                   <span style={{
                     fontFamily: PX.fm, fontSize: 11, color: PX.mid,
                     padding: "1px 8px",
-                    border: `1px solid rgba(51,85,255,0.35)`,
-                    background: "rgba(51,85,255,0.08)",
+                    border: `1px solid rgba(94,106,210,0.35)`,
+                    background: "rgba(94,106,210,0.08)",
                   }}>
                     {trades.length}건
                   </span>

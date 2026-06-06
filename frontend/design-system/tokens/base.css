@@ -8,36 +8,36 @@
 ───────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Backgrounds — from mockup --px-bg / --px-bg2 / --px-navy */
-  --px-black:       #0a0a1a;   /* body bg */
-  --px-dark:        #0f0f2a;   /* sidebar bg (between bg and panel) */
-  --px-panel:       #12122a;   /* card/panel bg  (mockup: --px-bg2) */
-  --px-panel-alt:   #1a1a4e;   /* elevated panel (mockup: --px-navy) */
+  /* Backgrounds — Linear surface ladder (canvas → surface 1..3) */
+  --px-black:       #010102;   /* canvas — deepest dark, faint blue tint */
+  --px-dark:        #0a0b0c;   /* sidebar bg (between canvas and surface-1) */
+  --px-panel:       #0f1011;   /* card/panel bg (Linear surface-1) */
+  --px-panel-alt:   #18191a;   /* elevated panel (Linear surface-3) */
 
-  /* Border — mockup uses blue as border colour */
-  --px-border:      #3355ff;   /* (mockup: --px-border / --px-blue) */
+  /* Border — Linear hairline */
+  --px-border:      #23252a;   /* hairline (1px card/divider borders) */
 
-  /* Accent colours */
-  --px-blue:        #3355ff;   /* primary interactive blue */
-  --px-cyan:        #00eeff;
-  --px-cyan-dim:    #00aabb;
-  --px-pink:        #ff2d78;
-  --px-pink-dim:    #cc2060;
-  --px-yellow:      #ffe000;
-  --px-yellow-dim:  #ccb400;
-  --px-green:       #00ff7f;
-  --px-green-dim:   #00cc60;
-  --px-red:         #ff3333;   /* destructive / loss */
-  --px-purple:      #9966ff;
-  --px-purple-dim:  #7744cc;
-  --px-orange:      #ff8800;
-  --px-orange-dim:  #cc6600;
+  /* Accent colours — single lavender-blue accent (Linear), multicolor collapsed */
+  --px-blue:        #5e6ad2;   /* primary lavender-blue */
+  --px-cyan:        #5e6ad2;   /* (was cyan) → lavender accent */
+  --px-cyan-dim:    #4e58b8;
+  --px-pink:        #7a7fad;   /* (was pink) → muted lavender-grey */
+  --px-pink-dim:    #5e6ad2;
+  --px-yellow:      #828fff;   /* (was yellow) → lavender hover (emphasis) */
+  --px-yellow-dim:  #5e6ad2;
+  --px-green:       #27a644;   /* semantic success — PROFIT (preserved) */
+  --px-green-dim:   #1e7d34;
+  --px-red:         #e5484d;   /* destructive — LOSS (preserved, Linear tone) */
+  --px-purple:      #828fff;   /* → lavender hover */
+  --px-purple-dim:  #5e69d1;   /* → lavender focus */
+  --px-orange:      #d4863a;   /* toned-down amber (rare) */
+  --px-orange-dim:  #a86a2e;
 
-  /* Neutrals — from mockup --px-white / --px-gray */
-  --px-white:       #f0f0ff;   /* (mockup: --px-white) */
-  --px-grey-hi:     #b0b0d0;
-  --px-grey-mid:    #8888aa;   /* (mockup: --px-gray) */
-  --px-grey-lo:     #404060;
+  /* Neutrals — Linear ink ladder */
+  --px-white:       #f7f8f8;   /* ink — headlines & emphasized body */
+  --px-grey-hi:     #d0d6e0;   /* ink-muted */
+  --px-grey-mid:    #8a8f98;   /* ink-subtle */
+  --px-grey-lo:     #62666d;   /* ink-tertiary */
 
   /* Typography scale */
   --px-text-xs:     0.5rem;   /* 8px  — labels, fine print */
@@ -57,10 +57,10 @@
   --px-space-6:     24px;
   --px-space-8:     32px;
 
-  /* Border */
+  /* Border — Linear uses 1px hairlines */
   --px-border-thin: 1px;
-  --px-border-base: 2px;
-  --px-border-thick: 4px;
+  --px-border-base: 1px;
+  --px-border-thick: 2px;
 
   /* Animation */
   --px-duration-fast:   150ms;
