@@ -8,34 +8,35 @@ import {
   type OrderInput,
 } from "@/lib/api";
 import { PxFooter } from "@/components/px-footer";
-import { PX } from "@/design-system/tokens/px";
+import { PX, pxTitle, pxButtonPrimary, pxButtonSecondary } from "@/design-system/tokens/px";
 import { useAuth } from "@/design-system/providers/auth-provider";
 
 const pxPanel: React.CSSProperties = {
   background: PX.panel,
-  border: `2px solid ${PX.border}`,
-  borderRadius: 0,
-  padding: "20px 24px",
+  border: `1px solid ${PX.border}`,
+  borderRadius: 12,
+  padding: "24px",
 };
 
 const pxLabel: React.CSSProperties = {
   display: "block",
-  fontFamily: PX.fp,
-  fontSize: 9,
+  fontFamily: PX.fb,
+  fontSize: 12,
+  fontWeight: 500,
   color: PX.mid,
-  letterSpacing: "0.08em",
+  letterSpacing: "0.04em",
   marginBottom: 8,
-  lineHeight: 1.8,
+  lineHeight: 1.4,
   textTransform: "uppercase" as const,
 };
 
 const pxInput: React.CSSProperties = {
-  background: PX.alt,
-  border: `2px solid ${PX.border}`,
-  borderRadius: 0,
+  background: PX.panel,
+  border: `1px solid ${PX.border}`,
+  borderRadius: 8,
   padding: "8px 12px",
   fontFamily: PX.fm,
-  fontSize: 13,
+  fontSize: 14,
   color: PX.white,
   outline: "none",
   width: "100%",
@@ -189,7 +190,7 @@ function BenchmarkPageInner() {
       <div style={{
         flex: 1, margin: "0 -24px -24px",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20,
-        background: "linear-gradient(135deg, #05051e 0%, #1a0b2e 50%, #0c0c1d 100%)",
+        background: PX.black,
         color: PX.white, minHeight: 400,
       }}>
         <span className="material-symbols-outlined" style={{ fontSize: 56, color: PX.mid }}>lock</span>
@@ -204,11 +205,11 @@ function BenchmarkPageInner() {
           style={{
             fontFamily: PX.fp, fontSize: 11, letterSpacing: 1,
             padding: "12px 28px",
-            border: `2px solid ${PX.cyan}`, background: "rgba(0,238,255,0.1)", color: PX.cyan,
+            border: `1px solid ${PX.cyan}`, background: "rgba(94,106,210,0.1)", color: PX.cyan,
             cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8,
           }}
           onMouseEnter={(e) => { e.currentTarget.style.background = PX.cyan; e.currentTarget.style.color = "#000"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(0,238,255,0.1)"; e.currentTarget.style.color = PX.cyan; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(94,106,210,0.1)"; e.currentTarget.style.color = PX.cyan; }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 16 }}>login</span>
           로그인
@@ -219,8 +220,7 @@ function BenchmarkPageInner() {
 
   return (
     <div style={{
-      background: "linear-gradient(135deg, #05051e 0%, #1a0b2e 50%, #0c0c1d 100%)",
-      backgroundAttachment: "fixed",
+      background: PX.black,
       flex: 1,
       margin: "0 -24px -24px",
       position: "relative",
@@ -228,22 +228,14 @@ function BenchmarkPageInner() {
       display: "flex",
       flexDirection: "column",
     }}>
-      {/* Scanline overlay */}
-      <div style={{
-        position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-        background: "linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.18) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03))",
-        backgroundSize: "100% 4px, 3px 100%",
-        zIndex: 9998, pointerEvents: "none",
-      }} />
 
     <div style={{ maxWidth: 960, width: "100%", margin: "0 auto", padding: "32px 24px 80px", position: "relative", zIndex: 1, flex: 1 }}>
 
       {/* ── Header ── */}
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 0, paddingBottom: 16, borderBottom: `2px solid #333345` }}>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 0, paddingBottom: 16, borderBottom: `1px solid ${PX.border}` }}>
         <div>
-          <h1 style={{ fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1,
-            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 14 }}>
-            ★ 주문 입력
+          <h1 style={{ ...pxTitle, marginBottom: 8 }}>
+            주문 입력
           </h1>
           <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
             AI 모델의 트레이딩 주문을 기록합니다
@@ -252,17 +244,17 @@ function BenchmarkPageInner() {
         <button
           onClick={() => router.push("/benchmark/models")}
           style={{
-            fontFamily: PX.fp, fontSize: 9, letterSpacing: "0.06em",
-            padding: "10px 20px",
-            border: `2px solid ${PX.border}`,
-            background: "#1e1e2f",
+            fontFamily: PX.fb, fontSize: 14, fontWeight: 500,
+            padding: "9px 16px",
+            border: `1px solid ${PX.border}`,
+            borderRadius: 8,
+            background: PX.panel,
             color: PX.white,
             cursor: "pointer",
-            borderRadius: 0,
-            transition: "all 0.1s steps(1)",
+            transition: "all 0.15s ease",
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = PX.border; e.currentTarget.style.color = PX.white; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "#1e1e2f"; e.currentTarget.style.color = PX.white; }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = PX.alt; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = PX.panel; }}
         >
           Live Benchmark
         </button>
@@ -272,8 +264,8 @@ function BenchmarkPageInner() {
 
         {/* ── Model & Analysis ── */}
         <section style={pxPanel}>
-          <div style={{ fontFamily: PX.fp, fontSize: 8, color: PX.cyan, marginBottom: 20, letterSpacing: "0.06em" }}>
-            ■ 모델 & 시장 분석
+          <div style={{ fontFamily: PX.fb, fontSize: 14, fontWeight: 600, color: PX.white, marginBottom: 20, letterSpacing: "-0.2px" }}>
+            모델 & 시장 분석
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
@@ -297,7 +289,7 @@ function BenchmarkPageInner() {
                     left: 0,
                     right: 0,
                     background: PX.panel,
-                    border: `2px solid ${PX.border}`,
+                    border: `1px solid ${PX.border}`,
                     maxHeight: 160,
                     overflowY: "auto",
                   }}>
@@ -315,8 +307,8 @@ function BenchmarkPageInner() {
                           fontSize: 13,
                           color: PX.white,
                           cursor: "pointer",
-                          transition: "background 0.1s steps(1)",
-                          borderBottom: `1px solid rgba(51,85,255,0.3)`,
+                          transition: "background 0.1s ease",
+                          borderBottom: `1px solid rgba(94,106,210,0.3)`,
                         }}
                         onMouseEnter={(e) => (e.currentTarget.style.background = PX.alt)}
                         onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
@@ -327,7 +319,7 @@ function BenchmarkPageInner() {
                   </div>
                 )}
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, padding: "12px 0", borderTop: `1px solid rgba(51,85,255,0.2)` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, padding: "12px 0", borderTop: `1px solid rgba(94,106,210,0.2)` }}>
                 <span style={{ fontFamily: PX.fm, fontSize: 11, color: PX.mid }}>AVAILABLE_BALANCE</span>
                 <span style={{ fontFamily: PX.fp, fontSize: 14, color: PX.cyan, filter: "drop-shadow(0 0 8px #00eeff)" }}>
                   {availableBalance !== null ? `$${availableBalance.toFixed(2)}` : "$--"}
@@ -359,22 +351,20 @@ function BenchmarkPageInner() {
         {/* ── Orders header row ── */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: "#333345", padding: "14px 20px",
-          borderBottom: `4px solid ${PX.pink}`,
+          background: PX.alt, padding: "14px 20px",
+          borderBottom: `1px solid ${PX.border}`,
         }}>
-          <div style={{ fontFamily: PX.fp, fontSize: 8, letterSpacing: "0.06em" }}>
-            <span style={{ color: PX.pink }}>■</span>{" "}
-            <span style={{ color: PX.white }}>주문 목록 [{orders.length}]</span>
+          <div style={{ fontFamily: PX.fb, fontSize: 14, fontWeight: 600, color: PX.white, letterSpacing: "-0.2px" }}>
+            주문 목록 [{orders.length}]
           </div>
-          <div style={{ display: "flex", gap: 12 }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             {orders.length > 0 && (
               <button
                 onClick={clearAllOrders}
                 style={{
-                  fontFamily: PX.fp, fontSize: 8, padding: "4px 0",
+                  fontFamily: PX.fb, fontSize: 13,
                   background: "transparent", border: "none",
-                  color: PX.red, cursor: "pointer",
-                  textDecoration: "underline",
+                  color: PX.mid, cursor: "pointer",
                 }}
               >
                 전체삭제
@@ -383,22 +373,22 @@ function BenchmarkPageInner() {
             <button
               onClick={addOrder}
               style={{
-                fontFamily: PX.fp, fontSize: 8,
-                padding: "6px 14px",
+                fontFamily: PX.fb, fontSize: 13, fontWeight: 500,
+                padding: "8px 14px",
                 border: "none",
-                background: "#e00363",
-                color: PX.white,
+                background: PX.blue,
+                color: "#fff",
                 cursor: "pointer",
-                borderRadius: 0,
+                borderRadius: 8,
               }}
             >
-              +추가
+              + 추가
             </button>
           </div>
         </div>
 
         {/* ── Orders ── */}
-        <section style={{ background: PX.panel, border: `2px solid ${PX.border}`, borderTop: "none", padding: "20px 24px" }}>
+        <section style={{ background: PX.panel, border: `1px solid ${PX.border}`, borderTop: "none", padding: "20px 24px" }}>
 
           {orders.length === 0 ? (
             <div style={{ textAlign: "center", padding: "32px 0", fontFamily: PX.fb, fontSize: 13, color: PX.mid }}>
@@ -429,7 +419,7 @@ function BenchmarkPageInner() {
         {error && (
           <div style={{
             background: "rgba(255,51,51,0.08)",
-            border: `2px solid ${PX.red}`,
+            border: `1px solid ${PX.red}`,
             padding: "12px 16px",
             fontFamily: PX.fb,
             fontSize: 13,
@@ -442,33 +432,29 @@ function BenchmarkPageInner() {
 
         {/* ── Submit ── */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, paddingTop: 24, paddingBottom: 32 }}>
-          <div style={{ height: 1, width: "100%", background: "linear-gradient(to right, transparent, rgba(51,85,255,0.5), transparent)", marginBottom: 8 }} />
+          <div style={{ height: 1, width: "100%", background: "linear-gradient(to right, transparent, rgba(94,106,210,0.5), transparent)", marginBottom: 8 }} />
           <button
             onClick={() => guard(handleSubmit)}
             disabled={loading}
             style={{
-              fontFamily: PX.fp, fontSize: 14, letterSpacing: "0.08em",
-              padding: "18px 48px",
-              border: `3px solid ${loading ? PX.mid : PX.cyan}`,
-              background: loading ? PX.alt : "#1e1e2f",
-              color: loading ? PX.mid : PX.cyan,
+              fontFamily: PX.fb, fontSize: 15, fontWeight: 500,
+              padding: "14px 40px",
+              border: "none",
+              background: loading ? PX.alt : PX.blue,
+              color: loading ? PX.mid : "#fff",
               cursor: loading ? "not-allowed" : "pointer",
-              borderRadius: 0,
-              boxShadow: loading ? "none" : `0 0 20px rgba(0,219,235,0.3)`,
-              transition: "all 0.1s steps(1)",
+              borderRadius: 8,
+              transition: "filter 0.15s ease",
               display: "inline-flex", alignItems: "center", gap: 8,
             }}
-            onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.background = PX.cyan; e.currentTarget.style.color = "#0a0a1a"; } }}
-            onMouseLeave={(e) => { if (!loading) { e.currentTarget.style.background = "#1e1e2f"; e.currentTarget.style.color = PX.cyan; } }}
+            onMouseEnter={(e) => { if (!loading) { e.currentTarget.style.filter = "brightness(1.1)"; } }}
+            onMouseLeave={(e) => { if (!loading) { e.currentTarget.style.filter = "none"; } }}
           >
             {!isAuthenticated && !loading && (
               <span className="material-symbols-outlined" style={{ fontSize: 16 }}>lock</span>
             )}
-            {loading ? "제출 중..." : isAnalysisOnly ? "▶ 분석 제출" : "▶ 주문 제출"}
+            {loading ? "제출 중..." : isAnalysisOnly ? "분석 제출" : "주문 제출"}
           </button>
-          <p style={{ fontFamily: PX.fm, fontSize: 10, color: "rgba(0,238,255,0.6)", letterSpacing: "0.08em", margin: 0, animation: "pulse 2s infinite" }}>
-            AWAITING USER EXECUTION COMMAND...
-          </p>
         </div>
       </div>
     </div>
@@ -488,8 +474,8 @@ function OrderCard({
 }) {
   const pxInput: React.CSSProperties = {
     background: "var(--px-black,#0a0a1a)",
-    border: "2px solid var(--px-border,#3355ff)",
-    borderRadius: 0,
+    border: "1px solid var(--px-border,#3355ff)",
+    borderRadius: 8,
     padding: "7px 10px",
     fontFamily: "var(--ff-mono,'JetBrains Mono',monospace)",
     fontSize: 13,
@@ -519,8 +505,8 @@ function OrderCard({
 
   return (
     <div style={{
-      background: "#1e1e2f",
-      border: "2px solid var(--px-border,#3355ff)",
+      background: PX.panel,
+      border: "1px solid var(--px-border,#3355ff)",
       padding: "20px 18px 16px",
       position: "relative",
     }}>
@@ -571,25 +557,25 @@ function OrderCard({
         </div>
         <div>
           <label style={lbl}>SIDE</label>
-          <div style={{ display: "flex", height: 36, border: "2px solid var(--px-border,#3355ff)" }}>
+          <div style={{ display: "flex", height: 36, border: "1px solid var(--px-border,#3355ff)" }}>
             <button
               onClick={() => onUpdate(order.key, "side", "long")}
               style={{
-                flex: 1, border: "none", cursor: "pointer", borderRadius: 0,
+                flex: 1, border: "none", cursor: "pointer", borderRadius: 8,
                 fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 8,
                 background: order.side === "long" ? "var(--tertiary-container,#00767f)" : "var(--px-black,#0a0a1a)",
                 color: order.side === "long" ? "#fff" : "var(--px-grey-mid,#8888aa)",
-                transition: "all 0.1s steps(1)",
+                transition: "all 0.1s ease",
               }}
             >LONG</button>
             <button
               onClick={() => onUpdate(order.key, "side", "short")}
               style={{
-                flex: 1, border: "none", cursor: "pointer", borderRadius: 0,
+                flex: 1, border: "none", cursor: "pointer", borderRadius: 8,
                 fontFamily: "var(--ff-pixel,'Press Start 2P',monospace)", fontSize: 9,
                 background: order.side === "short" ? "var(--px-red,#ff3333)" : "var(--px-black,#0a0a1a)",
                 color: order.side === "short" ? "#fff" : "var(--px-grey-mid,#8888aa)",
-                transition: "all 0.1s steps(1)",
+                transition: "all 0.1s ease",
               }}
             >SHORT</button>
           </div>
@@ -639,15 +625,15 @@ function OrderCard({
                   title={CONFIDENCE_LABELS[level]}
                   style={{
                     width: 32, height: 32,
-                    border: `2px solid ${active ? cfg.border : "var(--px-border,#3355ff)"}`,
+                    border: `1px solid ${active ? cfg.border : "var(--px-border,#3355ff)"}`,
                     background: active ? cfg.on : "transparent",
                     color: active ? cfg.text : "var(--px-mid,#8888aa)",
                     cursor: "pointer",
                     fontFamily: "var(--ff-mono,'JetBrains Mono',monospace)",
                     fontSize: 11,
                     fontWeight: 700,
-                    borderRadius: 0,
-                    transition: "all 0.1s steps(1)",
+                    borderRadius: 8,
+                    transition: "all 0.1s ease",
                   }}
                 >
                   {level}
@@ -665,8 +651,8 @@ function OrderCard({
             onChange={(e) => onUpdate(order.key, "description", e.target.value)}
             style={{
               background: "var(--px-black,#0a0a1a)",
-              border: "2px solid var(--px-border,#3355ff)",
-              borderRadius: 0,
+              border: "1px solid var(--px-border,#3355ff)",
+              borderRadius: 8,
               padding: "7px 10px",
               fontFamily: "var(--ff-body,Pretendard,sans-serif)",
               fontSize: 13,

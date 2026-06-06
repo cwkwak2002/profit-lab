@@ -127,25 +127,26 @@ function LoginModal({
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
         style={{
-          width: 320,
-          padding: 24,
-          background: "var(--px-panel, #14142a)",
-          border: "3px solid var(--px-border, #3355ff)",
-          boxShadow: "4px 4px 0 rgba(51,85,255,0.3)",
+          width: 340,
+          padding: 28,
+          background: "var(--px-panel)",
+          border: "1px solid var(--px-border)",
+          borderRadius: 12,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
           display: "flex",
           flexDirection: "column",
-          gap: 14,
+          gap: 16,
         }}
       >
         <div
           style={{
-            fontFamily: "'Press Start 2P', monospace",
-            fontSize: 11,
-            letterSpacing: 1,
-            color: "var(--px-yellow, #ffcc00)",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 16,
+            fontWeight: 600,
+            color: "var(--px-white)",
           }}
         >
-          ADMIN LOGIN
+          로그인
         </div>
 
         <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12 }}>
@@ -189,32 +190,38 @@ function LoginModal({
 }
 
 const inputStyle: React.CSSProperties = {
-  padding: "8px 10px",
-  background: "var(--px-black, #0a0a1a)",
-  border: "2px solid var(--px-border, #3355ff)",
-  color: "var(--px-white, #f0f0ff)",
-  fontFamily: "'JetBrains Mono', monospace",
-  fontSize: 13,
+  padding: "10px 12px",
+  background: "var(--px-black)",
+  border: "1px solid var(--px-border)",
+  borderRadius: 8,
+  color: "var(--px-white)",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  outline: "none",
 }
 
 const btnPrimary: React.CSSProperties = {
   flex: 1,
-  padding: "8px 0",
-  background: "var(--px-blue, #3355ff)",
-  border: "2px solid var(--px-border, #3355ff)",
-  color: "var(--px-white, #f0f0ff)",
-  fontFamily: "'Press Start 2P', monospace",
-  fontSize: 9,
+  padding: "10px 0",
+  background: "var(--px-blue)",
+  border: "none",
+  borderRadius: 8,
+  color: "#fff",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  fontWeight: 500,
   cursor: "pointer",
 }
 
 const btnSecondary: React.CSSProperties = {
   flex: 1,
-  padding: "8px 0",
+  padding: "10px 0",
   background: "transparent",
-  border: "2px solid var(--px-border, #3355ff)",
-  color: "var(--px-white, #f0f0ff)",
-  fontFamily: "'Press Start 2P', monospace",
-  fontSize: 9,
+  border: "1px solid var(--px-border)",
+  borderRadius: 8,
+  color: "var(--px-white)",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  fontWeight: 500,
   cursor: "pointer",
 }

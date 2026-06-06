@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { getBenchmarkModels, subscribeBenchmarkStream, type BenchmarkModel } from "@/lib/api";
 import { PxFooter } from "@/components/px-footer";
 import { PxPageShell } from "@/components/px-page-shell";
-import { PxPixelDeco } from "@/components/px-pixel-deco";
 import { PX } from "@/design-system/tokens/px";
 import { useAuth } from "@/design-system/providers/auth-provider";
 
@@ -15,14 +14,16 @@ function MetricCard({ label, value, sub, color, accent }: {
 }) {
   return (
     <div style={{
-      background: "#1e1e2f",
-      borderLeft: `4px solid ${accent ?? PX.border}`,
+      background: PX.panel,
+      border: `1px solid ${PX.border}`,
+      borderLeft: `3px solid ${accent ?? PX.blue}`,
+      borderRadius: 12,
       padding: "16px 20px",
       display: "flex",
       flexDirection: "column",
       gap: 8,
     }}>
-      <span style={{ fontFamily: PX.fp, fontSize: 11, color: PX.mid, letterSpacing: "0.06em", lineHeight: 1.8, textTransform: "uppercase" as const }}>
+      <span style={{ fontFamily: PX.fb, fontSize: 12, fontWeight: 500, color: PX.mid, letterSpacing: "0.02em", lineHeight: 1.4, textTransform: "uppercase" as const }}>
         {label}
       </span>
       <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
@@ -41,9 +42,9 @@ function MetricCard({ label, value, sub, color, accent }: {
 
 /* ── Rank badge ──────────────────────────────────────────────────────────── */
 const RANK_CONFIGS = [
-  { color: PX.yellow,   bg: "rgba(255,224,0,0.12)",   label: "★" },
-  { color: "#c0c0d0",   bg: "rgba(192,192,208,0.12)", label: "♦" },
-  { color: "#cd7f3a",   bg: "rgba(205,127,58,0.12)",  label: "♣" },
+  { color: PX.blue,    bg: "rgba(94,106,210,0.14)",  label: "★" },
+  { color: "#c0c6d0",  bg: "rgba(192,198,208,0.10)", label: "♦" },
+  { color: "#b98a5e",  bg: "rgba(185,138,94,0.10)",  label: "♣" },
 ];
 
 /* ── Table header cell ───────────────────────────────────────────────────── */
@@ -57,7 +58,7 @@ function TH({ children, align = "left", fontSize = 10 }: { children: React.React
       padding: "12px 14px",
       textAlign: align,
       fontWeight: "normal",
-      borderBottom: `2px solid var(--px-border,#3355ff)`,
+      borderBottom: `1px solid var(--px-border,#23252a)`,
       whiteSpace: "nowrap" as const,
     }}>
       {children}
@@ -133,11 +134,10 @@ export default function LeaderboardPage() {
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <PxPixelDeco variant="trophy" size={52} />
+          <span className="material-symbols-outlined" style={{ fontSize: 40, color: PX.blue }}>emoji_events</span>
           <div>
-          <h1 style={{ fontFamily: PX.fp, fontSize: 20, color: PX.yellow, letterSpacing: 2, lineHeight: 1.4,
-            textShadow: "2px 2px 0 #886600, 4px 4px 0 #443300", marginBottom: 14 }}>
-            ★ Live Benchmark
+          <h1 style={{ fontFamily: PX.fp, fontSize: 28, fontWeight: 600, color: PX.white, letterSpacing: "-0.6px", lineHeight: 1.2, marginBottom: 8 }}>
+            Live Benchmark
           </h1>
           <p style={{ fontFamily: PX.fb, fontSize: 14, color: PX.mid, margin: 0 }}>
             AI 모델 트레이딩 성과 비교
@@ -147,14 +147,14 @@ export default function LeaderboardPage() {
         <button
           onClick={() => guard(() => router.push("/benchmark"))}
           style={{
-            fontFamily: PX.fb, fontSize: 13,
-            padding: "10px 18px",
-            border: `2px solid ${PX.cyan}`,
-            background: "rgba(0,238,255,0.08)",
-            color: PX.cyan,
+            fontFamily: PX.fb, fontSize: 14, fontWeight: 500,
+            padding: "9px 16px",
+            border: "none",
+            background: PX.blue,
+            color: "#ffffff",
             cursor: "pointer",
-            borderRadius: 0,
-            transition: "all 0.1s steps(1)",
+            borderRadius: 8,
+            transition: "background 0.15s ease",
             display: "inline-flex", alignItems: "center", gap: 6,
           }}
         >
@@ -187,7 +187,7 @@ export default function LeaderboardPage() {
       </div>
 
       {/* ── Rankings table ── */}
-      <div style={{ border: `2px solid ${PX.border}`, background: "#1a1a2b", overflow: "hidden", padding: 1 }}>
+      <div style={{ border: `1px solid ${PX.border}`, background: PX.panel, borderRadius: 12, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ background: PX.alt }}>
@@ -214,10 +214,10 @@ export default function LeaderboardPage() {
                   onClick={() => router.push(`/benchmark/models/${m.id}`)}
                   style={{
                     cursor: "pointer",
-                    borderBottom: `1px solid rgba(51,85,255,0.3)`,
-                    transition: "background 0.1s steps(1)",
+                    borderBottom: `1px solid ${PX.border}`,
+                    transition: "background 0.15s ease",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(51,85,255,0.12)")}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(94,106,210,0.10)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 >
                   {/* rank */}
@@ -226,7 +226,7 @@ export default function LeaderboardPage() {
                       display: "inline-flex", alignItems: "center", justifyContent: "center",
                       width: 28, height: 28,
                       background: isTop3 ? rankCfg.bg : "transparent",
-                      border: isTop3 ? `2px solid ${rankCfg.color}` : "none",
+                      border: isTop3 ? `1px solid ${rankCfg.color}` : "none",
                       borderRadius: "50%",
                       fontFamily: PX.fm, fontSize: 13, fontWeight: 700,
                       color: isTop3 ? rankCfg.color : PX.mid,

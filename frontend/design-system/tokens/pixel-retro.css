@@ -74,8 +74,8 @@
   --sidebar-border:            var(--px-border);
   --sidebar-ring:              var(--px-cyan);
 
-  /* Zero border-radius → sharp pixel edges on ALL shadcn components */
-  --radius: 0px;
+  /* Linear: soft 8px radius on buttons/inputs (cards use 12px via presets) */
+  --radius: 8px;
 
   /* ── Pixel-exclusive tokens ─────────────────────────────────────────────── */
 

@@ -11,10 +11,9 @@ export function TickerTape() {
   return (
     <div style={{
       overflow: "hidden",
-      background: "#3355ff",
-      borderTop: "2px solid #00dbeb",
-      borderBottom: "2px solid #00dbeb",
-      padding: "6px 0",
+      background: "var(--px-black)",
+      borderBottom: "1px solid var(--px-border)",
+      padding: "7px 0",
       flexShrink: 0,
     }}>
       <style>{`
@@ -36,10 +35,10 @@ export function TickerTape() {
           const isPos = last.startsWith("+");
           const isNeg = last.startsWith("-");
           return (
-            <span key={i} style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: "#fff" }}>
+            <span key={i} style={{ fontFamily: "var(--ff-mono, monospace)", fontSize: 11, color: "var(--px-grey-mid)", letterSpacing: "0.02em" }}>
               {(isPos || isNeg)
-                ? <>{parts.slice(0, -1).join(" ")}{" "}<span style={{ color: isPos ? "#00ff7f" : "#ff3333" }}>{last}</span>{" ◆"}</>
-                : <>{t} ◆</>
+                ? <>{parts.slice(0, -1).join(" ")}{" "}<span style={{ color: isPos ? "var(--px-green)" : "var(--px-red)" }}>{last}</span>{"  ·"}</>
+                : <>{t}{"  ·"}</>
               }
             </span>
           );

@@ -57,10 +57,10 @@ export const PX = {
   mid:    "var(--px-grey-mid,#8888aa)",
   dim:    "var(--px-grey-dim,#555577)",
 
-  // Fonts
-  fp: "var(--ff-pixel,'Press Start 2P',monospace)",  // Pixel (titles, labels)
-  fm: "var(--ff-mono,'JetBrains Mono',monospace)",   // Mono (numbers, data)
-  fb: "var(--ff-body,Pretendard,sans-serif)",         // Body (descriptions)
+  // Fonts (Linear theme: Inter for display/body, JetBrains Mono for data)
+  fp: "var(--ff-pixel,Inter,Pretendard,sans-serif)",  // Titles, labels (was Press Start 2P)
+  fm: "var(--ff-mono,'JetBrains Mono',ui-monospace,monospace)",  // Mono (numbers, data)
+  fb: "var(--ff-body,Inter,Pretendard,sans-serif)",   // Body (descriptions)
 } as const;
 
 export type PxTokens = typeof PX;
@@ -95,44 +95,96 @@ export const pxSz = {
 // Spread and override as needed — these are starting points, not constraints.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Section field label — pixel font, uppercase, muted. */
+/** Section field label — Linear eyebrow: Inter, uppercase, subtle. */
 export const pxLabel: CSSProperties = {
   display: "block",
-  fontFamily: PX.fp,
-  fontSize: pxSz.label,   // 9px
+  fontFamily: PX.fb,
+  fontSize: 12,
+  fontWeight: 500,
   color: PX.mid,
-  letterSpacing: "0.08em",
-  lineHeight: 1.8,
+  letterSpacing: "0.04em",
+  lineHeight: 1.4,
   textTransform: "uppercase",
 };
 
-/** Form input — monospace, no radius, border highlight. */
+/** Form input — Linear: surface bg, 1px hairline, 8px radius. */
 export const pxInput: CSSProperties = {
-  background: PX.alt,
-  border: `2px solid ${PX.border}`,
-  borderRadius: 0,
+  background: PX.panel,
+  border: `1px solid ${PX.border}`,
+  borderRadius: 8,
   padding: "8px 12px",
-  fontFamily: PX.fm,
-  fontSize: 13,
+  fontFamily: PX.fb,
+  fontSize: 14,
   color: PX.white,
   outline: "none",
   width: "100%",
   boxSizing: "border-box",
 };
 
-/** Panel block — dark background, border, no radius. */
+/** Panel block — Linear: surface-1, 1px hairline, 12px radius. */
 export const pxPanel: CSSProperties = {
   background: PX.panel,
-  border: `2px solid ${PX.border}`,
-  borderRadius: 0,
-  padding: "20px 24px",
+  border: `1px solid ${PX.border}`,
+  borderRadius: 12,
+  padding: "24px",
 };
 
-/** Section header — small pixel font, border-color, wide tracking. */
+/** Section header — Linear: Inter, ink, slight negative tracking. */
 export const pxSectionHeader: CSSProperties = {
+  fontFamily: PX.fb,
+  fontSize: 13,
+  fontWeight: 600,
+  color: PX.white,
+  letterSpacing: "-0.2px",
+  marginBottom: 12,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Linear component presets — reuse these instead of inlining styles per page.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Card / panel — Linear surface-1, 1px hairline, 12px radius. */
+export const pxCard: CSSProperties = {
+  background: PX.panel,
+  border: `1px solid ${PX.border}`,
+  borderRadius: 12,
+  padding: 24,
+};
+
+/** Primary button — Linear lavender CTA. */
+export const pxButtonPrimary: CSSProperties = {
+  background: PX.blue,
+  color: "#ffffff",
+  border: "none",
+  borderRadius: 8,
+  padding: "9px 16px",
+  fontFamily: PX.fb,
+  fontSize: 14,
+  fontWeight: 500,
+  cursor: "pointer",
+  transition: "background 0.15s ease",
+};
+
+/** Secondary button — charcoal surface with hairline border. */
+export const pxButtonSecondary: CSSProperties = {
+  background: PX.panel,
+  color: PX.white,
+  border: `1px solid ${PX.border}`,
+  borderRadius: 8,
+  padding: "9px 16px",
+  fontFamily: PX.fb,
+  fontSize: 14,
+  fontWeight: 500,
+  cursor: "pointer",
+  transition: "all 0.15s ease",
+};
+
+/** Page title — Inter display weight, negative tracking, ink. */
+export const pxTitle: CSSProperties = {
   fontFamily: PX.fp,
-  fontSize: pxSz.label,   // 9px
-  color: PX.border,
-  letterSpacing: "0.08em",
-  marginBottom: 14,
+  fontSize: 28,
+  fontWeight: 600,
+  color: PX.white,
+  letterSpacing: "-0.6px",
+  lineHeight: 1.2,
 };

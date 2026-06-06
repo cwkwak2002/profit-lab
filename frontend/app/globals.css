@@ -158,10 +158,10 @@
   --type-num-md:    0.875rem; /* Small data (14px) */
   --type-num-sm:    0.8125rem; /* Compact data (13px) */
 
-  /* Font family shorthands */
-  --ff-pixel: 'Press Start 2P', monospace;
-  --ff-mono:  'JetBrains Mono', monospace;
-  --ff-body:  'Pretendard', sans-serif;
+  /* Font family shorthands — Linear theme (Inter ≈ Linear Display/Text; mono kept) */
+  --ff-pixel: 'Inter', 'Pretendard', sans-serif;        /* titles/labels (was Press Start 2P) */
+  --ff-mono:  'JetBrains Mono', ui-monospace, monospace; /* numbers & data (≈ Linear Mono) */
+  --ff-body:  'Inter', 'Pretendard', sans-serif;         /* body + Korean fallback */
 }
 
 /* ── Pixel retro global animations ─────────────────────────────────────── */
